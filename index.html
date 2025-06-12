@@ -9,6 +9,7 @@
     html, body {
       height: 100%;
       margin: 0;
+      position: relative;              /* allow positioning of the hint */
     }
     body {
       display: flex;
@@ -24,21 +25,34 @@
       cursor: pointer;
       user-select: none;
     }
-    /* message under the emoji */
+    /* bold message under the emoji */
     #message {
       margin-top: 2vh;
       font-size: 5vw;
+      font-weight: bold;               /* made bold */
       color: white;
       user-select: none;
       text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    /* small hint in the bottom-right */
+    #hint {
+      position: absolute;
+      bottom: 2vh;
+      right: 2vw;
+      font-size: 2.5vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
   <!-- the emoji -->
   <div id="emoji">🎎</div>
-  <!-- the new message -->
-  <div id="message">I love you pookie!</div>
+  <!-- the bolded message -->
+  <div id="message">I love you pookieeeeeee</div>
+  <!-- hint in the bottom-right -->
+  <div id="hint">Hint: Tap the emoji for a surprise baby</div>
 
   <!-- preload your boing sound -->
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
