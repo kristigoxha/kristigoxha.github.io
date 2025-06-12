@@ -1,20 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🎎</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎎 Boing Page</title>
   <style>
-    body {
+    /* full-viewport layout, center everything */
+    html, body {
+      height: 100%;
       margin: 0;
-      height: 101vh;
+    }
+    body {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 10rem;
+      /* soft smooth purple gradient */
+      background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+    }
+    /* big, centered, clickable emoji */
+    #emoji {
+      font-size: 20vw;
+      cursor: pointer;
+      user-select: none;
+    }
+    /* message under the emoji */
+    #message {
+      margin-top: 2vh;
+      font-size: 5vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  🎎
+  <!-- the emoji -->
+  <div id="emoji">🎎</div>
+  <!-- the new message -->
+  <div id="message">I love you pookie!</div>
+
+  <!-- preload your boing sound -->
+  <audio id="boing" src="boing.mp3" preload="auto"></audio>
+
+  <script>
+    const emoji = document.getElementById('emoji');
+    const boing = document.getElementById('boing');
+
+    // play boing on touch/click
+    emoji.addEventListener('pointerdown', () => {
+      boing.currentTime = 0;
+      boing.play();
+    });
+  </script>
 </body>
 </html>
