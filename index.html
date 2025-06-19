@@ -5,36 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pookie's Home</title>
   <style>
-    /* full-viewport layout, center everything */
     html, body {
       height: 100%;
       margin: 0;
-      position: relative;              /* allow positioning of the hint */
+      position: relative;
     }
     body {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      /* soft smooth purple gradient */
       background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
     }
-    /* big, centered, clickable emoji */
     #emoji {
       font-size: 20vw;
       cursor: pointer;
       user-select: none;
     }
-    /* bold message under the emoji */
     #message {
       margin-top: 2vh;
       font-size: 5vw;
-      font-weight: bold;               /* made bold */
+      font-weight: bold;
       color: white;
       user-select: none;
       text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
-    /* small hint in the bottom-right */
+    #counter {
+      position: absolute;
+      top: 2vh;
+      left: 2vw;
+      font-size: 3vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+    }
     #hint {
       position: absolute;
       bottom: 2vh;
@@ -47,25 +51,40 @@
   </style>
 </head>
 <body>
-  <!-- the emoji -->
   <div id="emoji">🎎</div>
-  <!-- the bolded message -->
   <div id="message">I LOVE YOU POOKIEEEEEE</div>
-  <!-- hint in the bottom-right -->
+  <div id="counter">Boings today: 0</div>
   <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
 
-  <!-- preload your boing sound -->
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
 
   <script>
     const emoji = document.getElementById('emoji');
     const boing = document.getElementById('boing');
+    const counter = document.getElementById('counter');
 
-    // play boing on touch/click
+    const today = new Date().toISOString().split('T')[0];
+
+    const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
+    if (savedData.date !== today) {
+      savedData.date = today;
+      savedData.count = 0;
+    }
+
+    function updateCounter() {
+      counter.textContent = `Boings today: ${savedData.count}`;
+    }
+
     emoji.addEventListener('pointerdown', () => {
       boing.currentTime = 0;
       boing.play();
+
+      savedData.count++;
+      localStorage.setItem('boingData', JSON.stringify(savedData));
+      updateCounter();
     });
+
+    updateCounter();
   </script>
 </body>
 </html>
