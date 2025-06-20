@@ -1,90 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pookie's Home</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      position: relative;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-    }
-    #emoji {
-      font-size: 20vw;
-      cursor: pointer;
-      user-select: none;
-    }
-    #message {
-      margin-top: 2vh;
-      font-size: 5vw;
-      font-weight: bold;
-      color: white;
-      user-select: none;
-      text-shadow: 0 0 5px rgba(0,0,0,0.3);
-    }
-    #counter {
-      position: absolute;
-      top: 2vh;
-      left: 2vw;
-      font-size: 3vw;
-      color: white;
-      user-select: none;
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-    }
-    #hint {
-      position: absolute;
-      bottom: 2vh;
-      right: 2vw;
-      font-size: 2.5vw;
-      color: white;
-      user-select: none;
-      text-shadow: 0 0 3px rgba(0,0,0,0.3);
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pookie's Home</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      position: relative;
+      font-family: sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+    }
+    #emoji {
+      font-size: 20vw;
+      cursor: pointer;
+      user-select: none;
+    }
+    #message {
+      margin-top: 2vh;
+      font-size: 5vw;
+      font-weight: bold;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    #counter {
+      position: absolute;
+      top: 2vh;
+      left: 2vw;
+      font-size: 3vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+    }
+    #hint {
+      position: absolute;
+      bottom: 2vh;
+      right: 2vw;
+      font-size: 2.5vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 3px rgba(0,0,0,0.3);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    #app-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
-  <div id="emoji">🎎</div>
-  <div id="message">I LOVE YOU POOKIEEEEEE</div>
-  <div id="counter">Boings today: 0</div>
-  <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
-
-  <audio id="boing" src="boing.mp3" preload="auto"></audio>
-
-  <script>
-    const emoji = document.getElementById('emoji');
-    const boing = document.getElementById('boing');
-    const counter = document.getElementById('counter');
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
-    if (savedData.date !== today) {
-      savedData.date = today;
-      savedData.count = 0;
-    }
-
-    function updateCounter() {
-      counter.textContent = `Boings today: ${savedData.count}`;
-    }
-
-    emoji.addEventListener('pointerdown', () => {
-      boing.currentTime = 0;
-      boing.play();
-
-      savedData.count++;
-      localStorage.setItem('boingData', JSON.stringify(savedData));
-      updateCounter();
-    });
-
-    updateCounter();
-  </script>
+  <!-- Login/Register Section -->
+  <div id="login-section">
+    <h2 style="color:white;">Login or Sign Up</h2>
+    <input id="email" type="email" placeholder="Email" /><br />
+    <input id="password" type="password" placeholder="Password" /><br />
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign Up</button>
+  </div>
+  <!-- App Section -->
+  <div id="app-section">
+    <div id="counter">Boings today: 0</div>
+    <div id="emoji">🎎</div>
+    <div id="message">I LOVE YOU POOKIEEEEEE</div>
+    <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
+    <!-- Upload Section -->
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="logout()" style="margin-top:2vh;">Logout</button>
+  </div>
+  <audio id="boing" src="boing.mp3" preload="auto"></audio>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
+      authDomain: "pookie-home.firebaseapp.com",
+      projectId: "pookie-home",
+      storageBucket: "pookie-home.appspot.com",
+      messagingSenderId: "207581484781",
+      appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
+      measurementId: "G-28118SDJNW"
+    };
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+    // Auth Handlers
+    window.signup = async function () {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        alert("Account created!");
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    window.login = async function () {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        alert("Logged in!");
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    window.logout = async function () {
+      await signOut(auth);
+      location.reload();
+    };
+    function showApp() {
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("app-section").style.display = "flex";
+    }
+    function showLogin() {
+      document.getElementById("login-section").style.display = "block";
+      document.getElementById("app-section").style.display = "none";
+    }
+    // Check login status
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        showApp();
+        setupApp();
+      } else {
+        showLogin();
+      }
+    });
+    // App logic (boing counter + file upload)
+    function setupApp() {
+      const emoji = document.getElementById('emoji');
+      const boing = document.getElementById('boing');
+      const counter = document.getElementById('counter');
+      const today = new Date().toISOString().split('T')[0];
+      const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
+      if (savedData.date !== today) {
+        savedData.date = today;
+        savedData.count = 0;
+      }
+      function updateCounter() {
+        counter.textContent = `Boings today: ${savedData.count}`;
+      }
+      emoji.addEventListener('pointerdown', () => {
+        boing.currentTime = 0;
+        boing.play();
+        savedData.count++;
+        localStorage.setItem('boingData', JSON.stringify(savedData));
+        updateCounter();
+      });
+      updateCounter();
+      // Upload logic
+      const input = document.getElementById('imageInput');
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const fileRef = ref(storage, 'uploads/' + file.name);
+        await uploadBytes(fileRef, file);
+        alert('Image uploaded!');
+      });
+    }
+  </script>
 </body>
 </html>
