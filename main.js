@@ -1,7 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+import {
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
@@ -18,21 +28,25 @@ const auth = getAuth(app);
 const analytics = getAnalytics(app);
 const storage = getStorage(app);
 
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   if (!auth) {
-    console.error("Firebase Auth not initialized.");
+    alert("Firebase auth not initialized");
     return;
   }
 
-  window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
-    size: 'invisible',
-    callback: (response) => {
-      sendCode();
+  window.recaptchaVerifier = new RecaptchaVerifier(
+    "sign-in-button",
+    {
+      size: "invisible",
+      callback: () => {
+        sendCode();
+      },
+      "expired-callback": () => {
+        alert("reCAPTCHA expired. Try again.");
+      }
     },
-    'expired-callback': () => {
-      alert("reCAPTCHA expired. Please refresh.");
-    }
-  }, auth);
+    auth
+  );
 
   window.recaptchaVerifier.render().then((widgetId) => {
     window.recaptchaWidgetId = widgetId;
@@ -40,14 +54,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.sendCode = function () {
-  const phoneNumber = document.getElementById('phone').value;
+  const phoneNumber = document.getElementById("phone").value;
   const appVerifier = window.recaptchaVerifier;
 
   signInWithPhoneNumber(auth, phoneNumber, appVerifier)
     .then((confirmationResult) => {
       window.confirmationResult = confirmationResult;
       alert("Verification code sent!");
-      document.getElementById('code').focus();
+      document.getElementById("code").focus();
     })
     .catch((error) => {
       console.error("Error sending code:", error);
@@ -56,8 +70,9 @@ window.sendCode = function () {
 };
 
 window.verifyCode = function () {
-  const code = document.getElementById('code').value;
-  window.confirmationResult.confirm(code)
+  const code = document.getElementById("code").value;
+  window.confirmationResult
+    .confirm(code)
     .then(() => {
       alert("Logged in!");
     })
@@ -91,11 +106,11 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function setupApp() {
-  const emoji = document.getElementById('emoji');
-  const boing = document.getElementById('boing');
-  const counter = document.getElementById('counter');
-  const today = new Date().toISOString().split('T')[0];
-  const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
+  const emoji = document.getElementById("emoji");
+  const boing = document.getElementById("boing");
+  const counter = document.getElementById("counter");
+  const today = new Date().toISOString().split("T")[0];
+  const savedData = JSON.parse(localStorage.getItem("boingData")) || {};
   if (savedData.date !== today) {
     savedData.date = today;
     savedData.count = 0;
@@ -105,22 +120,22 @@ function setupApp() {
     counter.textContent = `Boings today: ${savedData.count}`;
   }
 
-  emoji.addEventListener('pointerdown', () => {
+  emoji.addEventListener("pointerdown", () => {
     boing.currentTime = 0;
     boing.play();
     savedData.count++;
-    localStorage.setItem('boingData', JSON.stringify(savedData));
+    localStorage.setItem("boingData", JSON.stringify(savedData));
     updateCounter();
   });
 
   updateCounter();
 
-  const input = document.getElementById('imageInput');
-  input.addEventListener('change', async (e) => {
+  const input = document.getElementById("imageInput");
+  input.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const fileRef = ref(storage, 'uploads/' + file.name);
+    const fileRef = ref(storage, "uploads/" + file.name);
     await uploadBytes(fileRef, file);
-    alert('Image uploaded!');
+    alert("Image uploaded!");
   });
 }
