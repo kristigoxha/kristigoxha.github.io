@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -64,7 +65,7 @@
     <h2 style="color:white;">Login with Phone</h2>
     <input type="tel" id="phone" placeholder="+355xxxxxxxxx" required />
     <div id="recaptcha-container"></div>
-    <button onclick="sendCode()">Send Code</button>
+    <button id="sign-in-button">Send Code</button>
     <br><br>
     <input type="text" id="code" placeholder="Enter verification code" />
     <button onclick="verifyCode()">Verify</button>
@@ -98,31 +99,36 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // Auth
-    let recaptchaVerifier;
-    window.onload = function () {
-      recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        },
-        'expired-callback': () => {
-          alert('reCAPTCHA expired, please try again.');
-        }
-      }, auth);
-      recaptchaVerifier.render();
-    };
+    // Setup reCAPTCHA
+    window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
+      'size': 'invisible',
+      'callback': (response) => {
+        console.log("reCAPTCHA solved:", response);
+        sendCode();
+      },
+      'expired-callback': () => {
+        alert("reCAPTCHA expired. Please try again.");
+      }
+    }, auth);
 
+    window.recaptchaVerifier.render().then((widgetId) => {
+      window.recaptchaWidgetId = widgetId;
+    });
+
+    // Send verification code
     window.sendCode = function () {
       const phoneNumber = document.getElementById('phone').value;
-      const appVerifier = recaptchaVerifier;
+      const appVerifier = window.recaptchaVerifier;
 
       signInWithPhoneNumber(auth, phoneNumber, appVerifier)
         .then((confirmationResult) => {
           window.confirmationResult = confirmationResult;
           alert("Verification code sent!");
         })
-        .catch((error) => alert("Error sending code: " + error.message));
+        .catch((error) => {
+          console.error("Error sending code:", error);
+          alert("Failed to send code: " + error.message);
+        });
     };
 
     window.verifyCode = function () {
