@@ -59,7 +59,6 @@
       flex-direction: column;
       align-items: center;
     }
-    /* Keep reCAPTCHA container invisible so it doesn’t ruin layout */
     #recaptcha-container {
       position: absolute;
       width: 1px;
@@ -76,7 +75,8 @@
     <h2 style="color:white;">Login with Phone</h2>
     <input type="tel" id="phone" placeholder="+355xxxxxxxxx" autocomplete="tel" required />
     <div id="recaptcha-container"></div>
-    <button id="sign-in-button">Send Code</button>
+    <!-- Added onclick here -->
+    <button id="sign-in-button" onclick="sendCode()">Send Code</button>
     <br><br>
     <input type="text" id="code" placeholder="Enter verification code" inputmode="numeric" autocomplete="one-time-code" />
     <button onclick="verifyCode()">Verify</button>
@@ -114,20 +114,18 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // Create invisible reCAPTCHA verifier attached to the 'sign-in-button' element
     window.recaptchaVerifier = new RecaptchaVerifier(
-      'sign-in-button', 
+      'sign-in-button',
       {
         size: 'invisible',
         callback: () => {
-          // reCAPTCHA solved — send the code
           sendCode();
         },
         'expired-callback': () => {
           alert('reCAPTCHA expired. Please try again.');
         }
       },
-      auth // Pass the auth object here — this fixes the undefined error
+      auth
     );
 
     window.recaptchaVerifier.render().then(widgetId => {
