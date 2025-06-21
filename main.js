@@ -28,21 +28,22 @@ const auth = getAuth(app);
 const analytics = getAnalytics(app);
 const storage = getStorage(app);
 
-document.addEventListener("DOMContentLoaded", () => {
+// Create reCAPTCHA *after* auth is fully initialized and DOM is ready
+window.addEventListener("load", () => {
   if (!auth) {
-    alert("Firebase auth not initialized");
+    console.error("Auth not initialized");
     return;
   }
 
   window.recaptchaVerifier = new RecaptchaVerifier(
-    "sign-in-button",
+    document.getElementById("sign-in-button"),
     {
       size: "invisible",
-      callback: () => {
+      callback: (response) => {
         sendCode();
       },
       "expired-callback": () => {
-        alert("reCAPTCHA expired. Try again.");
+        alert("reCAPTCHA expired. Please refresh.");
       }
     },
     auth
