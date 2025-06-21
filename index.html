@@ -109,19 +109,22 @@
     const storage = getStorage(app);
 
     // Setup reCAPTCHA
-    window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
-      'size': 'invisible',
-      'callback': (response) => {
-        sendCode();
-      },
-      'expired-callback': () => {
-        alert("reCAPTCHA expired. Please try again.");
-      }
-    }, auth);
+window.addEventListener('DOMContentLoaded', () => {
+  window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
+    'size': 'invisible',
+    'callback': (response) => {
+      sendCode(); // reCAPTCHA solved
+    },
+    'expired-callback': () => {
+      alert("reCAPTCHA expired. Please refresh or try again.");
+    }
+  }, auth);
 
-    window.recaptchaVerifier.render().then((widgetId) => {
-      window.recaptchaWidgetId = widgetId;
-    });
+  window.recaptchaVerifier.render().then((widgetId) => {
+    window.recaptchaWidgetId = widgetId;
+  });
+});
+
 
     // Send verification code
     window.sendCode = function () {
