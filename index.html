@@ -80,7 +80,6 @@
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIEEEEEE</div>
     <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
-
     <input type="file" id="imageInput" accept="image/*" />
     <button onclick="logout()" style="margin-top:2vh;">Logout</button>
   </div>
@@ -104,29 +103,28 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const auth = getAuth(app);
+    const analytics = getAnalytics(app);
     const storage = getStorage(app);
 
-    // Setup reCAPTCHA
-window.addEventListener('DOMContentLoaded', () => {
-  window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
-    'size': 'invisible',
-    'callback': (response) => {
-      sendCode(); // reCAPTCHA solved
-    },
-    'expired-callback': () => {
-      alert("reCAPTCHA expired. Please refresh or try again.");
-    }
-  }, auth);
+    // ✅ Recaptcha after DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
+        size: 'invisible',
+        callback: (response) => {
+          sendCode(); // reCAPTCHA passed
+        },
+        'expired-callback': () => {
+          alert("reCAPTCHA expired. Please refresh.");
+        }
+      }, auth);
 
-  window.recaptchaVerifier.render().then((widgetId) => {
-    window.recaptchaWidgetId = widgetId;
-  });
-});
+      window.recaptchaVerifier.render().then((widgetId) => {
+        window.recaptchaWidgetId = widgetId;
+      });
+    });
 
-
-    // Send verification code
+    // ✅ Send verification code
     window.sendCode = function () {
       const phoneNumber = document.getElementById('phone').value;
       const appVerifier = window.recaptchaVerifier;
@@ -135,6 +133,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .then((confirmationResult) => {
           window.confirmationResult = confirmationResult;
           alert("Verification code sent!");
+          document.getElementById('code').focus();
         })
         .catch((error) => {
           console.error("Error sending code:", error);
@@ -142,6 +141,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // ✅ Verify the OTP code
     window.verifyCode = function () {
       const code = document.getElementById('code').value;
       window.confirmationResult.confirm(code)
@@ -149,15 +149,17 @@ window.addEventListener('DOMContentLoaded', () => {
           alert("Logged in!");
         })
         .catch((error) => {
-          alert("Invalid code. Please try again.");
+          alert("Invalid code. Try again.");
         });
     };
 
+    // ✅ Logout
     window.logout = async function () {
       await signOut(auth);
       location.reload();
     };
 
+    // ✅ Show correct section
     function showApp() {
       document.getElementById("login-section").style.display = "none";
       document.getElementById("app-section").style.display = "flex";
@@ -168,6 +170,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById("app-section").style.display = "none";
     }
 
+    // ✅ Auth state listener
     onAuthStateChanged(auth, (user) => {
       if (user) {
         showApp();
@@ -177,6 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // ✅ App behavior setup (boing, upload)
     function setupApp() {
       const emoji = document.getElementById('emoji');
       const boing = document.getElementById('boing');
