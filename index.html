@@ -61,22 +61,31 @@
     }
   </style>
 </head>
-<body>  <!-- Phone Auth Login Section -->  <div id="login-section">
+<body>
+
+  <!-- Phone Auth Login Section -->
+  <div id="login-section">
     <h2 style="color:white;">Login with Phone</h2>
-    <input type="tel" id="phone" placeholder="+355xxxxxxxxx" required />
+    <input type="tel" id="phone" placeholder="+355xxxxxxxxx" autocomplete="tel" required />
     <div id="recaptcha-container"></div>
     <button id="sign-in-button">Send Code</button>
     <br><br>
-    <input type="text" id="code" placeholder="Enter verification code" />
+    <input type="text" id="code" placeholder="Enter verification code" inputmode="numeric" autocomplete="one-time-code" />
     <button onclick="verifyCode()">Verify</button>
-  </div>  <!-- App Section -->  <div id="app-section">
+  </div>
+
+  <!-- App Section -->
+  <div id="app-section">
     <div id="counter">Boings today: 0</div>
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIEEEEEE</div>
-    <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div><input type="file" id="imageInput" accept="image/*" />
-<button onclick="logout()" style="margin-top:2vh;">Logout</button>
+    <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
 
-  </div><audio id="boing" src="boing.mp3" preload="auto"></audio>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="logout()" style="margin-top:2vh;">Logout</button>
+  </div>
+
+  <audio id="boing" src="boing.mp3" preload="auto"></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
@@ -103,7 +112,6 @@
     window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
       'size': 'invisible',
       'callback': (response) => {
-        console.log("reCAPTCHA solved:", response);
         sendCode();
       },
       'expired-callback': () => {
@@ -134,10 +142,12 @@
     window.verifyCode = function () {
       const code = document.getElementById('code').value;
       window.confirmationResult.confirm(code)
-        .then((result) => {
+        .then(() => {
           alert("Logged in!");
         })
-        .catch((error) => alert("Invalid code. Please try again."));
+        .catch((error) => {
+          alert("Invalid code. Please try again.");
+        });
     };
 
     window.logout = async function () {
@@ -198,5 +208,6 @@
         alert('Image uploaded!');
       });
     }
-  </script></body>
+  </script>
+</body>
 </html>
