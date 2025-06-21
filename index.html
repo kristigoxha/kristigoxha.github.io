@@ -3,12 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pookie's Home - Fixed</title>
+  <title>Pookie's Home</title>
   <style>
-    /* your styles here (omitted for brevity, keep same as before) */
+    html, body {
+      height: 100%;
+      margin: 0;
+      position: relative;
+      font-family: sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+    }
+    #emoji {
+      font-size: 20vw;
+      cursor: pointer;
+      user-select: none;
+    }
+    #message {
+      margin-top: 2vh;
+      font-size: 5vw;
+      font-weight: bold;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    #counter {
+      position: absolute;
+      top: 2vh;
+      left: 2vw;
+      font-size: 3vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+    }
+    #hint {
+      position: absolute;
+      bottom: 2vh;
+      right: 2vw;
+      font-size: 2.5vw;
+      color: white;
+      user-select: none;
+      text-shadow: 0 0 3px rgba(0,0,0,0.3);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    #app-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Keep reCAPTCHA container invisible so it doesn’t ruin layout */
+    #recaptcha-container {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      left: -9999px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Phone Auth Login Section -->
   <div id="login-section">
     <h2 style="color:white;">Login with Phone</h2>
     <input type="tel" id="phone" placeholder="+355xxxxxxxxx" autocomplete="tel" required />
@@ -19,11 +82,12 @@
     <button onclick="verifyCode()">Verify</button>
   </div>
 
-  <div id="app-section" style="display:none;">
+  <!-- App Section -->
+  <div id="app-section">
     <div id="counter">Boings today: 0</div>
-    <div id="emoji" style="font-size:20vw; cursor:pointer; user-select:none;">🎎</div>
-    <div id="message" style="color:white; font-weight:bold; font-size:5vw;">I LOVE YOU POOKIEEEEEE</div>
-    <div id="hint" style="position:absolute; bottom:2vh; right:2vw; color:white; font-size:2.5vw; user-select:none;">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
+    <div id="emoji">🎎</div>
+    <div id="message">I LOVE YOU POOKIEEEEEE</div>
+    <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
 
     <input type="file" id="imageInput" accept="image/*" />
     <button onclick="logout()" style="margin-top:2vh;">Logout</button>
@@ -50,64 +114,64 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // IMPORTANT: Create recaptchaVerifier with 'auth' as THIRD arg
+    // Create invisible reCAPTCHA verifier attached to the 'sign-in-button' element
     window.recaptchaVerifier = new RecaptchaVerifier(
-      'sign-in-button',
+      'sign-in-button', 
       {
         size: 'invisible',
-        callback: (response) => {
-          // reCAPTCHA solved, allow sendCode
+        callback: () => {
+          // reCAPTCHA solved — send the code
           sendCode();
         },
         'expired-callback': () => {
-          alert("reCAPTCHA expired. Please try again.");
+          alert('reCAPTCHA expired. Please try again.');
         }
       },
-      auth // <<< This MUST be auth instance here
+      auth // Pass the auth object here — this fixes the undefined error
     );
 
     window.recaptchaVerifier.render().then(widgetId => {
       window.recaptchaWidgetId = widgetId;
     });
 
-    window.sendCode = function () {
-      const phoneNumber = document.getElementById("phone").value;
+    window.sendCode = () => {
+      const phoneNumber = document.getElementById('phone').value;
       signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
         .then(confirmationResult => {
           window.confirmationResult = confirmationResult;
-          alert("Verification code sent!");
-          document.getElementById("code").focus();
+          alert('Verification code sent!');
+          document.getElementById('code').focus();
         })
         .catch(error => {
-          alert("Error sending code: " + error.message);
+          alert('Error sending code: ' + error.message);
           console.error(error);
         });
     };
 
-    window.verifyCode = function () {
-      const code = document.getElementById("code").value;
+    window.verifyCode = () => {
+      const code = document.getElementById('code').value;
       window.confirmationResult.confirm(code)
         .then(() => {
-          alert("Logged in!");
+          alert('Logged in!');
         })
         .catch(() => {
-          alert("Invalid code. Try again.");
+          alert('Invalid code. Please try again.');
         });
     };
 
-    window.logout = async function () {
+    window.logout = async () => {
       await signOut(auth);
       location.reload();
     };
 
     function showApp() {
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("app-section").style.display = "flex";
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('app-section').style.display = 'flex';
     }
 
     function showLogin() {
-      document.getElementById("login-section").style.display = "block";
-      document.getElementById("app-section").style.display = "none";
+      document.getElementById('login-section').style.display = 'block';
+      document.getElementById('app-section').style.display = 'none';
     }
 
     onAuthStateChanged(auth, user => {
@@ -120,11 +184,11 @@
     });
 
     function setupApp() {
-      const emoji = document.getElementById("emoji");
-      const boing = document.getElementById("boing");
-      const counter = document.getElementById("counter");
-      const today = new Date().toISOString().split("T")[0];
-      const savedData = JSON.parse(localStorage.getItem("boingData")) || {};
+      const emoji = document.getElementById('emoji');
+      const boing = document.getElementById('boing');
+      const counter = document.getElementById('counter');
+      const today = new Date().toISOString().split('T')[0];
+      const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
       if (savedData.date !== today) {
         savedData.date = today;
         savedData.count = 0;
@@ -134,23 +198,23 @@
         counter.textContent = `Boings today: ${savedData.count}`;
       }
 
-      emoji.addEventListener("pointerdown", () => {
+      emoji.addEventListener('pointerdown', () => {
         boing.currentTime = 0;
         boing.play();
         savedData.count++;
-        localStorage.setItem("boingData", JSON.stringify(savedData));
+        localStorage.setItem('boingData', JSON.stringify(savedData));
         updateCounter();
       });
 
       updateCounter();
 
-      const input = document.getElementById("imageInput");
-      input.addEventListener("change", async (e) => {
+      const input = document.getElementById('imageInput');
+      input.addEventListener('change', async e => {
         const file = e.target.files[0];
         if (!file) return;
-        const fileRef = ref(storage, "uploads/" + file.name);
+        const fileRef = ref(storage, 'uploads/' + file.name);
         await uploadBytes(fileRef, file);
-        alert("Image uploaded!");
+        alert('Image uploaded!');
       });
     }
   </script>
