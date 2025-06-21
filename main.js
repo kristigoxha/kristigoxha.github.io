@@ -19,6 +19,11 @@ const analytics = getAnalytics(app);
 const storage = getStorage(app);
 
 window.addEventListener('DOMContentLoaded', () => {
+  if (!auth) {
+    console.error("Firebase Auth not initialized.");
+    return;
+  }
+
   window.recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
     size: 'invisible',
     callback: (response) => {
