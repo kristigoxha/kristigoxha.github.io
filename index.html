@@ -77,7 +77,7 @@
     <button id="sign-in-button">Send Code</button>
     <br><br>
     <input type="text" id="code" placeholder="Enter verification code" inputmode="numeric" autocomplete="one-time-code" />
-    <button onclick="verifyCode()">Verify</button>
+    <button id="verify-button">Verify</button>
   </div>
 
   <div id="app-section">
@@ -111,23 +111,28 @@
       const auth = getAuth(app);
       const storage = getStorage(app);
 
-      // Setup reCAPTCHA
-      const recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
-        size: 'invisible',
-        callback: () => {
-          sendCode();
+      // Setup Recaptcha
+      const recaptchaButton = document.getElementById('sign-in-button');
+      const recaptchaVerifier = new RecaptchaVerifier(
+        recaptchaButton,
+        {
+          size: 'invisible',
+          callback: () => {
+            sendCode();
+          },
+          'expired-callback': () => {
+            alert("reCAPTCHA expired. Try again.");
+          }
         },
-        'expired-callback': () => {
-          alert("reCAPTCHA expired. Try again.");
-        }
-      }, auth);
+        auth
+      );
 
       recaptchaVerifier.render().then(widgetId => {
         window.recaptchaWidgetId = widgetId;
       });
 
       // Send SMS Code
-      window.sendCode = () => {
+      function sendCode() {
         const phone = document.getElementById("phone").value;
         signInWithPhoneNumber(auth, phone, recaptchaVerifier)
           .then(result => {
@@ -138,10 +143,12 @@
             alert("Error: " + error.message);
             console.error(error);
           });
-      };
+      }
 
-      // Verify SMS Code
-      window.verifyCode = () => {
+      recaptchaButton.addEventListener("click", sendCode);
+
+      // Verify Code
+      document.getElementById("verify-button").addEventListener("click", () => {
         const code = document.getElementById("code").value;
         window.confirmationResult.confirm(code)
           .then(() => {
@@ -150,7 +157,7 @@
           .catch(() => {
             alert("Wrong code.");
           });
-      };
+      });
 
       // Logout
       window.logout = async () => {
@@ -158,14 +165,13 @@
         location.reload();
       };
 
-      // Auth state listener
+      // Auth State Listener
       onAuthStateChanged(auth, (user) => {
         document.getElementById("login-section").style.display = user ? "none" : "block";
         document.getElementById("app-section").style.display = user ? "flex" : "none";
         if (user) setupApp();
       });
 
-      // Main app UI
       function setupApp() {
         const emoji = document.getElementById("emoji");
         const boing = document.getElementById("boing");
