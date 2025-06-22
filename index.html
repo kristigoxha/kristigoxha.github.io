@@ -10,34 +10,27 @@
     /* BASE & BACKGROUND                                                         */
     /* ────────────────────────────────────────────────────────────────────────── */
     html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;   /* kills the page‐level scrollbar */
+      margin: 0; padding: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-      box-sizing: border-box;
+      overflow-x: hidden;            /* hide only horizontal scroll */
+      font-size: 14px;               /* smaller base font */
+      /* removed: height:100% & display:flex on body */
     }
 
     h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
       color: white;
       text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      margin: 0;
-      padding: 1rem 0;
+      margin: 1rem 0;
       text-align: center;
     }
 
     /* ────────────────────────────────────────────────────────────────────────── */
-    /* LOGIN & APP “SCREENS”                                                     */
+    /* LOGIN SECTION (centered vertically)                                        */
     /* ────────────────────────────────────────────────────────────────────────── */
-    #login-section,
-    #app-section {
-      height: 100vh;      /* each view fills the screen */
-      width: 100%;
-    }
-
     #login-section {
+      min-height: calc(100vh - 2rem);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -45,50 +38,70 @@
       padding: 10px;
     }
 
+    /* ────────────────────────────────────────────────────────────────────────── */
+    /* APP SECTION (normal flow, can scroll)                                      */
+    /* ────────────────────────────────────────────────────────────────────────── */
     #app-section {
-      display: none;      /* shown after login */
+      display: none;                 /* shown after login */
       position: relative;
       padding: 10px;
+      min-height: calc(100vh - 2rem);
     }
 
-    /* Inputs & buttons (same as yours)                                          */
+    /* ────────────────────────────────────────────────────────────────────────── */
+    /* INPUTS & BUTTONS (your original styling, slightly smaller)                 */
+    /* ────────────────────────────────────────────────────────────────────────── */
     input, button {
-      padding: 12px;
-      font-size: 1rem;
-      margin: 5px;
-      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.9rem;
+      margin: 4px;
+      border-radius: 6px;
       border: none;
       max-width: 90vw;
     }
 
+    #login-message,
+    #reset-message,
+    #password-change-message,
+    #file-name {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: white;
+      text-shadow: 0 0 3px rgba(0,0,0,0.3);
+    }
+
     /* ────────────────────────────────────────────────────────────────────────── */
-    /* BOING COUNTER, HINT, AND HAMBURGER MENU                                   */
+    /* BOING COUNTER & HINT                                                       */
     /* ────────────────────────────────────────────────────────────────────────── */
     #counter {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: clamp(1rem, 3vw, 1.5rem);
+      top: 8px;
+      left: 8px;
+      font-size: clamp(0.8rem, 2vw, 1rem);
       color: white;
       text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
 
     #hint {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      bottom: 8px;
+      right: 8px;
+      font-size: clamp(0.7rem, 1.8vw, 0.9rem);
       color: white;
       text-align: right;
       text-shadow: 0 0 2px rgba(0,0,0,0.3);
       max-width: 40%;
     }
 
+    /* ────────────────────────────────────────────────────────────────────────── */
+    /* HAMBURGER MENU                                                             */
+    /* ────────────────────────────────────────────────────────────────────────── */
     .hamburger {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 28px; height: 20px;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 18px;
       background: none;
       border: none;
       cursor: pointer;
@@ -99,14 +112,14 @@
       z-index: 100;
     }
     .hamburger span {
-      height: 3px;
-      border-radius: 2px;
+      height: 2px;
+      border-radius: 1px;
       background: white;
     }
     #menu {
       position: absolute;
-      top: 40px;
-      right: 10px;
+      top: 32px;
+      right: 8px;
       display: none;
       flex-direction: column;
       background: rgba(0,0,0,0.6);
@@ -116,7 +129,7 @@
     }
     #menu.open { display: flex; }
     #menu a {
-      padding: 8px 12px;
+      padding: 6px 10px;
       color: white;
       text-decoration: none;
       font-size: 0.9rem;
@@ -127,19 +140,19 @@
     }
 
     /* ────────────────────────────────────────────────────────────────────────── */
-    /* YOUR ORIGINAL APP ELEMENTS (moved into the new screens)                   */
+    /* YOUR ORIGINAL ELEMENTS (slightly smaller & repositioned)                   */
     /* ────────────────────────────────────────────────────────────────────────── */
     #emoji {
-      font-size: clamp(80px, 20vw, 200px);
+      font-size: clamp(60px, 15vw, 150px);
       cursor: pointer;
       user-select: none;
-      margin: 2rem 0 1rem;
+      margin: 1rem auto 0;
       display: block;
     }
 
     #message {
       margin-top: 0.5rem;
-      font-size: clamp(1.5rem, 5vw, 3rem);
+      font-size: clamp(1.2rem, 4vw, 2rem);
       font-weight: bold;
       color: white;
       text-align: center;
@@ -148,15 +161,14 @@
 
     #gift-box {
       display: inline-block;
-      font-size: 1.2rem;
-      padding: 15px 25px;
+      font-size: 1rem;
+      padding: 10px 20px;
       background: linear-gradient(45deg, #ff9a9e, #fad0c4);
       border: 2px dashed white;
       color: white;
-      border-radius: 20px;
+      border-radius: 16px;
       cursor: pointer;
-      margin-top: 20px;
-      text-align: center;
+      margin: 1rem auto 0;
       transition: transform 0.2s, box-shadow 0.2s;
       user-select: none;
     }
@@ -168,24 +180,17 @@
       transform: scale(0.97);
     }
 
-    #reset-message,
-    #password-change-message,
-    #file-name {
-      margin-top: 10px;
-      color: white;
-      text-shadow: 0 0 3px rgba(0,0,0,0.2);
-      font-weight: bold;
-    }
-
-    /* keep your old logout/password buttons hidden now */
+    /* hide your old logout/change-password buttons (we now use the menu) */
     .logout {
       display: none;
     }
   </style>
 </head>
 <body>
+
   <h1>Pookie's Home</h1>
 
+  <!-- LOGIN / REGISTER / RESET -->
   <div id="login-section">
     <input type="email" id="email" placeholder="you@example.com" />
     <input type="password" id="password" placeholder="Password" />
@@ -200,6 +205,7 @@
     <p id="reset-message"></p>
   </div>
 
+  <!-- APP VIEW -->
   <div id="app-section">
     <div id="counter">Boings today: <span id="todayCount">0</span></div>
 
@@ -225,8 +231,10 @@
          background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:10;">
       <div style="background:white; border-radius:12px; padding:20px; width:90%; max-width:400px; text-align:center;">
         <h3>Change Password</h3>
-        <input type="password" id="current-password" placeholder="Current Password" style="width:100%; margin:10px 0;" />
-        <input type="password" id="new-password" placeholder="New Password" style="width:100%; margin:10px 0;" />
+        <input type="password" id="current-password" placeholder="Current Password"
+               style="width:100%; margin:10px 0;" />
+        <input type="password" id="new-password" placeholder="New Password"
+               style="width:100%; margin:10px 0;" />
         <div style="margin-top:10px;">
           <button onclick="changePassword()">Submit</button>
           <button onclick="closePasswordModal()">Cancel</button>
@@ -252,7 +260,7 @@
       document.getElementById('app-section').style.display   = 'block';
     };
 
-    // Auto‐show if already logged in
+    // If already logged in on load
     if (localStorage.getItem('token')) {
       showApp();
       setupApp();
