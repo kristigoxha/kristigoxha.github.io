@@ -1,4 +1,5 @@
 const api = 'https://kristigoxha-github-io.onrender.com';
+const resetApi = 'https://password-reset-q4wp.onrender.com'; // Your password reset backend
 
 window.register = async () => {
   const email = document.getElementById('email').value;
@@ -114,5 +115,31 @@ window.changePassword = async () => {
 
   if (res.ok) {
     setTimeout(() => closePasswordModal(), 1500);
+  }
+};
+
+window.resetPassword = async () => {
+  const email = document.getElementById('reset-email').value;
+  const message = document.getElementById('reset-message');
+
+  if (!email || !email.includes('@')) {
+    message.textContent = '❌ Please enter a valid email address.';
+    message.style.color = 'red';
+    return;
+  }
+
+  const res = await fetch(`${resetApi}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    message.textContent = '✅ ' + data.message;
+    message.style.color = 'green';
+  } else {
+    message.textContent = '❌ ' + (data.error || 'Failed to send reset link');
+    message.style.color = 'red';
   }
 };
