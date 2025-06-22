@@ -1,91 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pookie's Home</title>
+import Clerk from "https://esm.sh/@clerk/clerk-js@4";
 
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
+const clerk = new Clerk("pk_test_bWVhc3VyZWQtZ29waGVyLTQwLmNsZXJrLmFjY291bnRzLmRldiQ");
+await clerk.load();
 
-    h1 {
-      color: white;
-      font-size: 3em;
-      text-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
+const loginSection = document.getElementById("login-section");
+const appSection = document.getElementById("app-section");
 
-    input, button {
-      padding: 12px;
-      font-size: 1.2em;
-      margin: 10px;
-      border: none;
-      border-radius: 8px;
-    }
+// Send OTP to phone
+document.getElementById("send-code").addEventListener("click", async () => {
+  const phone = document.getElementById("phone").value;
 
-    #app-section {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 30px;
-    }
+  try {
+    await clerk.auth.signInWithPhoneNumber({ phoneNumber: phone });
+    alert("Code sent!");
+  } catch (err) {
+    alert("Error sending code: " + err.message);
+  }
+});
 
-    #emoji {
-      font-size: 20vw;
-      cursor: pointer;
-      user-select: none;
-    }
+// Verify OTP
+document.getElementById("verify-code").addEventListener("click", async () => {
+  const otp = document.getElementById("otp").value;
 
-    #message {
-      margin-top: 2vh;
-      font-size: 5vw;
-      font-weight: bold;
-      color: white;
-      text-shadow: 0 0 5px rgba(0,0,0,0.3);
-    }
+  try {
+    await clerk.auth.verifyPhoneCode({ code: otp });
+    showApp();
+    setupApp();
+  } catch (err) {
+    alert("Verification failed: " + err.message);
+  }
+});
 
-    #counter {
-      font-size: 2vw;
-      color: white;
-      margin-top: 1vh;
-    }
+// Clerk session detection
+clerk.addListener(async () => {
+  const user = await clerk.user;
+  if (user) {
+    showApp();
+    setupApp();
+  } else {
+    showLogin();
+  }
+});
 
-    #hint {
-      font-size: 2vw;
-      color: white;
-      margin-top: 2vh;
-    }
-  </style>
-</head>
-<body>
-  <h1>Pookie's Home</h1>
+// Show/hide logic
+function showApp() {
+  loginSection.style.display = "none";
+  appSection.style.display = "flex";
+}
 
-  <div id="login-section">
-    <input type="tel" id="phone" placeholder="+355xxxxxxxxx" required />
-    <button id="send-code">Send Code</button><br />
-    <input type="text" id="otp" placeholder="Enter code" />
-    <button id="verify-code">Verify</button>
-  </div>
+function showLogin() {
+  loginSection.style.display = "flex";
+  appSection.style.display = "none";
+}
 
-  <div id="app-section">
-    <div id="counter">Boings today: 0</div>
-    <div id="emoji">🎎</div>
-    <div id="message">I LOVE YOU POOKIEEEEEE</div>
-    <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
-    <input type="file" id="imageInput" accept="image/*" />
-    <button onclick="logout()" style="margin-top:2vh;">Logout</button>
-  </div>
+// Logout
+window.logout = async () => {
+  await clerk.signOut();
+  location.reload();
+};
 
-  <audio id="boing" src="boing.mp3" preload="auto"></audio>
+// Pookie App logic
+function setupApp() {
+  const emoji = document.getElementById("emoji");
+  const boing = document.getElementById("boing");
+  const counter = document.getElementById("counter");
+  const today = new Date().toISOString().split("T")[0];
+  const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
 
-  <script type="module" src="main.js"></script>
-</body>
-</html>
+  if (data.date !== today) {
+    data.date = today;
+    data.count = 0;
+  }
+
+  function updateCounter() {
+    counter.textContent = `Boings today: ${data.count}`;
+  }
+
+  emoji.addEventListener("pointerdown", () => {
+    boing.currentTime = 0;
+    boing.play();
+    data.count++;
+    localStorage.setItem("boingData", JSON.stringify(data));
+    updateCounter();
+  });
+
+  updateCounter();
+
+  const input = document.getElementById("imageInput");
+  input.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    alert("Image selected — upload not implemented yet.");
+  });
+}
