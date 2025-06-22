@@ -4,13 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pookie's Home</title>
+
+  <!-- Clerk.dev prebuilt UI -->
+  <script async src="https://clerk.dev/static/clerk.js"></script>
+  <script>
+    window.ClerkFrontendApi = "measured-gopher-40.clerk.accounts.dev";
+  </script>
+
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      position: relative;
       font-family: sans-serif;
     }
+
     body {
       display: flex;
       flex-direction: column;
@@ -18,64 +25,64 @@
       align-items: center;
       background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
     }
+
+    #app-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
     #emoji {
       font-size: 20vw;
       cursor: pointer;
       user-select: none;
     }
+
     #message {
       margin-top: 2vh;
       font-size: 5vw;
       font-weight: bold;
       color: white;
-      user-select: none;
-      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     }
+
     #counter {
       position: absolute;
       top: 2vh;
       left: 2vw;
       font-size: 3vw;
       color: white;
-      user-select: none;
       text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
     }
+
     #hint {
       position: absolute;
       bottom: 2vh;
       right: 2vw;
       font-size: 2.5vw;
       color: white;
-      user-select: none;
-      text-shadow: 0 0 3px rgba(0,0,0,0.3);
+      text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
     }
+
     input, button {
       padding: 10px;
       margin: 5px;
       font-size: 1rem;
     }
-    #app-section {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-    }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
 </head>
 <body>
 
-  <div id="login-section">
-    <h2 style="color:white;">Login with Email</h2>
-    <input type="email" id="email" placeholder="you@example.com" required />
-    <button id="login-button">Send Magic Link</button>
-  </div>
+  <!-- Clerk Sign-In Widget (handles phone login automatically) -->
+  <clerk-sign-in></clerk-sign-in>
 
+  <!-- App Section shown only after login -->
   <div id="app-section">
+    <clerk-user-button></clerk-user-button>
     <div id="counter">Boings today: 0</div>
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIEEEEEE</div>
     <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
-
     <input type="file" id="imageInput" accept="image/*" />
     <button onclick="logout()" style="margin-top:2vh;">Logout</button>
   </div>
@@ -83,46 +90,13 @@
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { Clerk } from "https://esm.sh/@clerk/clerk-js@4";
 
-    const supabase = createClient(
-      'https://bcjmlhxuakqqqdjrtntj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
-    );
+    const clerk = new Clerk("measured-gopher-40.clerk.accounts.dev");
+    await clerk.load();
 
-    const loginSection = document.getElementById("login-section");
-    const appSection = document.getElementById("app-section");
-
-    document.getElementById("login-button").addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) {
-        alert("Error: " + error.message);
-      } else {
-        alert("Check your email for the login link.");
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        loginSection.style.display = "none";
-        appSection.style.display = "flex";
-        setupApp();
-      }
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        loginSection.style.display = "none";
-        appSection.style.display = "flex";
-        setupApp();
-      }
-    });
-
-    window.logout = async () => {
-      await supabase.auth.signOut();
-      location.reload();
-    };
+    const app = document.getElementById("app-section");
+    const signInWidget = document.querySelector("clerk-sign-in");
 
     function setupApp() {
       const emoji = document.getElementById("emoji");
@@ -150,10 +124,26 @@
       input.addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        alert("Image selected, but upload not implemented yet.");
-        // Optional: Upload logic can be added using Supabase Storage
+        alert("Image selected — upload logic not implemented yet.");
       });
     }
+
+    clerk.addListener(async () => {
+      const user = await clerk.user;
+      if (user) {
+        signInWidget.style.display = "none";
+        app.style.display = "flex";
+        setupApp();
+      } else {
+        signInWidget.style.display = "block";
+        app.style.display = "none";
+      }
+    });
+
+    window.logout = async function () {
+      await clerk.signOut();
+      location.reload();
+    };
   </script>
 </body>
 </html>
