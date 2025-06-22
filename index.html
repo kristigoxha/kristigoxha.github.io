@@ -10,20 +10,32 @@
       height: 100%;
       margin: 0;
       font-family: sans-serif;
-    }
-
-    body {
+      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+      flex-direction: column;
+    }
+
+    h1 {
+      color: white;
+      font-size: 3em;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    input, button {
+      padding: 12px;
+      font-size: 1.2em;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
     }
 
     #app-section {
       display: none;
       flex-direction: column;
       align-items: center;
+      margin-top: 30px;
     }
 
     #emoji {
@@ -37,42 +49,33 @@
       font-size: 5vw;
       font-weight: bold;
       color: white;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
 
     #counter {
-      position: absolute;
-      top: 2vh;
-      left: 2vw;
-      font-size: 3vw;
+      font-size: 2vw;
       color: white;
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+      margin-top: 1vh;
     }
 
     #hint {
-      position: absolute;
-      bottom: 2vh;
-      right: 2vw;
-      font-size: 2.5vw;
+      font-size: 2vw;
       color: white;
-      text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-    }
-
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      font-size: 1rem;
+      margin-top: 2vh;
     }
   </style>
 </head>
 <body>
+  <h1>Pookie's Home</h1>
 
-  <!-- Clerk prebuilt UI -->
-  <clerk-sign-in></clerk-sign-in>
+  <div id="login-section">
+    <input type="tel" id="phone" placeholder="+355xxxxxxxxx" required />
+    <button id="send-code">Send Code</button><br />
+    <input type="text" id="otp" placeholder="Enter code" />
+    <button id="verify-code">Verify</button>
+  </div>
 
-  <!-- App -->
   <div id="app-section">
-    <clerk-user-button></clerk-user-button>
     <div id="counter">Boings today: 0</div>
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIEEEEEE</div>
