@@ -124,6 +124,22 @@
       },
       auth
     );
+    
+  window.addEventListener('load', () => {
+  window.recaptchaVerifier = new RecaptchaVerifier(
+    'sign-in-button',
+    {
+      size: 'invisible',
+      callback: () => {
+        window.sendCode();
+      },
+      'expired-callback': () => {
+        alert("reCAPTCHA expired. Try again.");
+      }
+    },
+    auth
+  );
+
 
     window.recaptchaVerifier.render().then(widgetId => {
       window.recaptchaWidgetId = widgetId;
