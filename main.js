@@ -6,45 +6,23 @@ await clerk.load();
 const loginSection = document.getElementById("login-section");
 const appSection = document.getElementById("app-section");
 
-let signInAttempt = null;
-
-// 📲 Send OTP
-document.getElementById("send-code").addEventListener("click", async () => {
-  const phone = document.getElementById("phone").value;
+// 🔑 Send email magic link
+document.getElementById("send-magic-link").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
 
   try {
-    signInAttempt = await clerk.client.signIn.create({
-      strategy: "phone_code",
-      phoneNumber: phone,
+    await clerk.client.signIn.create({
+      identifier: email,
+      strategy: "email_link",
     });
 
-    await signInAttempt.preparePhoneNumberVerification();
-    alert("Code sent!");
+    alert("Check your email for the magic login link.");
   } catch (err) {
-    alert("Error sending code: " + (err.errors?.[0]?.message || err.message));
+    alert("Error: " + (err.errors?.[0]?.message || err.message));
   }
 });
 
-// 🔐 Verify OTP
-document.getElementById("verify-code").addEventListener("click", async () => {
-  const otp = document.getElementById("otp").value;
-
-  try {
-    const result = await signInAttempt.attemptPhoneNumberVerification({ code: otp });
-
-    if (result.status === "complete") {
-      await clerk.setSession(result.createdSessionId);
-      showApp();
-      setupApp();
-    } else {
-      alert("Code invalid or expired.");
-    }
-  } catch (err) {
-    alert("Verification failed: " + (err.errors?.[0]?.message || err.message));
-  }
-});
-
-// 👁️ Session detection
+// 📦 Auth state detection
 clerk.addListener(async () => {
   const user = await clerk.user;
   if (user) {
@@ -61,7 +39,7 @@ window.logout = async () => {
   location.reload();
 };
 
-// 🧼 UI management
+// 🧼 UI show/hide
 function showApp() {
   loginSection.style.display = "none";
   appSection.style.display = "flex";
@@ -72,7 +50,7 @@ function showLogin() {
   appSection.style.display = "none";
 }
 
-// 🧸 Pookie app logic
+// 🎎 Pookie app logic
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
