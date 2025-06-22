@@ -59,25 +59,15 @@
       flex-direction: column;
       align-items: center;
     }
-    #recaptcha-container {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      left: -9999px;
-    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"></script>
 </head>
 <body>
 
   <div id="login-section">
-    <h2 style="color:white;">Login with Phone</h2>
-    <input type="tel" id="phone" placeholder="+355xxxxxxxxx" autocomplete="tel" required />
-    <div id="recaptcha-container"></div>
-    <button id="sign-in-button">Send Code</button>
-    <br><br>
-    <input type="text" id="code" placeholder="Enter verification code" inputmode="numeric" autocomplete="one-time-code" />
-    <button id="verify-button">Verify</button>
+    <h2 style="color:white;">Login with Email</h2>
+    <input type="email" id="email" placeholder="you@example.com" required />
+    <button id="login-button">Send Magic Link</button>
   </div>
 
   <div id="app-section">
@@ -93,120 +83,77 @@
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-    import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    window.addEventListener('load', () => {
-      const firebaseConfig = {
-        apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
-        authDomain: "pookie-home.firebaseapp.com",
-        projectId: "pookie-home",
-        storageBucket: "pookie-home.appspot.com",
-        messagingSenderId: "207581484781",
-        appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
-      };
+    const supabase = createClient(
+      'https://bcjmlhxuakqqqdjrtntj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
+    );
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const storage = getStorage(app);
+    const loginSection = document.getElementById("login-section");
+    const appSection = document.getElementById("app-section");
 
-      // ✅ SAFELY create reCAPTCHA after DOM + Auth are ready
-      setTimeout(() => {
-        const button = document.getElementById('sign-in-button');
-
-        window.recaptchaVerifier = new RecaptchaVerifier(
-          button,
-          {
-            size: 'invisible',
-            callback: () => {
-              sendCode();
-            },
-            'expired-callback': () => {
-              alert("reCAPTCHA expired. Try again.");
-            }
-          },
-          auth
-        );
-
-        window.recaptchaVerifier.render().then(widgetId => {
-          window.recaptchaWidgetId = widgetId;
-        });
-      }, 0);
-
-      // Send Code
-      function sendCode() {
-        const phone = document.getElementById("phone").value;
-        signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-          .then(result => {
-            window.confirmationResult = result;
-            alert("Code sent!");
-          })
-          .catch(error => {
-            alert("Error: " + error.message);
-            console.error(error);
-          });
-      }
-
-      document.getElementById("sign-in-button").addEventListener("click", sendCode);
-
-      // Verify Code
-      document.getElementById("verify-button").addEventListener("click", () => {
-        const code = document.getElementById("code").value;
-        window.confirmationResult.confirm(code)
-          .then(() => {
-            alert("You're in!");
-          })
-          .catch(() => {
-            alert("Wrong code.");
-          });
-      });
-
-      // Logout
-      window.logout = async () => {
-        await signOut(auth);
-        location.reload();
-      };
-
-      // Auth State
-      onAuthStateChanged(auth, (user) => {
-        document.getElementById("login-section").style.display = user ? "none" : "block";
-        document.getElementById("app-section").style.display = user ? "flex" : "none";
-        if (user) setupApp();
-      });
-
-      function setupApp() {
-        const emoji = document.getElementById("emoji");
-        const boing = document.getElementById("boing");
-        const counter = document.getElementById("counter");
-        const today = new Date().toISOString().split("T")[0];
-        const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
-
-        if (data.date !== today) {
-          data.date = today;
-          data.count = 0;
-        }
-
-        emoji.addEventListener("pointerdown", () => {
-          boing.currentTime = 0;
-          boing.play();
-          data.count++;
-          localStorage.setItem("boingData", JSON.stringify(data));
-          counter.textContent = `Boings today: ${data.count}`;
-        });
-
-        counter.textContent = `Boings today: ${data.count}`;
-
-        const input = document.getElementById("imageInput");
-        input.addEventListener("change", async (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const fileRef = ref(storage, 'uploads/' + file.name);
-          await uploadBytes(fileRef, file);
-          alert("Uploaded!");
-        });
+    document.getElementById("login-button").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("Check your email for the login link.");
       }
     });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        loginSection.style.display = "none";
+        appSection.style.display = "flex";
+        setupApp();
+      }
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        loginSection.style.display = "none";
+        appSection.style.display = "flex";
+        setupApp();
+      }
+    });
+
+    window.logout = async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    };
+
+    function setupApp() {
+      const emoji = document.getElementById("emoji");
+      const boing = document.getElementById("boing");
+      const counter = document.getElementById("counter");
+      const today = new Date().toISOString().split("T")[0];
+      const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
+
+      if (data.date !== today) {
+        data.date = today;
+        data.count = 0;
+      }
+
+      emoji.addEventListener("pointerdown", () => {
+        boing.currentTime = 0;
+        boing.play();
+        data.count++;
+        localStorage.setItem("boingData", JSON.stringify(data));
+        counter.textContent = `Boings today: ${data.count}`;
+      });
+
+      counter.textContent = `Boings today: ${data.count}`;
+
+      const input = document.getElementById("imageInput");
+      input.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        alert("Image selected, but upload not implemented yet.");
+        // Optional: Upload logic can be added using Supabase Storage
+      });
+    }
   </script>
 </body>
 </html>
