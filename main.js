@@ -6,28 +6,24 @@ await clerk.load();
 const loginSection = document.getElementById("login-section");
 const appSection = document.getElementById("app-section");
 
-// Send code via SMS
+// Send OTP to phone
 document.getElementById("send-code").addEventListener("click", async () => {
   const phone = document.getElementById("phone").value;
 
   try {
-    await clerk.auth.startMagicLinkFlow({
-      phoneNumber: phone,
-    });
-
+    await clerk.auth.signInWithPhoneNumber({ phoneNumber: phone });
     alert("Code sent!");
   } catch (err) {
-    alert("Error: " + err.message);
+    alert("Error sending code: " + err.message);
   }
 });
 
-// Verify code
+// Verify OTP
 document.getElementById("verify-code").addEventListener("click", async () => {
-  const phone = document.getElementById("phone").value;
   const otp = document.getElementById("otp").value;
 
   try {
-    await clerk.auth.verifyOTP({ phoneNumber: phone, code: otp });
+    await clerk.auth.verifyPhoneCode({ code: otp });
     showApp();
     setupApp();
   } catch (err) {
@@ -35,7 +31,18 @@ document.getElementById("verify-code").addEventListener("click", async () => {
   }
 });
 
-// Show/hide sections
+// Clerk session detection
+clerk.addListener(async () => {
+  const user = await clerk.user;
+  if (user) {
+    showApp();
+    setupApp();
+  } else {
+    showLogin();
+  }
+});
+
+// Show/hide logic
 function showApp() {
   loginSection.style.display = "none";
   appSection.style.display = "flex";
@@ -52,18 +59,7 @@ window.logout = async () => {
   location.reload();
 };
 
-// Rehydrate session
-clerk.addListener(async () => {
-  const user = await clerk.user;
-  if (user) {
-    showApp();
-    setupApp();
-  } else {
-    showLogin();
-  }
-});
-
-// Boing + emoji logic
+// Pookie App logic
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
@@ -94,6 +90,6 @@ function setupApp() {
   input.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    alert("Image selected — upload logic not implemented yet.");
+    alert("Image selected — upload not implemented yet.");
   });
 }
