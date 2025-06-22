@@ -111,30 +111,33 @@
       const auth = getAuth(app);
       const storage = getStorage(app);
 
-      // Setup Recaptcha
-      const recaptchaButton = document.getElementById('sign-in-button');
-      const recaptchaVerifier = new RecaptchaVerifier(
-        recaptchaButton,
-        {
-          size: 'invisible',
-          callback: () => {
-            sendCode();
+      // ✅ SAFELY create reCAPTCHA after DOM + Auth are ready
+      setTimeout(() => {
+        const button = document.getElementById('sign-in-button');
+
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          button,
+          {
+            size: 'invisible',
+            callback: () => {
+              sendCode();
+            },
+            'expired-callback': () => {
+              alert("reCAPTCHA expired. Try again.");
+            }
           },
-          'expired-callback': () => {
-            alert("reCAPTCHA expired. Try again.");
-          }
-        },
-        auth
-      );
+          auth
+        );
 
-      recaptchaVerifier.render().then(widgetId => {
-        window.recaptchaWidgetId = widgetId;
-      });
+        window.recaptchaVerifier.render().then(widgetId => {
+          window.recaptchaWidgetId = widgetId;
+        });
+      }, 0);
 
-      // Send SMS Code
+      // Send Code
       function sendCode() {
         const phone = document.getElementById("phone").value;
-        signInWithPhoneNumber(auth, phone, recaptchaVerifier)
+        signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
           .then(result => {
             window.confirmationResult = result;
             alert("Code sent!");
@@ -145,7 +148,7 @@
           });
       }
 
-      recaptchaButton.addEventListener("click", sendCode);
+      document.getElementById("sign-in-button").addEventListener("click", sendCode);
 
       // Verify Code
       document.getElementById("verify-button").addEventListener("click", () => {
@@ -165,7 +168,7 @@
         location.reload();
       };
 
-      // Auth State Listener
+      // Auth State
       onAuthStateChanged(auth, (user) => {
         document.getElementById("login-section").style.display = user ? "none" : "block";
         document.getElementById("app-section").style.display = user ? "flex" : "none";
