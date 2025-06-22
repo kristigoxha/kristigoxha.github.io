@@ -1,25 +1,15 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { Clerk } from "https://esm.sh/@clerk/clerk-js@4";
 
-// ✅ Supabase project credentials
-const supabase = createClient(
-  'https://bcjmlhxuakqqqdjrtntj.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
-);
+const clerk = new Clerk("measured-gopher-40.clerk.accounts.dev");
+await clerk.load();
 
-// ⏩ Handle login via email magic link
-document.getElementById("login-button").addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const { error } = await supabase.auth.signInWithOtp({ email });
-  if (error) {
-    alert("Error: " + error.message);
-  } else {
-    alert("Check your email for the magic login link.");
-  }
-});
+const signInWidget = document.querySelector("clerk-sign-in");
+const appSection = document.getElementById("app-section");
 
-// 🔄 Check session on page load
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session) {
+// 🔁 Handle auth state changes
+clerk.addListener(async () => {
+  const user = await clerk.user;
+  if (user) {
     showApp();
     setupApp();
   } else {
@@ -27,55 +17,45 @@ supabase.auth.getSession().then(({ data: { session } }) => {
   }
 });
 
-// 🔁 Listen for login state changes (e.g. after magic link returns)
-supabase.auth.onAuthStateChange((_event, session) => {
-  if (session) {
-    showApp();
-    setupApp();
-  } else {
-    showLogin();
-  }
-});
-
-// 🔓 Logout
-window.logout = async function () {
-  await supabase.auth.signOut();
+// 🔓 Logout function
+window.logout = async () => {
+  await clerk.signOut();
   location.reload();
 };
 
-// 👀 Show/hide UI
+// 🧼 Show/hide UI sections
 function showApp() {
-  document.getElementById("login-section").style.display = "none";
-  document.getElementById("app-section").style.display = "flex";
+  signInWidget.style.display = "none";
+  appSection.style.display = "flex";
 }
 
 function showLogin() {
-  document.getElementById("login-section").style.display = "block";
-  document.getElementById("app-section").style.display = "none";
+  signInWidget.style.display = "block";
+  appSection.style.display = "none";
 }
 
-// 🧸 App logic
+// 🎎 Emoji logic and file input
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
   const counter = document.getElementById("counter");
   const today = new Date().toISOString().split("T")[0];
-  const savedData = JSON.parse(localStorage.getItem("boingData")) || {};
+  const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
 
-  if (savedData.date !== today) {
-    savedData.date = today;
-    savedData.count = 0;
+  if (data.date !== today) {
+    data.date = today;
+    data.count = 0;
   }
 
   function updateCounter() {
-    counter.textContent = `Boings today: ${savedData.count}`;
+    counter.textContent = `Boings today: ${data.count}`;
   }
 
   emoji.addEventListener("pointerdown", () => {
     boing.currentTime = 0;
     boing.play();
-    savedData.count++;
-    localStorage.setItem("boingData", JSON.stringify(savedData));
+    data.count++;
+    localStorage.setItem("boingData", JSON.stringify(data));
     updateCounter();
   });
 
@@ -85,7 +65,6 @@ function setupApp() {
   input.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    alert("Image selected, but upload to Supabase not implemented yet.");
-    // Optional: implement Supabase Storage upload here
+    alert("Image selected — upload not implemented yet.");
   });
 }
