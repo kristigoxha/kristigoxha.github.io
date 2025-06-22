@@ -97,120 +97,106 @@
     import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
-      authDomain: "pookie-home.firebaseapp.com",
-      projectId: "pookie-home",
-      storageBucket: "pookie-home.appspot.com",
-      messagingSenderId: "207581484781",
-      appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
-      measurementId: "G-28118SDJNW"
-    };
+    window.addEventListener('load', () => {
+      const firebaseConfig = {
+        apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
+        authDomain: "pookie-home.firebaseapp.com",
+        projectId: "pookie-home",
+        storageBucket: "pookie-home.appspot.com",
+        messagingSenderId: "207581484781",
+        appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
+        measurementId: "G-28118SDJNW"
+      };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const storage = getStorage(app);
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const storage = getStorage(app);
 
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      'sign-in-button',
-      {
-        size: 'invisible',
-        callback: () => {
-          window.sendCode();
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        'sign-in-button',
+        {
+          size: 'invisible',
+          callback: () => {
+            window.sendCode();
+          },
+          'expired-callback': () => {
+            alert("reCAPTCHA expired. Try again.");
+          }
         },
-        'expired-callback': () => {
-          alert("reCAPTCHA expired. Try again.");
+        auth
+      );
+
+      window.recaptchaVerifier.render().then(widgetId => {
+        window.recaptchaWidgetId = widgetId;
+      });
+
+      window.sendCode = () => {
+        const phone = document.getElementById("phone").value;
+        signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
+          .then(result => {
+            window.confirmationResult = result;
+            alert("Code sent!");
+          })
+          .catch(error => {
+            alert("Error: " + error.message);
+            console.error(error);
+          });
+      };
+
+      window.verifyCode = () => {
+        const code = document.getElementById("code").value;
+        window.confirmationResult.confirm(code)
+          .then(() => {
+            alert("You're in!");
+          })
+          .catch(() => {
+            alert("Wrong code.");
+          });
+      };
+
+      window.logout = async () => {
+        await signOut(auth);
+        location.reload();
+      };
+
+      onAuthStateChanged(auth, (user) => {
+        document.getElementById("login-section").style.display = user ? "none" : "block";
+        document.getElementById("app-section").style.display = user ? "flex" : "none";
+        if (user) setupApp();
+      });
+
+      function setupApp() {
+        const emoji = document.getElementById("emoji");
+        const boing = document.getElementById("boing");
+        const counter = document.getElementById("counter");
+        const today = new Date().toISOString().split("T")[0];
+        const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
+
+        if (data.date !== today) {
+          data.date = today;
+          data.count = 0;
         }
-      },
-      auth
-    );
-    
-  window.addEventListener('load', () => {
-  window.recaptchaVerifier = new RecaptchaVerifier(
-    'sign-in-button',
-    {
-      size: 'invisible',
-      callback: () => {
-        window.sendCode();
-      },
-      'expired-callback': () => {
-        alert("reCAPTCHA expired. Try again.");
-      }
-    },
-    auth
-  );
 
-
-    window.recaptchaVerifier.render().then(widgetId => {
-      window.recaptchaWidgetId = widgetId;
-    });
-
-    window.sendCode = () => {
-      const phone = document.getElementById("phone").value;
-      signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-        .then(result => {
-          window.confirmationResult = result;
-          alert("Code sent!");
-        })
-        .catch(error => {
-          alert("Error: " + error.message);
-          console.error(error);
+        emoji.addEventListener("pointerdown", () => {
+          boing.currentTime = 0;
+          boing.play();
+          data.count++;
+          localStorage.setItem("boingData", JSON.stringify(data));
+          counter.textContent = `Boings today: ${data.count}`;
         });
-    };
 
-    window.verifyCode = () => {
-      const code = document.getElementById("code").value;
-      window.confirmationResult.confirm(code)
-        .then(() => {
-          alert("You're in!");
-        })
-        .catch(() => {
-          alert("Wrong code.");
-        });
-    };
-
-    window.logout = async () => {
-      await signOut(auth);
-      location.reload();
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      document.getElementById("login-section").style.display = user ? "none" : "block";
-      document.getElementById("app-section").style.display = user ? "flex" : "none";
-      if (user) setupApp();
-    });
-
-    function setupApp() {
-      const emoji = document.getElementById("emoji");
-      const boing = document.getElementById("boing");
-      const counter = document.getElementById("counter");
-      const today = new Date().toISOString().split("T")[0];
-      const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
-
-      if (data.date !== today) {
-        data.date = today;
-        data.count = 0;
-      }
-
-      emoji.addEventListener("pointerdown", () => {
-        boing.currentTime = 0;
-        boing.play();
-        data.count++;
-        localStorage.setItem("boingData", JSON.stringify(data));
         counter.textContent = `Boings today: ${data.count}`;
-      });
 
-      counter.textContent = `Boings today: ${data.count}`;
-
-      const input = document.getElementById("imageInput");
-      input.addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const fileRef = ref(storage, 'uploads/' + file.name);
-        await uploadBytes(fileRef, file);
-        alert("Uploaded!");
-      });
-    }
+        const input = document.getElementById("imageInput");
+        input.addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const fileRef = ref(storage, 'uploads/' + file.name);
+          await uploadBytes(fileRef, file);
+          alert("Uploaded!");
+        });
+      }
+    });
   </script>
 </body>
 </html>
