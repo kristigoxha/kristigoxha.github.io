@@ -1,6 +1,6 @@
 import Clerk from "https://esm.sh/@clerk/clerk-js@4";
 
-const clerk = new Clerk("measured-gopher-40.clerk.accounts.dev");
+const clerk = new Clerk("pk_test_bWVhc3VyZWQtZ29waGVyLTQwLmNsZXJrLmFjY291bnRzLmRldiQ");
 await clerk.load();
 
 const signInWidget = document.querySelector("clerk-sign-in");
