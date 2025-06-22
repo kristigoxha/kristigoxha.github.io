@@ -105,34 +105,31 @@
         storageBucket: "pookie-home.appspot.com",
         messagingSenderId: "207581484781",
         appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
-        measurementId: "G-28118SDJNW"
       };
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const storage = getStorage(app);
 
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        'sign-in-button',
-        {
-          size: 'invisible',
-          callback: () => {
-            window.sendCode();
-          },
-          'expired-callback': () => {
-            alert("reCAPTCHA expired. Try again.");
-          }
+      // Setup reCAPTCHA
+      const recaptchaVerifier = new RecaptchaVerifier('sign-in-button', {
+        size: 'invisible',
+        callback: () => {
+          sendCode();
         },
-        auth
-      );
+        'expired-callback': () => {
+          alert("reCAPTCHA expired. Try again.");
+        }
+      }, auth);
 
-      window.recaptchaVerifier.render().then(widgetId => {
+      recaptchaVerifier.render().then(widgetId => {
         window.recaptchaWidgetId = widgetId;
       });
 
+      // Send SMS Code
       window.sendCode = () => {
         const phone = document.getElementById("phone").value;
-        signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
+        signInWithPhoneNumber(auth, phone, recaptchaVerifier)
           .then(result => {
             window.confirmationResult = result;
             alert("Code sent!");
@@ -143,6 +140,7 @@
           });
       };
 
+      // Verify SMS Code
       window.verifyCode = () => {
         const code = document.getElementById("code").value;
         window.confirmationResult.confirm(code)
@@ -154,17 +152,20 @@
           });
       };
 
+      // Logout
       window.logout = async () => {
         await signOut(auth);
         location.reload();
       };
 
+      // Auth state listener
       onAuthStateChanged(auth, (user) => {
         document.getElementById("login-section").style.display = user ? "none" : "block";
         document.getElementById("app-section").style.display = user ? "flex" : "none";
         if (user) setupApp();
       });
 
+      // Main app UI
       function setupApp() {
         const emoji = document.getElementById("emoji");
         const boing = document.getElementById("boing");
