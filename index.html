@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pookie's Home</title>
-
   <style>
     html, body {
       height: 100%;
@@ -21,19 +20,13 @@
       font-size: 3rem;
       color: white;
       text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      margin-bottom: 2vh;
     }
 
     #login-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    .row {
-      display: flex;
       gap: 10px;
-      margin: 10px 0;
     }
 
     input, button {
@@ -86,14 +79,8 @@
   <h1>Pookie's Home</h1>
 
   <div id="login-section">
-    <div class="row">
-      <input type="tel" id="phone" placeholder="+355xxxxxxxxx" required />
-      <button id="send-code">Send Code</button>
-    </div>
-    <div class="row">
-      <input type="text" id="otp" placeholder="Enter code" />
-      <button id="verify-code">Verify</button>
-    </div>
+    <input type="email" id="email" placeholder="you@example.com" required />
+    <button id="send-magic-link">Send Magic Link</button>
   </div>
 
   <div id="app-section">
@@ -106,7 +93,6 @@
   </div>
 
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
-
   <script type="module" src="main.js"></script>
 </body>
 </html>
