@@ -10,165 +10,108 @@
     /* BASE & BACKGROUND                                                         */
     /* ────────────────────────────────────────────────────────────────────────── */
     html, body {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-      overflow-x: hidden;            /* hide only horizontal scroll */
-      font-size: 14px;               /* smaller base font */
-      /* removed: height:100% & display:flex on body */
-    }
-
-    h1 {
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
-      color: white;
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      margin: 1rem 0;
-      text-align: center;
+      overflow-x: hidden;    /* hide horizontal overflow */
+      height: 100%;
     }
 
     /* ────────────────────────────────────────────────────────────────────────── */
-    /* LOGIN SECTION (centered vertically)                                        */
+    /* LOGIN SECTION (unchanged)                                                 */
     /* ────────────────────────────────────────────────────────────────────────── */
     #login-section {
-      min-height: calc(100vh - 2rem);
+      min-height: calc(100vh - 0px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 10px;
     }
-
-    /* ────────────────────────────────────────────────────────────────────────── */
-    /* APP SECTION (normal flow, can scroll)                                      */
-    /* ────────────────────────────────────────────────────────────────────────── */
-    #app-section {
-      display: none;                 /* shown after login */
-      position: relative;
-      padding: 10px;
-      min-height: calc(100vh - 2rem);
-    }
-
-    /* ────────────────────────────────────────────────────────────────────────── */
-    /* INPUTS & BUTTONS (your original styling, slightly smaller)                 */
-    /* ────────────────────────────────────────────────────────────────────────── */
     input, button {
-      padding: 8px;
-      font-size: 0.9rem;
-      margin: 4px;
-      border-radius: 6px;
+      padding: 12px;
+      font-size: 1rem;
+      margin: 5px;
+      border-radius: 8px;
       border: none;
       max-width: 90vw;
+      box-sizing: border-box;
     }
-
     #login-message,
-    #reset-message,
-    #password-change-message,
-    #file-name {
-      margin-top: 6px;
+    #reset-message {
+      margin-top: 8px;
       font-size: 0.9rem;
       color: white;
       text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
 
     /* ────────────────────────────────────────────────────────────────────────── */
-    /* BOING COUNTER & HINT                                                       */
+    /* APP SECTION                                                               */
     /* ────────────────────────────────────────────────────────────────────────── */
+    #app-section {
+      display: none;         /* shown after login */
+      position: relative;
+      height: 100vh;         /* fill viewport */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center; 
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    /* Boings counter (small, top-left)                                         */
     #counter {
       position: absolute;
-      top: 8px;
-      left: 8px;
-      font-size: clamp(0.8rem, 2vw, 1rem);
+      top: 10px;
+      left: 10px;
+      font-size: 0.8rem;
       color: white;
       text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
 
+    /* Hint (even smaller, bottom-right)                                         */
     #hint {
       position: absolute;
-      bottom: 8px;
-      right: 8px;
-      font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+      bottom: 10px;
+      right: 10px;
+      font-size: 0.7rem;
       color: white;
       text-align: right;
       text-shadow: 0 0 2px rgba(0,0,0,0.3);
       max-width: 40%;
     }
 
-    /* ────────────────────────────────────────────────────────────────────────── */
-    /* HAMBURGER MENU                                                             */
-    /* ────────────────────────────────────────────────────────────────────────── */
-    .hamburger {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 24px;
-      height: 18px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 0;
-      z-index: 100;
-    }
-    .hamburger span {
-      height: 2px;
-      border-radius: 1px;
-      background: white;
-    }
-    #menu {
-      position: absolute;
-      top: 32px;
-      right: 8px;
-      display: none;
-      flex-direction: column;
-      background: rgba(0,0,0,0.6);
-      border-radius: 6px;
-      overflow: hidden;
-      z-index: 100;
-    }
-    #menu.open { display: flex; }
-    #menu a {
-      padding: 6px 10px;
-      color: white;
-      text-decoration: none;
-      font-size: 0.9rem;
-      white-space: nowrap;
-    }
-    #menu a:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* ────────────────────────────────────────────────────────────────────────── */
-    /* YOUR ORIGINAL ELEMENTS (slightly smaller & repositioned)                   */
-    /* ────────────────────────────────────────────────────────────────────────── */
+    /* Emoji centered, large                                                     */
     #emoji {
-      font-size: clamp(60px, 15vw, 150px);
+      font-size: clamp(80px, 20vw, 200px);
       cursor: pointer;
       user-select: none;
-      margin: 1rem auto 0;
-      display: block;
+      margin: 0;
     }
 
+    /* Message under emoji                                                        */
     #message {
-      margin-top: 0.5rem;
-      font-size: clamp(1.2rem, 4vw, 2rem);
+      margin-top: 1rem;
+      font-size: clamp(1.5rem, 5vw, 3rem);
       font-weight: bold;
       color: white;
-      text-align: center;
       text-shadow: 0 0 5px rgba(0,0,0,0.3);
+      text-align: center;
     }
 
+    /* Gift-box button under message                                             */
     #gift-box {
+      margin-top: 2rem;
       display: inline-block;
       font-size: 1rem;
-      padding: 10px 20px;
+      padding: 15px 25px;
       background: linear-gradient(45deg, #ff9a9e, #fad0c4);
       border: 2px dashed white;
       color: white;
-      border-radius: 16px;
+      border-radius: 20px;
       cursor: pointer;
-      margin: 1rem auto 0;
       transition: transform 0.2s, box-shadow 0.2s;
       user-select: none;
     }
@@ -180,15 +123,13 @@
       transform: scale(0.97);
     }
 
-    /* hide your old logout/change-password buttons (we now use the menu) */
+    /* Hide old logout/change-password buttons (we’ll use menu)                 */
     .logout {
       display: none;
     }
   </style>
 </head>
 <body>
-
-  <h1>Pookie's Home</h1>
 
   <!-- LOGIN / REGISTER / RESET -->
   <div id="login-section">
@@ -209,6 +150,7 @@
   <div id="app-section">
     <div id="counter">Boings today: <span id="todayCount">0</span></div>
 
+    <!-- Hamburger menu (top-right) -->
     <button id="menu-toggle" class="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -217,19 +159,20 @@
       <a href="#" onclick="showPasswordModal()">Change Password</a>
     </nav>
 
+    <!-- Centered emoji and message -->
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIEEEEEE</div>
 
+    <!-- Upload button under message -->
     <label id="gift-box" for="imageInput">🎁 Upload a surprise for Pookie</label>
     <input type="file" id="imageInput" accept="image/*" hidden />
     <p id="file-name"></p>
 
-    <button onclick="logout()" class="logout">Logout</button>
-    <button onclick="showPasswordModal()" class="logout">Change Password</button>
-
+    <!-- Change Password Modal (unchanged) -->
     <div id="password-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
          background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:10;">
-      <div style="background:white; border-radius:12px; padding:20px; width:90%; max-width:400px; text-align:center;">
+      <div style="background:white; border-radius:12px; padding:20px; width:90%; max-width:400px;
+                  text-align:center;">
         <h3>Change Password</h3>
         <input type="password" id="current-password" placeholder="Current Password"
                style="width:100%; margin:10px 0;" />
@@ -249,21 +192,21 @@
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
   <script type="module" src="main.js"></script>
   <script>
-    // Hamburger toggle
-    const toggle = document.getElementById('menu-toggle');
-    const menu   = document.getElementById('menu');
+    // Hamburger toggle logic
+    const toggle = document.getElementById('menu-toggle'),
+          menu   = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
 
-    // Show app after login
+    // Show app view after login
     window.showApp = () => {
       document.getElementById('login-section').style.display = 'none';
-      document.getElementById('app-section').style.display   = 'block';
+      document.getElementById('app-section').style.display   = 'flex';
+      setupApp();
     };
 
-    // If already logged in on load
+    // Auto‐show if already logged in
     if (localStorage.getItem('token')) {
       showApp();
-      setupApp();
     }
   </script>
 </body>
