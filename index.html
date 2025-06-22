@@ -70,19 +70,18 @@
 </head>
 <body>
 
-  <!-- Phone Auth Login Section -->
+  <!-- Login UI -->
   <div id="login-section">
     <h2 style="color:white;">Login with Phone</h2>
     <input type="tel" id="phone" placeholder="+355xxxxxxxxx" autocomplete="tel" required />
     <div id="recaptcha-container"></div>
-    <!-- Added onclick here -->
-    <button id="sign-in-button" onclick="sendCode()">Send Code</button>
+    <button id="sign-in-button">Send Code</button>
     <br><br>
     <input type="text" id="code" placeholder="Enter verification code" inputmode="numeric" autocomplete="one-time-code" />
-    <button onclick="verifyCode()">Verify</button>
+    <button id="verify-button">Verify</button>
   </div>
 
-  <!-- App Section -->
+  <!-- Main App -->
   <div id="app-section">
     <div id="counter">Boings today: 0</div>
     <div id="emoji">🎎</div>
@@ -114,70 +113,74 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
+    // reCAPTCHA setup
     window.recaptchaVerifier = new RecaptchaVerifier(
-      'sign-in-button',
+      'recaptcha-container',
       {
         size: 'invisible',
-        callback: () => {
-          sendCode();
+        callback: (response) => {
+          window.sendCode(); // This is needed if auto-solving
         },
         'expired-callback': () => {
-          alert('reCAPTCHA expired. Please try again.');
+          alert('reCAPTCHA expired. Try again.');
         }
       },
       auth
     );
 
-    window.recaptchaVerifier.render().then(widgetId => {
+    recaptchaVerifier.render().then((widgetId) => {
       window.recaptchaWidgetId = widgetId;
     });
 
-    window.sendCode = () => {
+    // Send code function
+    function sendCode() {
       const phoneNumber = document.getElementById('phone').value;
       signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
-        .then(confirmationResult => {
+        .then((confirmationResult) => {
           window.confirmationResult = confirmationResult;
-          alert('Verification code sent!');
+          alert('Code sent!');
           document.getElementById('code').focus();
         })
-        .catch(error => {
-          alert('Error sending code: ' + error.message);
+        .catch((error) => {
           console.error(error);
+          alert('Error sending code: ' + error.message);
         });
-    };
+    }
 
-    window.verifyCode = () => {
+    // Verify code
+    function verifyCode() {
       const code = document.getElementById('code').value;
       window.confirmationResult.confirm(code)
         .then(() => {
           alert('Logged in!');
         })
         .catch(() => {
-          alert('Invalid code. Please try again.');
+          alert('Invalid code.');
         });
-    };
+    }
 
-    window.logout = async () => {
+    // Logout
+    async function logout() {
       await signOut(auth);
       location.reload();
-    };
-
-    function showApp() {
-      document.getElementById('login-section').style.display = 'none';
-      document.getElementById('app-section').style.display = 'flex';
     }
 
-    function showLogin() {
-      document.getElementById('login-section').style.display = 'block';
-      document.getElementById('app-section').style.display = 'none';
-    }
+    // Attach listeners for buttons
+    document.getElementById('sign-in-button').addEventListener('click', sendCode);
+    document.getElementById('verify-button').addEventListener('click', verifyCode);
 
-    onAuthStateChanged(auth, user => {
+    // Expose for inline button use
+    window.logout = logout;
+
+    // Auth state listener
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        showApp();
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("app-section").style.display = "flex";
         setupApp();
       } else {
-        showLogin();
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("app-section").style.display = "none";
       }
     });
 
@@ -187,6 +190,7 @@
       const counter = document.getElementById('counter');
       const today = new Date().toISOString().split('T')[0];
       const savedData = JSON.parse(localStorage.getItem('boingData')) || {};
+
       if (savedData.date !== today) {
         savedData.date = today;
         savedData.count = 0;
@@ -207,7 +211,7 @@
       updateCounter();
 
       const input = document.getElementById('imageInput');
-      input.addEventListener('change', async e => {
+      input.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const fileRef = ref(storage, 'uploads/' + file.name);
