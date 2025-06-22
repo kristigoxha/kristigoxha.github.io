@@ -6,32 +6,45 @@ await clerk.load();
 const loginSection = document.getElementById("login-section");
 const appSection = document.getElementById("app-section");
 
-// Send OTP to phone
+let signInAttempt = null;
+
+// 📲 Send OTP
 document.getElementById("send-code").addEventListener("click", async () => {
   const phone = document.getElementById("phone").value;
 
   try {
-    await clerk.auth.signInWithPhoneNumber({ phoneNumber: phone });
+    signInAttempt = await clerk.client.signIn.create({
+      strategy: "phone_code",
+      phoneNumber: phone,
+    });
+
+    await signInAttempt.preparePhoneNumberVerification();
     alert("Code sent!");
   } catch (err) {
-    alert("Error sending code: " + err.message);
+    alert("Error sending code: " + (err.errors?.[0]?.message || err.message));
   }
 });
 
-// Verify OTP
+// 🔐 Verify OTP
 document.getElementById("verify-code").addEventListener("click", async () => {
   const otp = document.getElementById("otp").value;
 
   try {
-    await clerk.auth.verifyPhoneCode({ code: otp });
-    showApp();
-    setupApp();
+    const result = await signInAttempt.attemptPhoneNumberVerification({ code: otp });
+
+    if (result.status === "complete") {
+      await clerk.setSession(result.createdSessionId);
+      showApp();
+      setupApp();
+    } else {
+      alert("Code invalid or expired.");
+    }
   } catch (err) {
-    alert("Verification failed: " + err.message);
+    alert("Verification failed: " + (err.errors?.[0]?.message || err.message));
   }
 });
 
-// Clerk session detection
+// 👁️ Session detection
 clerk.addListener(async () => {
   const user = await clerk.user;
   if (user) {
@@ -42,7 +55,13 @@ clerk.addListener(async () => {
   }
 });
 
-// Show/hide logic
+// 🔓 Logout
+window.logout = async () => {
+  await clerk.signOut();
+  location.reload();
+};
+
+// 🧼 UI management
 function showApp() {
   loginSection.style.display = "none";
   appSection.style.display = "flex";
@@ -53,13 +72,7 @@ function showLogin() {
   appSection.style.display = "none";
 }
 
-// Logout
-window.logout = async () => {
-  await clerk.signOut();
-  location.reload();
-};
-
-// Pookie App logic
+// 🧸 Pookie app logic
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
