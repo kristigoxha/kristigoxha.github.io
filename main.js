@@ -1,4 +1,4 @@
-import { Clerk } from "https://esm.sh/@clerk/clerk-js@4";
+import Clerk from "https://esm.sh/@clerk/clerk-js@4";
 
 const clerk = new Clerk("measured-gopher-40.clerk.accounts.dev");
 await clerk.load();
@@ -6,7 +6,7 @@ await clerk.load();
 const signInWidget = document.querySelector("clerk-sign-in");
 const appSection = document.getElementById("app-section");
 
-// 🔁 Handle auth state changes
+// Handle login/logout UI
 clerk.addListener(async () => {
   const user = await clerk.user;
   if (user) {
@@ -17,13 +17,11 @@ clerk.addListener(async () => {
   }
 });
 
-// 🔓 Logout function
 window.logout = async () => {
   await clerk.signOut();
   location.reload();
 };
 
-// 🧼 Show/hide UI sections
 function showApp() {
   signInWidget.style.display = "none";
   appSection.style.display = "flex";
@@ -34,7 +32,7 @@ function showLogin() {
   appSection.style.display = "none";
 }
 
-// 🎎 Emoji logic and file input
+// 🎎 Emoji boing logic
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
