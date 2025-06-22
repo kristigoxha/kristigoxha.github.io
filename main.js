@@ -71,10 +71,10 @@ function setupApp() {
   updateCounter();
 
   const input = document.getElementById("imageInput");
-  input.addEventListener("change", async (e) => {
+  input.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    alert("Image selected — upload not implemented yet.");
+    document.getElementById('file-name').textContent = `🎉 File ready: ${file.name}`;
   });
 }
 
@@ -82,3 +82,37 @@ if (localStorage.getItem('token')) {
   showApp();
   setupApp();
 }
+
+window.showPasswordModal = () => {
+  document.getElementById('password-modal').style.display = 'flex';
+};
+
+window.closePasswordModal = () => {
+  document.getElementById('password-modal').style.display = 'none';
+  document.getElementById('password-change-message').textContent = '';
+};
+
+window.changePassword = async () => {
+  const currentPassword = document.getElementById('current-password').value;
+  const newPassword = document.getElementById('new-password').value;
+
+  const token = localStorage.getItem('token');
+  if (!token) return alert("Not logged in");
+
+  const res = await fetch(`${api}/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ currentPassword, newPassword })
+  });
+
+  const data = await res.json();
+  document.getElementById('password-change-message').textContent =
+    data.message || data.error || 'Something went wrong';
+
+  if (res.ok) {
+    setTimeout(() => closePasswordModal(), 1500);
+  }
+};
