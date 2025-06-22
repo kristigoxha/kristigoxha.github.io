@@ -6,34 +6,25 @@
   <title>Pookie's Home</title>
   <link rel="icon" href="/favicon.ico" />
   <style>
-    /* ───── BASE & BACKGROUND ─────────────────────────────────────────────── */
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
       overflow-x: hidden;
       height: 100%;
+      box-sizing: border-box;
     }
-
-    /* ───── LOGIN SECTION ─────────────────────────────────────────────────── */
+    /* LOGIN */
     #login-section {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       padding: 10px;
-      box-sizing: border-box;
     }
     input, button {
-      padding: 12px;
-      font-size: 1rem;
-      margin: 5px;
-      border-radius: 8px;
-      border: none;
-      max-width: 90vw;
-      box-sizing: border-box;
+      padding: 12px; font-size: 1rem;
+      margin: 5px; border-radius: 8px; border: none;
+      max-width: 90vw; box-sizing: border-box;
     }
     #login-message, #reset-message {
       margin-top: 8px;
@@ -41,128 +32,102 @@
       color: white;
       text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
-
-    /* ───── APP SECTION ───────────────────────────────────────────────────── */
+    /* APP */
     #app-section {
       display: none;
       position: relative;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       padding: 0 10px;
-      box-sizing: border-box;
     }
-
-    /* Boings counter top-left */
+    /* Boings counter */
     #counter {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 10px; left: 10px;
       font-size: 0.8rem;
       color: white;
       text-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
-
-    /* Hint bottom-right */
+    /* Hint */
     #hint {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
+      bottom: 10px; right: 10px;
       font-size: 0.7rem;
       color: white;
       text-shadow: 0 0 2px rgba(0,0,0,0.3);
       text-align: right;
       max-width: 40%;
     }
-
-    /* ───── HAMBURGER MENU ───────────────────────────────────────────────── */
+    /* Hamburger */
     .hamburger {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 24px;
-      height: 18px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
+      top: 10px; right: 10px;
+      width: 24px; height: 18px;
+      background: none; border: none; cursor: pointer;
+      display: flex; flex-direction: column;
       justify-content: space-between;
-      padding: 0;
-      z-index: 100;
+      padding: 0; z-index: 100;
     }
     .hamburger span {
-      height: 2px;
-      border-radius: 1px;
-      background: white;
+      height: 2px; border-radius: 1px; background: white;
     }
     #menu {
       position: absolute;
-      top: 36px;
-      right: 10px;
-      display: none;
-      flex-direction: column;
+      top: 36px; right: 10px;
+      display: none; flex-direction: column;
       background: rgba(0,0,0,0.6);
-      border-radius: 6px;
-      overflow: hidden;
-      z-index: 100;
+      border-radius: 6px; overflow: hidden; z-index: 100;
     }
-    #menu.open {
-      display: flex;
-    }
+    #menu.open { display: flex; }
     #menu a {
       padding: 6px 10px;
-      color: white;
-      text-decoration: none;
-      font-size: 0.9rem;
-      white-space: nowrap;
+      color: white; text-decoration: none;
+      font-size: 0.9rem; white-space: nowrap;
     }
-    #menu a:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* ───── EMOJI, MESSAGE & BUTTON ───────────────────────────────────────── */
+    #menu a:hover { background: rgba(255,255,255,0.1); }
+    /* Emoji & message */
     #emoji {
-      font-size: clamp(80px, 20vw, 200px);
-      cursor: pointer;
-      user-select: none;
-      margin: 0;
+      font-size: clamp(80px,20vw,200px);
+      cursor: pointer; user-select: none; margin: 0;
     }
     #message {
       margin-top: 1rem;
-      font-size: clamp(1.5rem, 5vw, 3rem);
-      font-weight: bold;
-      color: white;
+      font-size: clamp(1.5rem,5vw,3rem);
+      font-weight: bold; color: white;
       text-shadow: 0 0 5px rgba(0,0,0,0.3);
       text-align: center;
     }
+    /* Upload button */
     #gift-box {
       margin-top: 2rem;
       display: inline-block;
       font-size: 1rem;
       padding: 15px 25px;
-      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      background: linear-gradient(45deg,#ff9a9e,#fad0c4);
       border: 2px dashed white;
       color: white;
       border-radius: 20px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform .2s, box-shadow .2s;
       user-select: none;
     }
     #gift-box:hover {
       transform: scale(1.05);
       box-shadow: 0 4px 20px rgba(255,255,255,0.3);
     }
-    #gift-box:active {
-      transform: scale(0.97);
+    #gift-box:active { transform: scale(0.97); }
+    /* View History link */
+    .history-link {
+      margin-top: 1.5rem;
     }
-
-    /* hide old logout/change-password buttons */
-    .logout {
-      display: none;
+    .history-link a {
+      color: white;
+      text-decoration: underline;
+      font-size: 0.9rem;
     }
+    /* hide old logout buttons */
+    .logout { display: none; }
   </style>
 </head>
 <body>
@@ -176,7 +141,6 @@
       <button onclick="login()">Login</button>
     </div>
     <p id="login-message"></p>
-
     <input type="email" id="reset-email" placeholder="Forgot password? Enter your email" />
     <button onclick="resetPassword()">Send Reset Link</button>
     <p id="reset-message"></p>
@@ -195,14 +159,19 @@
       <a href="#" onclick="showPasswordModal()">Change Password</a>
     </nav>
 
-    <!-- Centered emoji & text -->
+    <!-- Centered emoji & message -->
     <div id="emoji">🎎</div>
-    <div id="message">I LOVE YOU POOKIEEEEEE</div>
+    <div id="message">I LOVE YOU POOKIE</div>
 
     <!-- Upload button -->
     <label id="gift-box" for="imageInput">🎁 Upload a surprise for Pookie</label>
     <input type="file" id="imageInput" accept="image/*" hidden />
     <p id="file-name"></p>
+
+    <!-- View history -->
+    <div class="history-link">
+      <a href="/history.html" target="_blank">📊 View Boing History</a>
+    </div>
 
     <!-- Change Password Modal -->
     <div id="password-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
@@ -233,14 +202,23 @@
           menu   = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
 
-    // Show app after login
+    // Show app after login (with popup)
     window.showApp = () => {
+      const today     = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const lastLogin = localStorage.getItem('lastLoginDate');
+      if (lastLogin !== today) {
+        const history = JSON.parse(localStorage.getItem('boingHistory')) || {};
+        const yCount  = history[yesterday] || 0;
+        alert(`Yesterday (${yesterday}) you boinged ${yCount} time${yCount===1?'':'s'}.`);
+        localStorage.setItem('lastLoginDate', today);
+      }
       document.getElementById('login-section').style.display = 'none';
       document.getElementById('app-section').style.display   = 'flex';
       setupApp();
     };
 
-    // Auto-show if token present
+    // Auto-show if already logged in
     if (localStorage.getItem('token')) {
       showApp();
     }
