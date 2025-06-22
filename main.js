@@ -1,92 +1,49 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-import {
-  getAuth,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAT25FtujsQeqE_pRa5QTZkEqpCfnNkZmU",
-  authDomain: "pookie-home.firebaseapp.com",
-  projectId: "pookie-home",
-  storageBucket: "pookie-home.appspot.com",
-  messagingSenderId: "207581484781",
-  appId: "1:207581484781:web:62f4ff09533567b66c5ee4",
-  measurementId: "G-28118SDJNW"
-};
+// ✅ Supabase project credentials
+const supabase = createClient(
+  'https://bcjmlhxuakqqqdjrtntj.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
+);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const analytics = getAnalytics(app);
-const storage = getStorage(app);
-
-// Create reCAPTCHA *after* auth is fully initialized and DOM is ready
-window.addEventListener("load", () => {
-  if (!auth) {
-    console.error("Auth not initialized");
-    return;
+// ⏩ Handle login via email magic link
+document.getElementById("login-button").addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const { error } = await supabase.auth.signInWithOtp({ email });
+  if (error) {
+    alert("Error: " + error.message);
+  } else {
+    alert("Check your email for the magic login link.");
   }
-
-  window.recaptchaVerifier = new RecaptchaVerifier(
-    document.getElementById("sign-in-button"),
-    {
-      size: "invisible",
-      callback: (response) => {
-        sendCode();
-      },
-      "expired-callback": () => {
-        alert("reCAPTCHA expired. Please refresh.");
-      }
-    },
-    auth
-  );
-
-  window.recaptchaVerifier.render().then((widgetId) => {
-    window.recaptchaWidgetId = widgetId;
-  });
 });
 
-window.sendCode = function () {
-  const phoneNumber = document.getElementById("phone").value;
-  const appVerifier = window.recaptchaVerifier;
+// 🔄 Check session on page load
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    showApp();
+    setupApp();
+  } else {
+    showLogin();
+  }
+});
 
-  signInWithPhoneNumber(auth, phoneNumber, appVerifier)
-    .then((confirmationResult) => {
-      window.confirmationResult = confirmationResult;
-      alert("Verification code sent!");
-      document.getElementById("code").focus();
-    })
-    .catch((error) => {
-      console.error("Error sending code:", error);
-      alert("Failed to send code: " + error.message);
-    });
-};
+// 🔁 Listen for login state changes (e.g. after magic link returns)
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session) {
+    showApp();
+    setupApp();
+  } else {
+    showLogin();
+  }
+});
 
-window.verifyCode = function () {
-  const code = document.getElementById("code").value;
-  window.confirmationResult
-    .confirm(code)
-    .then(() => {
-      alert("Logged in!");
-    })
-    .catch((error) => {
-      alert("Invalid code. Try again.");
-    });
-};
-
+// 🔓 Logout
 window.logout = async function () {
-  await signOut(auth);
+  await supabase.auth.signOut();
   location.reload();
 };
 
+// 👀 Show/hide UI
 function showApp() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("app-section").style.display = "flex";
@@ -97,21 +54,14 @@ function showLogin() {
   document.getElementById("app-section").style.display = "none";
 }
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    showApp();
-    setupApp();
-  } else {
-    showLogin();
-  }
-});
-
+// 🧸 App logic
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
   const counter = document.getElementById("counter");
   const today = new Date().toISOString().split("T")[0];
   const savedData = JSON.parse(localStorage.getItem("boingData")) || {};
+
   if (savedData.date !== today) {
     savedData.date = today;
     savedData.count = 0;
@@ -135,8 +85,7 @@ function setupApp() {
   input.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const fileRef = ref(storage, "uploads/" + file.name);
-    await uploadBytes(fileRef, file);
-    alert("Image uploaded!");
+    alert("Image selected, but upload to Supabase not implemented yet.");
+    // Optional: implement Supabase Storage upload here
   });
 }
