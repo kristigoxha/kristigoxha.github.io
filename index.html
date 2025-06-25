@@ -126,13 +126,12 @@
       text-decoration: underline;
       font-size: 0.9rem;
     }
-    /* hide old logout buttons */
     .logout { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN / REGISTER / RESET -->
+  <!-- LOGIN -->
   <div id="login-section">
     <input type="email" id="email" placeholder="you@example.com" />
     <input type="password" id="password" placeholder="Password" />
@@ -146,11 +145,10 @@
     <p id="reset-message"></p>
   </div>
 
-  <!-- APP VIEW -->
+  <!-- APP -->
   <div id="app-section">
     <div id="counter">Boings today: <span id="todayCount">0</span></div>
 
-    <!-- Hamburger -->
     <button id="menu-toggle" class="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -159,21 +157,17 @@
       <a href="#" onclick="showPasswordModal()">Change Password</a>
     </nav>
 
-    <!-- Centered emoji & message -->
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIE</div>
 
-    <!-- Upload button -->
     <label id="gift-box" for="imageInput">🎁 Upload a surprise for Pookie</label>
     <input type="file" id="imageInput" accept="image/*" hidden />
     <p id="file-name"></p>
 
-    <!-- View history -->
     <div class="history-link">
       <a href="/history.html" target="_blank">📊 View Boing History</a>
     </div>
 
-    <!-- Change Password Modal -->
     <div id="password-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
          background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:10;">
       <div style="background:white; border-radius:12px; padding:20px; width:90%; max-width:400px;
@@ -195,33 +189,16 @@
   </div>
 
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
+
+  <!-- Only one script needed -->
   <script type="module" src="main.js"></script>
+
+  <!-- Menu toggle script -->
   <script>
-    // Toggle menu
     const toggle = document.getElementById('menu-toggle'),
           menu   = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
-
-    // Show app after login (with popup)
-    window.showApp = () => {
-      const today     = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      const lastLogin = localStorage.getItem('lastLoginDate');
-      if (lastLogin !== today) {
-        const history = JSON.parse(localStorage.getItem('boingHistory')) || {};
-        const yCount  = history[yesterday] || 0;
-        alert(`Yesterday (${yesterday}) you boinged ${yCount} time${yCount===1?'':'s'}.`);
-        localStorage.setItem('lastLoginDate', today);
-      }
-      document.getElementById('login-section').style.display = 'none';
-      document.getElementById('app-section').style.display   = 'flex';
-      setupApp();
-    };
-
-    // Auto-show if already logged in
-    if (localStorage.getItem('token')) {
-      showApp();
-    }
   </script>
+
 </body>
 </html>
