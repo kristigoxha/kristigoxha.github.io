@@ -1,6 +1,7 @@
 const api = 'https://kristigoxha-github-io.onrender.com';
-const resetApi = 'https://password-reset-q4wp.onrender.com'; // Your password reset backend
+const resetApi = 'https://password-reset-q4wp.onrender.com';
 
+// REGISTER
 window.register = async () => {
   try {
     const email = document.getElementById('email').value;
@@ -17,6 +18,7 @@ window.register = async () => {
   }
 };
 
+// LOGIN
 window.login = async () => {
   try {
     const email = document.getElementById('email').value;
@@ -29,7 +31,7 @@ window.login = async () => {
     const data = await res.json();
     if (res.ok && data.token) {
       localStorage.setItem('token', data.token);
-      showApp();
+      window.showApp(); // call exposed global
     } else {
       document.getElementById('login-message').textContent = data.error || 'Login failed';
     }
@@ -38,11 +40,13 @@ window.login = async () => {
   }
 };
 
+// LOGOUT
 window.logout = () => {
   localStorage.removeItem('token');
   location.reload();
 };
 
+// RESET PASSWORD
 window.resetPassword = async () => {
   const email = document.getElementById('reset-email').value;
   const msgEl = document.getElementById('reset-message');
@@ -70,6 +74,7 @@ window.resetPassword = async () => {
   }
 };
 
+// CHANGE PASSWORD
 window.changePassword = async () => {
   const currentPassword = document.getElementById('current-password').value;
   const newPassword     = document.getElementById('new-password').value;
@@ -88,17 +93,18 @@ window.changePassword = async () => {
     const msgEl = document.getElementById('password-change-message');
     msgEl.textContent = data.message || data.error || 'Something went wrong';
     if (res.ok) {
-      setTimeout(closePasswordModal, 1500);
+      setTimeout(window.closePasswordModal, 1500);
     }
   } catch {
     document.getElementById('password-change-message').textContent = '⚠️ Network error';
   }
 };
 
+// APP SETUP
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
-  const counter = document.getElementById("counter");
+  const counterSpan = document.getElementById("todayCount");
   const today = new Date().toISOString().split("T")[0];
   const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
   const history = JSON.parse(localStorage.getItem("boingHistory")) || {};
@@ -111,7 +117,7 @@ function setupApp() {
   function updateCounter() {
     history[data.date] = data.count;
     localStorage.setItem("boingHistory", JSON.stringify(history));
-    counter.textContent = `Boings today: ${data.count}`;
+    counterSpan.textContent = data.count;
   }
 
   emoji.addEventListener("pointerdown", () => {
@@ -132,10 +138,35 @@ function setupApp() {
   });
 }
 
+// EXPOSE TO GLOBAL
+window.setupApp = setupApp;
+
+// SHOW APP (moved here for modular consistency)
+window.showApp = () => {
+  const today     = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const lastLogin = localStorage.getItem('lastLoginDate');
+  if (lastLogin !== today) {
+    const history = JSON.parse(localStorage.getItem('boingHistory')) || {};
+    const yCount  = history[yesterday] || 0;
+    alert(`Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`);
+    localStorage.setItem('lastLoginDate', today);
+  }
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('app-section').style.display = 'flex';
+  setupApp();
+};
+
+// MODALS
 window.showPasswordModal = () => {
   document.getElementById('password-modal').style.display = 'flex';
 };
 window.closePasswordModal = () => {
   document.getElementById('password-modal').style.display = 'none';
   document.getElementById('password-change-message').textContent = '';
+};
+
+// AUTO-LOGIN
+if (localStorage.getItem('token')) {
+  window.showApp();
 }
