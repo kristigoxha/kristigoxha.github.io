@@ -31,7 +31,7 @@ window.login = async () => {
     const data = await res.json();
     if (res.ok && data.token) {
       localStorage.setItem('token', data.token);
-      window.showApp(); // call exposed global
+      window.showApp();
     } else {
       document.getElementById('login-message').textContent = data.error || 'Login failed';
     }
@@ -77,9 +77,10 @@ window.resetPassword = async () => {
 // CHANGE PASSWORD
 window.changePassword = async () => {
   const currentPassword = document.getElementById('current-password').value;
-  const newPassword     = document.getElementById('new-password').value;
-  const token           = localStorage.getItem('token');
+  const newPassword = document.getElementById('new-password').value;
+  const token = localStorage.getItem('token');
   if (!token) return alert("Not logged in");
+
   try {
     const res = await fetch(`${api}/change-password`, {
       method: 'POST',
@@ -93,19 +94,20 @@ window.changePassword = async () => {
     const msgEl = document.getElementById('password-change-message');
     msgEl.textContent = data.message || data.error || 'Something went wrong';
     if (res.ok) {
-      setTimeout(window.closePasswordModal, 1500);
+      setTimeout(closePasswordModal, 1500);
     }
   } catch {
     document.getElementById('password-change-message').textContent = '⚠️ Network error';
   }
 };
 
-// APP SETUP
+// BOING SETUP
 function setupApp() {
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
   const counterSpan = document.getElementById("todayCount");
   const today = new Date().toISOString().split("T")[0];
+
   const data = JSON.parse(localStorage.getItem("boingData")) || { date: today, count: 0 };
   const history = JSON.parse(localStorage.getItem("boingHistory")) || {};
 
@@ -138,20 +140,41 @@ function setupApp() {
   });
 }
 
-// EXPOSE TO GLOBAL
 window.setupApp = setupApp;
 
-// SHOW APP (moved here for modular consistency)
+// SHOW APP WITH CUSTOM MODAL
 window.showApp = () => {
-  const today     = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
   const lastLogin = localStorage.getItem('lastLoginDate');
+
   if (lastLogin !== today) {
     const history = JSON.parse(localStorage.getItem('boingHistory')) || {};
-    const yCount  = history[yesterday] || 0;
-    alert(`Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`);
+    const yCount = history[yesterday] || 0;
+
+    const modal = document.getElementById('boing-modal');
+    const modalContent = document.getElementById('boing-modal-content');
+    const message = document.getElementById('boing-message');
+
+    message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`;
+    modal.style.display = 'flex';
+
+    requestAnimationFrame(() => {
+      modalContent.style.transform = 'scale(1)';
+      modalContent.style.opacity = '1';
+    });
+
+    document.getElementById('boing-ok').onclick = () => {
+      modalContent.style.transform = 'scale(0.9)';
+      modalContent.style.opacity = '0';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    };
+
     localStorage.setItem('lastLoginDate', today);
   }
+
   document.getElementById('login-section').style.display = 'none';
   document.getElementById('app-section').style.display = 'flex';
   setupApp();
