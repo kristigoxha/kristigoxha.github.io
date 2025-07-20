@@ -23,13 +23,21 @@ window.register = async () => {
   try {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+
+    console.log('Attempting signup with:', { email, password }); // Debug line
     
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password
     })
     
-    if (error) throw error
+    if (error) {
+        console.error('Full error object:', error); // This will show the real issue
+        alert('Error: ' + error.message);
+    } else {
+        console.log('Success:', data);
+        alert('Registration successful!');
+    }
     
     if (data.user && !data.session) {
       document.getElementById('login-message').textContent = '✅ Check your email to verify your account!';
