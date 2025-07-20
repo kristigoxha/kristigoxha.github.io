@@ -10,28 +10,91 @@
       padding: 1rem;
       background: linear-gradient(135deg, #a18cd1, #a18cd1);
       color: white;
+      margin: 0;
     }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    
+    .back-button {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .back-button:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
+    
+    .back-button:active {
+      transform: translateY(0px);
+    }
+    
     h1 {
       text-align: center;
+      margin: 0;
+      flex-grow: 1;
     }
+    
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
       background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      overflow: hidden;
     }
+    
     th, td {
-      padding: 0.5rem;
+      padding: 0.75rem;
       border: 1px solid rgba(255,255,255,0.3);
       text-align: center;
     }
+    
     th {
       background: rgba(255,255,255,0.2);
+      font-weight: bold;
+    }
+    
+    tr:nth-child(even) {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    tr:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .no-history {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255,255,255,0.7);
+      font-style: italic;
     }
   </style>
 </head>
 <body>
-  <h1>Boing History</h1>
+  <div class="header">
+    <button class="back-button" onclick="goBack()">
+      ← Back
+    </button>
+    <h1>Boing History</h1>
+    <div style="width: 80px;"></div> <!-- Spacer for centering -->
+  </div>
+  
   <table>
     <thead>
       <tr><th>Date</th><th>Count</th></tr>
@@ -40,12 +103,35 @@
   </table>
 
   <script>
+    // Go back function
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // If no history, go to main page
+        window.location.href = '/';
+      }
+    }
+    
+    // Load history from localStorage (your existing code)
     const history = JSON.parse(localStorage.getItem("boingHistory")) || {};
-    const tbody   = document.getElementById("history-tbody");
-    Object.keys(history).sort().forEach(date => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${date}</td><td>${history[date]}</td>`;
-      tbody.appendChild(tr);
+    const tbody = document.getElementById("history-tbody");
+    
+    if (Object.keys(history).length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" class="no-history">No boing history found</td></tr>';
+    } else {
+      Object.keys(history).sort().reverse().forEach(date => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${date}</td><td>${history[date]}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // Handle keyboard shortcut (Escape key to go back)
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        goBack();
+      }
     });
   </script>
 </body>
