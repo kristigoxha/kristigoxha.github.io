@@ -39,7 +39,7 @@
     #app-section {
       display: none;
       position: relative;
-      height: 100vh;
+      min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 0 10px;
@@ -83,12 +83,14 @@
       border-radius: 6px; overflow: hidden; z-index: 100;
     }
     #menu.open { display: flex; }
-    #menu a {
+    #menu a, #menu button {
       padding: 6px 10px;
       color: white; text-decoration: none;
       font-size: 0.9rem; white-space: nowrap;
+      background: none; border: none; cursor: pointer;
+      text-align: left;
     }
-    #menu a:hover { background: rgba(255,255,255,0.1); }
+    #menu a:hover, #menu button:hover { background: rgba(255,255,255,0.1); }
 
     #emoji {
       font-size: clamp(80px,20vw,200px);
@@ -124,13 +126,107 @@
     .history-link {
       margin-top: 1.5rem;
     }
-    .history-link a {
+    .history-link a, .gallery-link a {
       color: white;
       text-decoration: underline;
       font-size: 0.9rem;
+      margin: 0 10px;
     }
 
     .logout { display: none; }
+
+    /* Gallery Toggle Button */
+    .gallery-toggle {
+      margin-top: 1rem;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .gallery-toggle:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Mini Gallery Section */
+    #mini-gallery {
+      display: none;
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mini-gallery-header {
+      text-align: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .mini-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .mini-image-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .mini-image-card:hover {
+      transform: scale(1.05);
+    }
+
+    .mini-image-card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .mini-image-info {
+      padding: 10px;
+      color: white;
+      font-size: 0.8rem;
+    }
+
+    .view-all-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      border: none;
+      color: white;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .view-all-btn:hover {
+      transform: translateY(-2px);
+    }
 
     /* Spring animation for custom alert */
     @keyframes spring {
@@ -143,6 +239,30 @@
 
     #boing-ok:active {
       animation: spring 0.4s ease;
+    }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    .modal img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
   </style>
 </head>
@@ -169,17 +289,35 @@
       <span></span><span></span><span></span>
     </button>
     <nav id="menu">
-      <a href="#" onclick="logout()">Logout</a>
-      <a href="#" onclick="showPasswordModal()">Change Password</a>
+      <button onclick="logout()">Logout</button>
+      <button onclick="showPasswordModal()">Change Password</button>
+      <button onclick="window.open('/gallery.html', '_blank')">Full Gallery</button>
     </nav>
+    
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIE</div>
     <label id="gift-box" for="imageInput">🎁 Upload a surprise for Pookie</label>
     <input type="file" id="imageInput" accept="image/*" hidden />
     <p id="file-name"></p>
+    
+    <button class="gallery-toggle" onclick="toggleMiniGallery()">
+      📸 <span id="gallery-toggle-text">Show Recent Photos</span>
+    </button>
+    
+    <!-- Mini Gallery Section -->
+    <div id="mini-gallery">
+      <div class="mini-gallery-header">💝 Recent Shared Memories</div>
+      <div id="mini-gallery-grid" class="mini-gallery-grid"></div>
+      <button class="view-all-btn" onclick="window.open('/gallery.html', '_blank')">
+        🌟 View Full Gallery
+      </button>
+    </div>
+    
     <div class="history-link">
       <a href="/history.html" target="_blank">📊 View Boing History</a>
     </div>
+    
+    <!-- Password Modal -->
     <div id="password-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0;
          background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:10;">
       <div style="background:white; border-radius:12px; padding:20px; width:90%; max-width:400px;
@@ -196,6 +334,7 @@
         <p id="password-change-message"></p>
       </div>
     </div>
+    
     <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
   </div>
 
@@ -214,6 +353,13 @@
     </div>
   </div>
 
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal" onclick="closeImageModal()">
+    <div class="modal-content">
+      <img id="modal-image" src="" alt="">
+    </div>
+  </div>
+
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
   <script type="module" src="main.js"></script>
   <script>
@@ -221,6 +367,79 @@
     const toggle = document.getElementById('menu-toggle');
     const menu = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
+
+    // Gallery functionality
+    let galleryVisible = false;
+    
+    function toggleMiniGallery() {
+      const gallery = document.getElementById('mini-gallery');
+      const toggleText = document.getElementById('gallery-toggle-text');
+      
+      if (galleryVisible) {
+        gallery.style.display = 'none';
+        toggleText.textContent = 'Show Recent Photos';
+        galleryVisible = false;
+      } else {
+        gallery.style.display = 'block';
+        toggleText.textContent = 'Hide Photos';
+        galleryVisible = true;
+        loadMiniGallery();
+      }
+    }
+    
+    async function loadMiniGallery() {
+      if (!window.currentUser) return;
+      
+      try {
+        const { data: images, error } = await window.supabase
+          .from('shared_images')
+          .select('*')
+          .or(`owner_id.eq.${window.currentUser.id},shared_with_emails.cs.["${window.currentUser.email}"]`)
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (error) throw error;
+        
+        const grid = document.getElementById('mini-gallery-grid');
+        
+        if (!images || images.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; opacity: 0.7; padding: 20px;">No photos yet! Upload some memories ✨</div>';
+          return;
+        }
+        
+        grid.innerHTML = images.map(image => `
+          <div class="mini-image-card" onclick="openImageModal('${image.file_url}')">
+            <img src="${image.file_url}" alt="${image.filename}">
+            <div class="mini-image-info">
+              <div style="font-weight: 600; margin-bottom: 3px;">${image.filename.substring(0, 15)}${image.filename.length > 15 ? '...' : ''}</div>
+              <div style="opacity: 0.8; font-size: 0.7rem;">
+                ${new Date(image.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading mini gallery:', error);
+        const grid = document.getElementById('mini-gallery-grid');
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff6b6b; padding: 20px;">Error loading photos 😢</div>';
+      }
+    }
+    
+    function openImageModal(imageUrl) {
+      document.getElementById('modal-image').src = imageUrl;
+      document.getElementById('image-modal').classList.add('show');
+    }
+    
+    function closeImageModal() {
+      document.getElementById('image-modal').classList.remove('show');
+    }
+    
+    // Add these functions to window for global access
+    window.toggleMiniGallery = toggleMiniGallery;
+    window.loadMiniGallery = loadMiniGallery;
+    window.openImageModal = openImageModal;
+    window.closeImageModal = closeImageModal;
   </script>
 </body>
 </html>
