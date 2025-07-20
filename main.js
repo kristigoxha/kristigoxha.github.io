@@ -282,7 +282,7 @@ async function uploadFile(file) {
   try {
     // Upload to storage
     const { error: uploadError } = await supabase.storage
-      .from('pookie-uploads')
+      .from('pookiepics')
       .upload(fileName, file)
     
     if (uploadError) throw uploadError
