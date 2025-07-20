@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pookie's Little Gallery</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 15px 25px;
+      margin-bottom: 30px;
+    }
+
+    .user-info {
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .upload-section {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .upload-form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 20px;
+      background: linear-gradient(45deg, #28a745, #20c997);
+      color: white;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+    }
+
+    .file-input-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+    }
+
+    .share-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      font-size: 16px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      backdrop-filter: blur(5px);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .form-group select option {
+      background: #a18cd1;
+      color: white;
+    }
+
+    .images-section {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    .section-title {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      text-align: center;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+    }
+
+    .tab.active {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    .image-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .image-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .image-info {
+      padding: 20px;
+    }
+
+    .image-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .image-meta {
+      font-size: 0.85em;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .shared-with {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .user-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: 600;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .status-success {
+      background: rgba(40, 167, 69, 0.2);
+      border: 1px solid rgba(40, 167, 69, 0.5);
+    }
+
+    .status-error {
+      background: rgba(220, 53, 69, 0.2);
+      border: 1px solid rgba(220, 53, 69, 0.5);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .modal img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      opacity: 0.7;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .share-controls {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-bar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .nav-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎎 Pookie's Little Gallery</h1>
+      <p>Hi baby, what are you up to today?</p>
+    </div>
+
+    <div class="nav-bar">
+      <div class="user-info">
+        Welcome, <span id="user-email">Loading...</span>
+      </div>
+      <div class="nav-buttons">
+        <a href="/" class="btn btn-secondary">🏠 Home</a>
+        <button class="btn btn-secondary" onclick="logout()">👋 Logout</button>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <h2 class="section-title">📤 Share New Images</h2>
+      
+      <div class="upload-form">
+        <div class="file-input-wrapper">
+          <input type="file" id="image-input" accept="image/*" multiple>
+          <label for="image-input" class="file-input-label">
+            📸 Choose Images to Share
+          </label>
+        </div>
+        
+        <div class="share-controls">
+          <div class="form-group">
+            <label>Choose an email to send this to (me ofc):</label>
+            <input type="text" id="share-emails" placeholder="alice@example.com, bob@example.com">
+          </div>
+          <button class="btn btn-primary" onclick="uploadAndShare()" id="upload-btn">
+            🚀 Upload & Share
+          </button>
+        </div>
+      </div>
+      
+      <div id="upload-status"></div>
+    </div>
+
+    <div class="images-section">
+      <h2 class="section-title">🖼️ Your Gallery</h2>
+      
+      <div class="filter-tabs">
+        <div class="tab active" onclick="filterImages('all')">All Images</div>
+        <div class="tab" onclick="filterImages('shared-by-me')">Shared by Me</div>
+        <div class="tab" onclick="filterImages('shared-with-me')">Shared with Me</div>
+      </div>
+      
+      <div id="images-grid" class="images-grid">
+        <div class="empty-state">
+          <h3>📷 No images yet</h3>
+          <p>Upload your first image bebecita!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="image-modal" class="modal" onclick="closeModal()">
+    <div class="modal-content">
+      <img id="modal-image" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+    // Supabase configuration (using your existing setup)
+    const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    
+    let currentUser = null
+    let currentFilter = 'all'
+
+    // Check authentication
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        window.location.href = '/'
+        return
+      }
+      currentUser = user
+      document.getElementById('user-email').textContent = user.email
+      loadImages()
+    }
+
+    // Upload and share images
+    async function uploadAndShare() {
+      const fileInput = document.getElementById('image-input')
+      const emailsInput = document.getElementById('share-emails')
+      const uploadBtn = document.getElementById('upload-btn')
+      const statusDiv = document.getElementById('upload-status')
+      
+      const files = fileInput.files
+      const emailsText = emailsInput.value.trim()
+      
+      if (files.length === 0) {
+        showStatus('You need to select one image boo!!', 'error')
+        return
+      }
+      
+      // Parse emails
+      const shareEmails = emailsText ? emailsText.split(',').map(e => e.trim()).filter(e => e) : []
+      
+      uploadBtn.textContent = '⏳ Uploading...'
+      uploadBtn.disabled = true
+      
+      try {
+        for (const file of files) {
+          await uploadSingleImage(file, shareEmails)
+        }
+        
+        showStatus(`Successfully uploaded ${files.length} image(s)!`, 'success')
+        fileInput.value = ''
+        emailsInput.value = ''
+        loadImages()
+        
+      } catch (error) {
+        console.error('Upload error:', error)
+        showStatus('Upload failed: ' + error.message, 'error')
+      } finally {
+        uploadBtn.textContent = '🚀 Upload & Share'
+        uploadBtn.disabled = false
+      }
+    }
+
+    async function uploadSingleImage(file, shareEmails) {
+      const fileName = `${currentUser.id}/${Date.now()}-${file.name}`
+      
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('pookiepics')
+        .upload(fileName, file)
+      
+      if (uploadError) throw uploadError
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('pookiepics')
+        .getPublicUrl(fileName)
+      
+      // Save to database with sharing info
+      const { error: dbError } = await supabase
+        .from('shared_images')
+        .insert([{
+          owner_id: currentUser.id,
+          owner_email: currentUser.email,
+          filename: file.name,
+          file_path: fileName,
+          file_url: publicUrl,
+          file_size: file.size,
+          mime_type: file.type,
+          shared_with_emails: shareEmails
+        }])
+      
+      if (dbError) throw dbError
+    }
+
+    // Load and display images
+    async function loadImages() {
+      try {
+        let query = supabase.from('shared_images').select('*')
+        
+        if (currentFilter === 'shared-by-me') {
+          query = query.eq('owner_id', currentUser.id)
+        } else if (currentFilter === 'shared-with-me') {
+          query = query.contains('shared_with_emails', [currentUser.email])
+        } else {
+          // All images: owned by user OR shared with user
+          query = query.or(`owner_id.eq.${currentUser.id},shared_with_emails.cs.["${currentUser.email}"]`)
+        }
+        
+        const { data: images, error } = await query.order('created_at', { ascending: false })
+        
+        if (error) throw error
+        
+        displayImages(images || [])
+      } catch (error) {
+        console.error('Error loading images:', error)
+        showStatus('Error loading images: ' + error.message, 'error')
+      }
+    }
+
+    function displayImages(images) {
+      const grid = document.getElementById('images-grid')
+      
+      if (images.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <h3>📷 No images found</h3>
+            <p>Upload some images or wait for pookie to share some!</p>
+          </div>
+        `
+        return
+      }
+      
+      grid.innerHTML = images.map(image => `
+        <div class="image-card">
+          <img src="${image.file_url}" alt="${image.filename}" onclick="openModal('${image.file_url}')">
+          <div class="image-info">
+            <div class="image-title">${image.filename}</div>
+            <div class="image-meta">By: ${image.owner_email}</div>
+            <div class="image-meta">
+              Uploaded: ${new Date(image.created_at).toLocaleDateString()}
+            </div>
+            <div class="image-meta">
+              Size: ${(image.file_size / 1024 / 1024).toFixed(2)} MB
+            </div>
+            ${image.shared_with_emails && image.shared_with_emails.length > 0 ? `
+              <div class="shared-with">
+                <strong>Shared with:</strong>
+                ${image.shared_with_emails.map(email => `<span class="user-badge">${email}</span>`).join('')}
+              </div>
+            ` : '<div class="image-meta">Private</div>'}
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function filterImages(filter) {
+      currentFilter = filter
+      
+      // Update tab appearance
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+      event.target.classList.add('active')
+      
+      loadImages()
+    }
+
+    function openModal(imageUrl) {
+      document.getElementById('modal-image').src = imageUrl
+      document.getElementById('image-modal').classList.add('show')
+    }
+
+    function closeModal() {
+      document.getElementById('image-modal').classList.remove('show')
+    }
+
+    function showStatus(message, type) {
+      const statusDiv = document.getElementById('upload-status')
+      statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`
+      setTimeout(() => statusDiv.innerHTML = '', 5000)
+    }
+
+    async function logout() {
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    }
+
+    // Initialize
+    checkAuth()
+  </script>
+</body>
+</html>
