@@ -502,29 +502,30 @@
     }
 
     // Load and display images
-    async function loadImages() {
-      try {
-        let query = supabase.from('shared_images').select('*')
-        
-        if (currentFilter === 'shared-by-me') {
-          query = query.eq('owner_id', currentUser.id)
-        } else if (currentFilter === 'shared-with-me') {
-          query = query.contains('shared_with_emails', [currentUser.email])
-        } else {
-          // All images: owned by user OR shared with user
-          query = query.or(`owner_id.eq.${currentUser.id},shared_with_emails.cs.["${currentUser.email}"]`)
-        }
-        
-        const { data: images, error } = await query.order('created_at', { ascending: false })
-        
-        if (error) throw error
-        
-        displayImages(images || [])
-      } catch (error) {
-        console.error('Error loading images:', error)
-        showStatus('Error loading images: ' + error.message, 'error')
-      }
+async function loadImages() {
+  try {
+    let query = supabase.from('shared_images').select('*')
+    
+    if (currentFilter === 'shared-by-me') {
+      query = query.eq('owner_id', currentUser.id)
+    } else if (currentFilter === 'shared-with-me') {
+      query = query.contains('shared_with_emails', [currentUser.email])
+    } else {
+      // All images: owned by user OR shared with user
+      // Fixed the array comparison syntax
+      query = query.or(`owner_id.eq.${currentUser.id},shared_with_emails.cs.{${currentUser.email}}`)
     }
+    
+    const { data: images, error } = await query.order('created_at', { ascending: false })
+    
+    if (error) throw error
+    
+    displayImages(images || [])
+  } catch (error) {
+    console.error('Error loading images:', error)
+    showStatus('Error loading images: ' + error.message, 'error')
+  }
+}
 
     function displayImages(images) {
       const grid = document.getElementById('images-grid')
