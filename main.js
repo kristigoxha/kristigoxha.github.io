@@ -238,6 +238,102 @@ async function updateLastLoginDate() {
   }
 }
 
+// PHOTO PREVIEW FUNCTIONALITY - Moved from index.html
+window.showPhotoPreview = async () => {
+  // Check if user is logged in
+  if (!currentUser) {
+    alert('Please log in first');
+    return;
+  }
+  
+  const popup = document.getElementById('photo-preview-popup');
+  const content = document.getElementById('photo-preview-content');
+  
+  // Show loading
+  content.innerHTML = '<div style="padding: 20px;">Loading latest photo...</div>';
+  popup.classList.add('show');
+  
+  try {
+    // Get the latest photo shared with the current user (not owned by them)
+    const { data: images, error } = await supabase
+      .from('shared_images')
+      .select('*')
+      .contains('shared_with_emails', [currentUser.email])
+      .neq('owner_id', currentUser.id)  // Exclude photos owned by current user
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    if (!images || images.length === 0) {
+      content.innerHTML = `
+        <div class="no-photos">
+          <h3>📷 No shared photos yet</h3>
+          <p>Wait for someone to share photos with you!</p>
+          <div class="popup-buttons">
+            <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+              Close
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    const latestPhoto = images[0];
+    
+    content.innerHTML = `
+      <img src="${latestPhoto.file_url}" 
+           alt="${latestPhoto.filename}" 
+           class="latest-photo"
+           onclick="openImageModal('${latestPhoto.file_url}')">
+      <div class="photo-info">
+        <div><strong>${latestPhoto.filename}</strong></div>
+        <div>Shared by: ${latestPhoto.owner_email}</div>
+        <div>Date: ${new Date(latestPhoto.created_at).toLocaleDateString()}</div>
+      </div>
+      <div class="popup-buttons">
+        <a href="/gallery.html?filter=shared-with-me" target="_blank" class="popup-btn popup-btn-primary">
+          🌟 Go to Gallery
+        </a>
+        <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+          Close
+        </button>
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error('Error loading latest photo:', error);
+    content.innerHTML = `
+      <div class="no-photos">
+        <h3>😢 Error loading photos</h3>
+        <p>Something went wrong. Please try again later.</p>
+        <div class="popup-buttons">
+          <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+  }
+};
+
+window.closePhotoPreview = (event) => {
+  // Only close if clicking on the backdrop, not the content
+  if (event && event.target !== event.currentTarget) return;
+  
+  document.getElementById('photo-preview-popup').classList.remove('show');
+};
+
+window.openImageModal = (imageUrl) => {
+  document.getElementById('modal-image').src = imageUrl;
+  document.getElementById('image-modal').classList.add('show');
+};
+
+window.closeImageModal = () => {
+  document.getElementById('image-modal').classList.remove('show');
+};
+
 // BOING SETUP - Updated to use database
 async function setupApp() {
   const emoji = document.getElementById("emoji");
