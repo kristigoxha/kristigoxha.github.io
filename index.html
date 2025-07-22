@@ -116,6 +116,7 @@
       cursor: pointer;
       transition: transform .2s, box-shadow .2s;
       user-select: none;
+      text-decoration: none;
     }
     #gift-box:hover {
       transform: scale(1.05);
@@ -154,78 +155,107 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
 
-    /* Mini Gallery Section */
-    #mini-gallery {
+    /* Photo Preview Popup */
+    .photo-preview-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
       display: none;
-      margin-top: 2rem;
-      width: 100%;
-      max-width: 600px;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
       padding: 20px;
-      animation: slideDown 0.3s ease;
     }
 
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .photo-preview-popup.show {
+      display: flex;
     }
 
-    .mini-gallery-header {
+    .popup-content {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
       text-align: center;
       color: white;
+      animation: popupSlide 0.3s ease;
+    }
+
+    @keyframes popupSlide {
+      from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .popup-header {
       font-size: 1.5rem;
       font-weight: 600;
       margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
 
-    .mini-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
+    .latest-photo {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 15px;
       margin-bottom: 15px;
-    }
-
-    .mini-image-card {
-      background: rgba(255,255,255,0.15);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: transform 0.2s ease;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
-    .mini-image-card:hover {
+    .latest-photo:hover {
       transform: scale(1.05);
     }
 
-    .mini-image-card img {
-      width: 100%;
-      height: 100px;
-      object-fit: cover;
+    .photo-info {
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
 
-    .mini-image-info {
-      padding: 10px;
-      color: white;
-      font-size: 0.8rem;
+    .popup-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
-    .view-all-btn {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+    .popup-btn {
+      padding: 10px 20px;
       border: none;
-      color: white;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 25px;
+      font-size: 14px;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .view-all-btn:hover {
+    .popup-btn-primary {
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      color: white;
+    }
+
+    .popup-btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .popup-btn:hover {
       transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .no-photos {
+      padding: 40px 20px;
+      text-align: center;
+      opacity: 0.8;
     }
 
     /* Spring animation for custom alert */
@@ -296,22 +326,13 @@
     
     <div id="emoji">🎎</div>
     <div id="message">I LOVE YOU POOKIE</div>
-    <label id="gift-box" for="imageInput">🎁 Upload a surprise for Pookie</label>
-    <input type="file" id="imageInput" accept="image/*" hidden />
-    <p id="file-name"></p>
     
-    <button class="gallery-toggle" onclick="toggleMiniGallery()">
-      📸 <span id="gallery-toggle-text">Show Recent Photos</span>
+    <!-- Updated gift box to redirect to gallery -->
+    <a id="gift-box" href="/gallery.html" target="_blank">🎁 Upload a surprise for Pookie</a>
+    
+    <button class="gallery-toggle" onclick="showPhotoPreview()">
+      📸 Show Recent Shared Photos
     </button>
-    
-    <!-- Mini Gallery Section -->
-    <div id="mini-gallery">
-      <div class="mini-gallery-header">💝 Recent Shared Memories</div>
-      <div id="mini-gallery-grid" class="mini-gallery-grid"></div>
-      <button class="view-all-btn" onclick="window.open('/gallery.html', '_blank')">
-        🌟 View Full Gallery
-      </button>
-    </div>
     
     <div class="history-link">
       <a href="/history.html" target="_blank">📊 View Boing History</a>
@@ -336,6 +357,16 @@
     </div>
     
     <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
+  </div>
+
+  <!-- Photo Preview Popup -->
+  <div id="photo-preview-popup" class="photo-preview-popup" onclick="closePhotoPreview(event)">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <div class="popup-header">💝 Latest Shared Photo</div>
+      <div id="photo-preview-content">
+        <!-- Content will be loaded dynamically -->
+      </div>
+    </div>
   </div>
 
   <!-- Custom Boing Modal -->
@@ -368,62 +399,90 @@
     const menu = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
 
-    // Gallery functionality
-    let galleryVisible = false;
-    
-    function toggleMiniGallery() {
-      const gallery = document.getElementById('mini-gallery');
-      const toggleText = document.getElementById('gallery-toggle-text');
-      
-      if (galleryVisible) {
-        gallery.style.display = 'none';
-        toggleText.textContent = 'Show Recent Photos';
-        galleryVisible = false;
-      } else {
-        gallery.style.display = 'block';
-        toggleText.textContent = 'Hide Photos';
-        galleryVisible = true;
-        loadMiniGallery();
+    // Photo Preview Popup functionality
+    async function showPhotoPreview() {
+      if (!window.currentUser) {
+        alert('Please log in first');
+        return;
       }
-    }
-    
-    async function loadMiniGallery() {
-      if (!window.currentUser) return;
+      
+      const popup = document.getElementById('photo-preview-popup');
+      const content = document.getElementById('photo-preview-content');
+      
+      // Show loading
+      content.innerHTML = '<div style="padding: 20px;">Loading latest photo...</div>';
+      popup.classList.add('show');
       
       try {
+        // Get the latest photo shared with the current user (not owned by them)
         const { data: images, error } = await window.supabase
           .from('shared_images')
           .select('*')
-          .or(`owner_id.eq.${window.currentUser.id},shared_with_emails.cs.["${window.currentUser.email}"]`)
+          .contains('shared_with_emails', [window.currentUser.email])
+          .neq('owner_id', window.currentUser.id)  // Exclude photos owned by current user
           .order('created_at', { ascending: false })
-          .limit(6);
+          .limit(1);
         
         if (error) throw error;
         
-        const grid = document.getElementById('mini-gallery-grid');
-        
         if (!images || images.length === 0) {
-          grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: white; opacity: 0.7; padding: 20px;">No photos yet! Upload some memories ✨</div>';
+          content.innerHTML = `
+            <div class="no-photos">
+              <h3>📷 No shared photos yet</h3>
+              <p>Wait for someone to share photos with you!</p>
+              <div class="popup-buttons">
+                <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+                  Close
+                </button>
+              </div>
+            </div>
+          `;
           return;
         }
         
-        grid.innerHTML = images.map(image => `
-          <div class="mini-image-card" onclick="openImageModal('${image.file_url}')">
-            <img src="${image.file_url}" alt="${image.filename}">
-            <div class="mini-image-info">
-              <div style="font-weight: 600; margin-bottom: 3px;">${image.filename.substring(0, 15)}${image.filename.length > 15 ? '...' : ''}</div>
-              <div style="opacity: 0.8; font-size: 0.7rem;">
-                ${new Date(image.created_at).toLocaleDateString()}
-              </div>
-            </div>
+        const latestPhoto = images[0];
+        
+        content.innerHTML = `
+          <img src="${latestPhoto.file_url}" 
+               alt="${latestPhoto.filename}" 
+               class="latest-photo"
+               onclick="openImageModal('${latestPhoto.file_url}')">
+          <div class="photo-info">
+            <div><strong>${latestPhoto.filename}</strong></div>
+            <div>Shared by: ${latestPhoto.owner_email}</div>
+            <div>Date: ${new Date(latestPhoto.created_at).toLocaleDateString()}</div>
           </div>
-        `).join('');
+          <div class="popup-buttons">
+            <a href="/gallery.html?filter=shared-with-me" target="_blank" class="popup-btn popup-btn-primary">
+              🌟 Go to Gallery
+            </a>
+            <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+              Close
+            </button>
+          </div>
+        `;
         
       } catch (error) {
-        console.error('Error loading mini gallery:', error);
-        const grid = document.getElementById('mini-gallery-grid');
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff6b6b; padding: 20px;">Error loading photos 😢</div>';
+        console.error('Error loading latest photo:', error);
+        content.innerHTML = `
+          <div class="no-photos">
+            <h3>😢 Error loading photos</h3>
+            <p>Something went wrong. Please try again later.</p>
+            <div class="popup-buttons">
+              <button class="popup-btn popup-btn-secondary" onclick="closePhotoPreview()">
+                Close
+              </button>
+            </div>
+          </div>
+        `;
       }
+    }
+    
+    function closePhotoPreview(event) {
+      // Only close if clicking on the backdrop, not the content
+      if (event && event.target !== event.currentTarget) return;
+      
+      document.getElementById('photo-preview-popup').classList.remove('show');
     }
     
     function openImageModal(imageUrl) {
@@ -436,8 +495,8 @@
     }
     
     // Add these functions to window for global access
-    window.toggleMiniGallery = toggleMiniGallery;
-    window.loadMiniGallery = loadMiniGallery;
+    window.showPhotoPreview = showPhotoPreview;
+    window.closePhotoPreview = closePhotoPreview;
     window.openImageModal = openImageModal;
     window.closeImageModal = closeImageModal;
   </script>
