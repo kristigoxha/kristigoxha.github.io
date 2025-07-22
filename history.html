@@ -84,6 +84,18 @@
       color: rgba(255,255,255,0.7);
       font-style: italic;
     }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .error {
+      text-align: center;
+      padding: 2rem;
+      color: #ff6b6b;
+    }
   </style>
 </head>
 <body>
@@ -99,10 +111,22 @@
     <thead>
       <tr><th>Date</th><th>Count</th></tr>
     </thead>
-    <tbody id="history-tbody"></tbody>
+    <tbody id="history-tbody">
+      <tr><td colspan="2" class="loading">Loading your boing history...</td></tr>
+    </tbody>
   </table>
 
+  <!-- Include Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+    // SUPABASE CONFIGURATION (same as main.js)
+    const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
+
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
     // Go back function
     function goBack() {
       if (window.history.length > 1) {
@@ -112,20 +136,65 @@
         window.location.href = '/';
       }
     }
-    
-    // Load history from localStorage (your existing code)
-    const history = JSON.parse(localStorage.getItem("boingHistory")) || {};
-    const tbody = document.getElementById("history-tbody");
-    
-    if (Object.keys(history).length === 0) {
-      tbody.innerHTML = '<tr><td colspan="2" class="no-history">No boing history found</td></tr>';
-    } else {
-      Object.keys(history).sort().reverse().forEach(date => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${date}</td><td>${history[date]}</td>`;
-        tbody.appendChild(tr);
-      });
+
+    // Load history from Supabase database
+    async function loadBoingHistory() {
+      const tbody = document.getElementById("history-tbody");
+      
+      try {
+        // Get current user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+          tbody.innerHTML = '<tr><td colspan="2" class="error">Please log in to view your history</td></tr>';
+          return;
+        }
+
+        // Fetch boing data from database
+        const { data: boings, error } = await supabase
+          .from('boings')
+          .select('boing_date')
+          .eq('user_id', user.id)
+          .order('boing_date', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching boing history:', error);
+          tbody.innerHTML = '<tr><td colspan="2" class="error">Error loading history</td></tr>';
+          return;
+        }
+
+        // Group boings by date
+        const history = {};
+        boings.forEach(boing => {
+          const date = boing.boing_date;
+          history[date] = (history[date] || 0) + 1;
+        });
+
+        // Display history
+        if (Object.keys(history).length === 0) {
+          tbody.innerHTML = '<tr><td colspan="2" class="no-history">No boing history found</td></tr>';
+        } else {
+          tbody.innerHTML = '';
+          
+          // Sort dates in descending order and create table rows
+          Object.keys(history)
+            .sort()
+            .reverse()
+            .forEach(date => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `<td>${date}</td><td>${history[date]}</td>`;
+              tbody.appendChild(tr);
+            });
+        }
+
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        tbody.innerHTML = '<tr><td colspan="2" class="error">Unexpected error loading history</td></tr>';
+      }
     }
+
+    // Load history when page loads
+    document.addEventListener('DOMContentLoaded', loadBoingHistory);
     
     // Handle keyboard shortcut (Escape key to go back)
     document.addEventListener('keydown', function(event) {
