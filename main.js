@@ -3,17 +3,20 @@
 const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Initialize Supabase client and expose globally
+window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const supabase = window.supabase
 
-// Global user state
+// Global user state - expose to window
 let currentUser = null
+window.currentUser = null
 
 // Check authentication status on page load
 async function checkAuth() {
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
     currentUser = user
+    window.currentUser = user  // Set global reference
     window.showApp()
   }
 }
@@ -63,6 +66,7 @@ window.login = async () => {
     if (error) throw error
     
     currentUser = data.user
+    window.currentUser = data.user  // Set global reference
     window.showApp()
   } catch (error) {
     document.getElementById('login-message').textContent = '❌ ' + error.message;
@@ -76,11 +80,13 @@ window.logout = async () => {
     if (error) throw error
     
     currentUser = null
+    window.currentUser = null  // Clear global reference
     location.reload()
   } catch (error) {
     console.error('Logout error:', error)
     // Force logout even if there's an error
     currentUser = null
+    window.currentUser = null  // Clear global reference
     location.reload()
   }
 };
@@ -260,17 +266,19 @@ async function setupApp() {
   // Initial counter update
   updateCounter()
 
-  // File input handler
+  // File input handler (if exists)
   const input = document.getElementById("imageInput");
-  input.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    document.getElementById('file-name').textContent = `🎉 File ready: ${file.name}`;
-    
-    // Upload file to Supabase storage
-    await uploadFile(file)
-  });
+  if (input) {
+    input.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      document.getElementById('file-name').textContent = `🎉 File ready: ${file.name}`;
+      
+      // Upload file to Supabase storage
+      await uploadFile(file)
+    });
+  }
 }
 
 // FILE UPLOAD FUNCTION
@@ -393,8 +401,10 @@ window.viewBoingHistory = async () => {
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     currentUser = session.user
+    window.currentUser = session.user  // Set global reference
   } else if (event === 'SIGNED_OUT') {
     currentUser = null
+    window.currentUser = null  // Clear global reference
   }
 })
 
