@@ -399,9 +399,31 @@
     const menu = document.getElementById('menu');
     toggle.addEventListener('click', () => menu.classList.toggle('open'));
 
-    // Photo Preview Popup functionality
+    // Photo Preview Popup functionality with improved auth checking
     async function showPhotoPreview() {
-      if (!window.currentUser) {
+      // Multiple ways to check if user is logged in
+      let currentUser = null;
+      
+      // Try to get user from Supabase directly
+      if (window.supabase) {
+        try {
+          const { data: { user } } = await window.supabase.auth.getUser();
+          currentUser = user;
+        } catch (error) {
+          console.error('Error getting user:', error);
+        }
+      }
+      
+      // Fallback to window.currentUser if available
+      if (!currentUser && window.currentUser) {
+        currentUser = window.currentUser;
+      }
+      
+      // Check if we're on the app section (logged in)
+      const appSection = document.getElementById('app-section');
+      const loginSection = document.getElementById('login-section');
+      
+      if (!currentUser || appSection.style.display === 'none' || loginSection.style.display !== 'none') {
         alert('Please log in first');
         return;
       }
@@ -418,8 +440,8 @@
         const { data: images, error } = await window.supabase
           .from('shared_images')
           .select('*')
-          .contains('shared_with_emails', [window.currentUser.email])
-          .neq('owner_id', window.currentUser.id)  // Exclude photos owned by current user
+          .contains('shared_with_emails', [currentUser.email])
+          .neq('owner_id', currentUser.id)  // Exclude photos owned by current user
           .order('created_at', { ascending: false })
           .limit(1);
         
