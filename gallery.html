@@ -69,6 +69,13 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      position: relative;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .btn-primary {
@@ -82,9 +89,23 @@
       border: 2px solid rgba(255,255,255,0.3);
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .upload-section {
@@ -132,7 +153,7 @@
 
     .share-controls {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr auto;
       gap: 15px;
       align-items: end;
     }
@@ -149,8 +170,7 @@
       opacity: 0.9;
     }
 
-    .form-group input,
-    .form-group select {
+    .form-group input {
       padding: 12px 15px;
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 10px;
@@ -162,11 +182,6 @@
 
     .form-group input::placeholder {
       color: rgba(255,255,255,0.7);
-    }
-
-    .form-group select option {
-      background: #a18cd1;
-      color: white;
     }
 
     .autocomplete-container {
@@ -201,10 +216,6 @@
     .suggestion-item:hover,
     .suggestion-item.highlighted {
       background: rgba(161, 140, 209, 0.3);
-    }
-
-    .suggestion-item:last-child {
-      border-bottom: none;
     }
 
     .email-tags {
@@ -343,6 +354,10 @@
       margin: 15px 0;
       text-align: center;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     .status-success {
@@ -353,6 +368,11 @@
     .status-error {
       background: rgba(220, 53, 69, 0.2);
       border: 1px solid rgba(220, 53, 69, 0.5);
+    }
+
+    .status-info {
+      background: rgba(23, 162, 184, 0.2);
+      border: 1px solid rgba(23, 162, 184, 0.5);
     }
 
     .modal {
@@ -395,6 +415,14 @@
     .empty-state h3 {
       font-size: 1.5em;
       margin-bottom: 15px;
+    }
+
+    .progress-step {
+      margin: 10px 0;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      border-left: 4px solid #17a2b8;
     }
 
     @media (max-width: 768px) {
@@ -486,36 +514,46 @@
   </div>
 
   <script>
-    // Supabase configuration (using your existing setup)
+    // Configuration
     const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
+    // State
     let currentUser = null
     let currentFilter = 'all'
     let selectedEmails = []
     let allUsers = []
     let currentSuggestionIndex = -1
 
-    // Fetch all users for autocomplete
-    async function fetchUsers() {
-      try {
-        const { data, error } = await supabase
-          .from('shared_images')
-          .select('owner_email')
-        
-        if (error) throw error
-        
-        // Get unique emails
-        const emails = [...new Set(data.map(item => item.owner_email))]
-        allUsers = emails.filter(email => email && email !== currentUser.email)
-      } catch (error) {
-        console.error('Error fetching users:', error)
+    // Utility functions
+    function showStatus(message, type, showSpinner = false) {
+      const statusDiv = document.getElementById('upload-status')
+      const spinnerHTML = showSpinner ? '<div class="spinner"></div>' : ''
+      statusDiv.innerHTML = `<div class="status-message status-${type}">${spinnerHTML}${message}</div>`
+      
+      if (!showSpinner && type !== 'error') {
+        setTimeout(() => statusDiv.innerHTML = '', 5000)
       }
     }
 
-    // Check authentication
+    function setButtonLoading(buttonId, isLoading, loadingText = 'Loading...') {
+      const button = document.getElementById(buttonId)
+      if (isLoading) {
+        button.disabled = true
+        button.innerHTML = `<div class="spinner"></div> ${loadingText}`
+      } else {
+        button.disabled = false
+        button.innerHTML = '🚀 Upload & Share'
+      }
+    }
+
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    }
+
+    // Authentication
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -529,12 +567,30 @@
       loadImages()
     }
 
-    // Upload and share images
+    async function logout() {
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    }
+
+    // User management
+    async function fetchUsers() {
+      try {
+        const { data, error } = await supabase
+          .from('shared_images')
+          .select('owner_email')
+        
+        if (error) throw error
+        
+        const emails = [...new Set(data.map(item => item.owner_email))]
+        allUsers = emails.filter(email => email && email !== currentUser.email)
+      } catch (error) {
+        console.error('Error fetching users:', error)
+      }
+    }
+
+    // Upload functionality
     async function uploadAndShare() {
       const fileInput = document.getElementById('image-input')
-      const uploadBtn = document.getElementById('upload-btn')
-      const statusDiv = document.getElementById('upload-status')
-      
       const files = fileInput.files
       
       if (files.length === 0) {
@@ -542,25 +598,28 @@
         return
       }
       
-      uploadBtn.textContent = '⏳ Uploading...'
-      uploadBtn.disabled = true
+      setButtonLoading('upload-btn', true, 'Uploading...')
       
       try {
-        for (const file of files) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          showStatus(`Uploading image ${i + 1} of ${files.length}: ${file.name}`, 'info', true)
+          
           await uploadSingleImage(file, selectedEmails)
+          
+          showStatus(`✅ Image uploaded: ${file.name}`, 'success')
+          await new Promise(resolve => setTimeout(resolve, 1000)) // Brief pause to show success
         }
         
-        showStatus(`Successfully uploaded ${files.length} image(s)!`, 'success')
-        fileInput.value = ''
-        clearSelectedEmails()
+        showStatus(`🎉 Successfully uploaded and shared ${files.length} image(s)!`, 'success')
+        resetUploadForm()
         loadImages()
         
       } catch (error) {
         console.error('Upload error:', error)
-        showStatus('Upload failed: ' + error.message, 'error')
+        showStatus(`❌ Upload failed: ${error.message}`, 'error')
       } finally {
-        uploadBtn.textContent = '🚀 Upload & Share'
-        uploadBtn.disabled = false
+        setButtonLoading('upload-btn', false)
       }
     }
 
@@ -579,7 +638,7 @@
         .from('pookiepics')
         .getPublicUrl(fileName)
       
-      // Save to database with sharing info
+      // Save to database
       const { error: dbError } = await supabase
         .from('shared_images')
         .insert([{
@@ -596,31 +655,34 @@
       if (dbError) throw dbError
     }
 
-    // Load and display images
-async function loadImages() {
-  try {
-    let query = supabase.from('shared_images').select('*')
-    
-    if (currentFilter === 'shared-by-me') {
-      query = query.eq('owner_id', currentUser.id)
-    } else if (currentFilter === 'shared-with-me') {
-      query = query.contains('shared_with_emails', [currentUser.email])
-    } else {
-      // All images: owned by user OR shared with user
-      // Fixed the array comparison syntax
-      query = query.or(`owner_id.eq.${currentUser.id},shared_with_emails.cs.{${currentUser.email}}`)
+    function resetUploadForm() {
+      document.getElementById('image-input').value = ''
+      clearSelectedEmails()
     }
-    
-    const { data: images, error } = await query.order('created_at', { ascending: false })
-    
-    if (error) throw error
-    
-    displayImages(images || [])
-  } catch (error) {
-    console.error('Error loading images:', error)
-    showStatus('Error loading images: ' + error.message, 'error')
-  }
-}
+
+    // Image loading and display
+    async function loadImages() {
+      try {
+        let query = supabase.from('shared_images').select('*')
+        
+        if (currentFilter === 'shared-by-me') {
+          query = query.eq('owner_id', currentUser.id)
+        } else if (currentFilter === 'shared-with-me') {
+          query = query.contains('shared_with_emails', [currentUser.email])
+        } else {
+          query = query.or(`owner_id.eq.${currentUser.id},shared_with_emails.cs.{${currentUser.email}}`)
+        }
+        
+        const { data: images, error } = await query.order('created_at', { ascending: false })
+        
+        if (error) throw error
+        
+        displayImages(images || [])
+      } catch (error) {
+        console.error('Error loading images:', error)
+        showStatus('Error loading images: ' + error.message, 'error')
+      }
+    }
 
     function displayImages(images) {
       const grid = document.getElementById('images-grid')
@@ -660,14 +722,12 @@ async function loadImages() {
 
     function filterImages(filter) {
       currentFilter = filter
-      
-      // Update tab appearance
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
       event.target.classList.add('active')
-      
       loadImages()
     }
 
+    // Modal functionality
     function openModal(imageUrl) {
       document.getElementById('modal-image').src = imageUrl
       document.getElementById('image-modal').classList.add('show')
@@ -677,22 +737,14 @@ async function loadImages() {
       document.getElementById('image-modal').classList.remove('show')
     }
 
-    function showStatus(message, type) {
-      const statusDiv = document.getElementById('upload-status')
-      statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`
-      setTimeout(() => statusDiv.innerHTML = '', 5000)
-    }
-
     // Autocomplete functionality
     function setupAutocomplete() {
       const input = document.getElementById('share-emails')
-      const suggestionsDiv = document.getElementById('autocomplete-suggestions')
-      
       input.addEventListener('input', handleInput)
       input.addEventListener('keydown', handleKeydown)
       
-      // Close suggestions when clicking outside
       document.addEventListener('click', function(e) {
+        const suggestionsDiv = document.getElementById('autocomplete-suggestions')
         if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) {
           hideSuggestions()
         }
@@ -700,8 +752,7 @@ async function loadImages() {
     }
 
     function handleInput(e) {
-      const input = e.target
-      const query = input.value.trim().toLowerCase()
+      const query = e.target.value.trim().toLowerCase()
       
       if (query.length >= 3) {
         const filtered = allUsers.filter(email => 
@@ -719,32 +770,36 @@ async function loadImages() {
       const suggestionsDiv = document.getElementById('autocomplete-suggestions')
       const suggestions = suggestionsDiv.querySelectorAll('.suggestion-item')
       
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1)
-        updateSuggestionHighlight()
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1)
-        updateSuggestionHighlight()
-      } else if (e.key === 'Enter') {
-        e.preventDefault()
-        if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
-          const email = suggestions[currentSuggestionIndex].textContent
-          addEmailTag(email)
-        } else {
-          // Try to add the current input as email if it looks valid
-          const input = e.target
-          const email = input.value.trim()
-          if (validateEmail(email)) {
-            addEmailTag(email)
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1)
+          updateSuggestionHighlight()
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1)
+          updateSuggestionHighlight()
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+            addEmailTag(suggestions[currentSuggestionIndex].textContent)
+          } else {
+            const email = e.target.value.trim()
+            if (validateEmail(email)) {
+              addEmailTag(email)
+            }
           }
-        }
-      } else if (e.key === 'Escape') {
-        hideSuggestions()
-      } else if (e.key === 'Backspace' && e.target.value === '' && selectedEmails.length > 0) {
-        // Remove last email tag when backspacing on empty input
-        removeEmailTag(selectedEmails[selectedEmails.length - 1])
+          break
+        case 'Escape':
+          hideSuggestions()
+          break
+        case 'Backspace':
+          if (e.target.value === '' && selectedEmails.length > 0) {
+            removeEmailTag(selectedEmails[selectedEmails.length - 1])
+          }
+          break
       }
     }
 
@@ -769,16 +824,12 @@ async function loadImages() {
     }
 
     function updateSuggestionHighlight() {
-      const suggestions = document.querySelectorAll('.suggestion-item')
-      suggestions.forEach((item, index) => {
-        if (index === currentSuggestionIndex) {
-          item.classList.add('highlighted')
-        } else {
-          item.classList.remove('highlighted')
-        }
+      document.querySelectorAll('.suggestion-item').forEach((item, index) => {
+        item.classList.toggle('highlighted', index === currentSuggestionIndex)
       })
     }
 
+    // Email tag management
     function addEmailTag(email) {
       if (!selectedEmails.includes(email) && validateEmail(email)) {
         selectedEmails.push(email)
@@ -809,17 +860,7 @@ async function loadImages() {
       document.getElementById('share-emails').value = ''
     }
 
-    function validateEmail(email) {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      return re.test(email)
-    }
-
-    async function logout() {
-      await supabase.auth.signOut()
-      window.location.href = '/'
-    }
-
-    // Initialize
+    // Initialize the application
     checkAuth()
   </script>
 </body>
