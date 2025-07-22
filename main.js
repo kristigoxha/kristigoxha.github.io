@@ -1,104 +1,87 @@
 // SUPABASE CONFIGURATION
-// Replace these with your actual Supabase project values
 const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
 
-// Initialize Supabase client and expose globally
-window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-const supabase = window.supabase
+// Initialize Supabase client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+window.supabase = supabase
 
-// Global user state - expose to window
+// Global user state
 let currentUser = null
-window.currentUser = null
+
+// Utility function to update global user reference
+function updateCurrentUser(user) {
+  currentUser = user
+  window.currentUser = user
+}
 
 // Check authentication status on page load
 async function checkAuth() {
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
-    currentUser = user
-    window.currentUser = user  // Set global reference
+    updateCurrentUser(user)
     window.showApp()
   }
 }
 
-// REGISTER
+// AUTHENTICATION FUNCTIONS
 window.register = async () => {
   try {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    console.log('Attempting signup with:', { email, password }); // Debug line
+    const email = document.getElementById('email').value
+    const password = document.getElementById('password').value
     
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password
-    })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     
     if (error) {
-        console.error('Full error object:', error); // This will show the real issue
-        alert('Error: ' + error.message);
-    } else {
-        console.log('Success:', data);
-        alert('Registration successful!');
+      console.error('Registration error:', error)
+      document.getElementById('login-message').textContent = '❌ ' + error.message
+      return
     }
     
-    if (data.user && !data.session) {
-      document.getElementById('login-message').textContent = '✅ Check your email to verify your account!';
-    } else {
-      document.getElementById('login-message').textContent = '✅ Registration successful! You can now login.';
-    }
+    const message = data.user && !data.session 
+      ? '✅ Check your email to verify your account!'
+      : '✅ Registration successful! You can now login.'
+    
+    document.getElementById('login-message').textContent = message
   } catch (error) {
-    document.getElementById('login-message').textContent = '❌ ' + error.message;
+    document.getElementById('login-message').textContent = '❌ ' + error.message
   }
-};
+}
 
-// LOGIN
 window.login = async () => {
   try {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value
+    const password = document.getElementById('password').value
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    })
-    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     
-    currentUser = data.user
-    window.currentUser = data.user  // Set global reference
+    updateCurrentUser(data.user)
     window.showApp()
   } catch (error) {
-    document.getElementById('login-message').textContent = '❌ ' + error.message;
+    document.getElementById('login-message').textContent = '❌ ' + error.message
   }
-};
+}
 
-// LOGOUT
 window.logout = async () => {
   try {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    
-    currentUser = null
-    window.currentUser = null  // Clear global reference
-    location.reload()
+    await supabase.auth.signOut()
   } catch (error) {
     console.error('Logout error:', error)
-    // Force logout even if there's an error
-    currentUser = null
-    window.currentUser = null  // Clear global reference
+  } finally {
+    // Always clear user state and reload, even if logout fails
+    updateCurrentUser(null)
     location.reload()
   }
-};
+}
 
-// RESET PASSWORD
 window.resetPassword = async () => {
-  const email = document.getElementById('reset-email').value;
-  const msgEl = document.getElementById('reset-message');
+  const email = document.getElementById('reset-email').value
+  const msgEl = document.getElementById('reset-message')
   
   if (!email || !email.includes('@')) {
-    msgEl.textContent = '❌ Please enter a valid email address.';
-    return;
+    msgEl.textContent = '❌ Please enter a valid email address.'
+    return
   }
   
   try {
@@ -108,43 +91,39 @@ window.resetPassword = async () => {
     
     if (error) throw error
     
-    msgEl.style.color = 'green';
-    msgEl.textContent = '✅ Password reset email sent! Check your inbox.';
+    msgEl.style.color = 'green'
+    msgEl.textContent = '✅ Password reset email sent! Check your inbox.'
   } catch (error) {
-    msgEl.style.color = 'red';
-    msgEl.textContent = '❌ ' + error.message;
+    msgEl.style.color = 'red'
+    msgEl.textContent = '❌ ' + error.message
   }
-};
+}
 
-// CHANGE PASSWORD
 window.changePassword = async () => {
-  const newPassword = document.getElementById('new-password').value;
-  
   if (!currentUser) {
-    alert("Not logged in");
-    return;
+    alert("Not logged in")
+    return
   }
+  
+  const newPassword = document.getElementById('new-password').value
   
   try {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    })
-    
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw error
     
-    const msgEl = document.getElementById('password-change-message');
-    msgEl.textContent = '✅ Password changed successfully!';
-    setTimeout(closePasswordModal, 1500);
+    const msgEl = document.getElementById('password-change-message')
+    msgEl.textContent = '✅ Password changed successfully!'
+    setTimeout(closePasswordModal, 1500)
   } catch (error) {
-    document.getElementById('password-change-message').textContent = '❌ ' + error.message;
+    document.getElementById('password-change-message').textContent = '❌ ' + error.message
   }
-};
+}
 
-// DATABASE FUNCTIONS FOR BOINGS
+// DATABASE FUNCTIONS
 async function getTodaysBoings() {
-  if (!currentUser) return 0;
+  if (!currentUser) return 0
   
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0]
   
   try {
     const { data, error } = await supabase
@@ -162,9 +141,9 @@ async function getTodaysBoings() {
 }
 
 async function getYesterdaysBoings() {
-  if (!currentUser) return 0;
+  if (!currentUser) return 0
   
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
   
   try {
     const { data, error } = await supabase
@@ -182,14 +161,12 @@ async function getYesterdaysBoings() {
 }
 
 async function recordBoing() {
-  if (!currentUser) return;
+  if (!currentUser) return false
   
   try {
     const { error } = await supabase
       .from('boings')
-      .insert([
-        { user_id: currentUser.id }
-      ])
+      .insert([{ user_id: currentUser.id }])
     
     if (error) throw error
     return true
@@ -200,7 +177,7 @@ async function recordBoing() {
 }
 
 async function getLastLoginDate() {
-  if (!currentUser) return null;
+  if (!currentUser) return null
   
   try {
     const { data, error } = await supabase
@@ -218,19 +195,17 @@ async function getLastLoginDate() {
 }
 
 async function updateLastLoginDate() {
-  if (!currentUser) return;
+  if (!currentUser) return
   
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0]
   
   try {
     const { error } = await supabase
       .from('profiles')
-      .upsert([
-        { 
-          id: currentUser.id,
-          last_login_date: today
-        }
-      ])
+      .upsert([{ 
+        id: currentUser.id,
+        last_login_date: today
+      }])
     
     if (error) throw error
   } catch (error) {
@@ -238,20 +213,19 @@ async function updateLastLoginDate() {
   }
 }
 
-// PHOTO PREVIEW FUNCTIONALITY - Moved from index.html
+// PHOTO PREVIEW FUNCTIONALITY
 window.showPhotoPreview = async () => {
-  // Check if user is logged in
   if (!currentUser) {
-    alert('Please log in first');
-    return;
+    alert('Please log in first')
+    return
   }
   
-  const popup = document.getElementById('photo-preview-popup');
-  const content = document.getElementById('photo-preview-content');
+  const popup = document.getElementById('photo-preview-popup')
+  const content = document.getElementById('photo-preview-content')
   
   // Show loading
-  content.innerHTML = '<div style="padding: 20px;">Loading latest photo...</div>';
-  popup.classList.add('show');
+  content.innerHTML = '<div style="padding: 20px;">Loading latest photo...</div>'
+  popup.classList.add('show')
   
   try {
     // Get the latest photo shared with the current user (not owned by them)
@@ -259,11 +233,11 @@ window.showPhotoPreview = async () => {
       .from('shared_images')
       .select('*')
       .contains('shared_with_emails', [currentUser.email])
-      .neq('owner_id', currentUser.id)  // Exclude photos owned by current user
+      .neq('owner_id', currentUser.id)
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
     
-    if (error) throw error;
+    if (error) throw error
     
     if (!images || images.length === 0) {
       content.innerHTML = `
@@ -276,11 +250,11 @@ window.showPhotoPreview = async () => {
             </button>
           </div>
         </div>
-      `;
-      return;
+      `
+      return
     }
     
-    const latestPhoto = images[0];
+    const latestPhoto = images[0]
     
     content.innerHTML = `
       <img src="${latestPhoto.file_url}" 
@@ -300,10 +274,10 @@ window.showPhotoPreview = async () => {
           Close
         </button>
       </div>
-    `;
+    `
     
   } catch (error) {
-    console.error('Error loading latest photo:', error);
+    console.error('Error loading latest photo:', error)
     content.innerHTML = `
       <div class="no-photos">
         <h3>😢 Error loading photos</h3>
@@ -314,42 +288,42 @@ window.showPhotoPreview = async () => {
           </button>
         </div>
       </div>
-    `;
+    `
   }
-};
+}
 
 window.closePhotoPreview = (event) => {
   // Only close if clicking on the backdrop, not the content
-  if (event && event.target !== event.currentTarget) return;
+  if (event && event.target !== event.currentTarget) return
   
-  document.getElementById('photo-preview-popup').classList.remove('show');
-};
+  document.getElementById('photo-preview-popup').classList.remove('show')
+}
 
 window.openImageModal = (imageUrl) => {
-  document.getElementById('modal-image').src = imageUrl;
-  document.getElementById('image-modal').classList.add('show');
-};
+  document.getElementById('modal-image').src = imageUrl
+  document.getElementById('image-modal').classList.add('show')
+}
 
 window.closeImageModal = () => {
-  document.getElementById('image-modal').classList.remove('show');
-};
+  document.getElementById('image-modal').classList.remove('show')
+}
 
-// BOING SETUP - Updated to use database
+// APP SETUP
 async function setupApp() {
-  const emoji = document.getElementById("emoji");
-  const boing = document.getElementById("boing");
-  const counterSpan = document.getElementById("todayCount");
+  const emoji = document.getElementById("emoji")
+  const boing = document.getElementById("boing")
+  const counterSpan = document.getElementById("todayCount")
 
   // Load today's count from database
   let todayCount = await getTodaysBoings()
   
   function updateCounter() {
-    counterSpan.textContent = todayCount;
+    counterSpan.textContent = todayCount
   }
 
   emoji.addEventListener("pointerdown", async () => {
-    boing.currentTime = 0;
-    boing.play();
+    boing.currentTime = 0
+    boing.play()
     
     // Record boing in database
     const success = await recordBoing()
@@ -357,29 +331,27 @@ async function setupApp() {
       todayCount++
       updateCounter()
     }
-  });
+  })
 
   // Initial counter update
   updateCounter()
 
   // File input handler (if exists)
-  const input = document.getElementById("imageInput");
+  const input = document.getElementById("imageInput")
   if (input) {
     input.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+      const file = e.target.files[0]
+      if (!file) return
       
-      document.getElementById('file-name').textContent = `🎉 File ready: ${file.name}`;
-      
-      // Upload file to Supabase storage
+      document.getElementById('file-name').textContent = `🎉 File ready: ${file.name}`
       await uploadFile(file)
-    });
+    })
   }
 }
 
 // FILE UPLOAD FUNCTION
 async function uploadFile(file) {
-  if (!currentUser || !file) return;
+  if (!currentUser || !file) return
   
   const fileName = `${currentUser.id}/${Date.now()}-${file.name}`
   
@@ -404,66 +376,63 @@ async function uploadFile(file) {
     
     if (dbError) throw dbError
     
-    document.getElementById('file-name').textContent = `✅ ${file.name} uploaded successfully!`;
+    document.getElementById('file-name').textContent = `✅ ${file.name} uploaded successfully!`
   } catch (error) {
     console.error('Upload error:', error)
-    document.getElementById('file-name').textContent = `❌ Upload failed: ${error.message}`;
+    document.getElementById('file-name').textContent = `❌ Upload failed: ${error.message}`
   }
 }
 
-window.setupApp = setupApp;
-
-// SHOW APP WITH CUSTOM MODAL - Updated to use database
+// SHOW APP WITH MODAL
 window.showApp = async () => {
-  const today = new Date().toISOString().split('T')[0];
-  const lastLogin = await getLastLoginDate();
+  const today = new Date().toISOString().split('T')[0]
+  const lastLogin = await getLastLoginDate()
 
   if (lastLogin !== today) {
-    const yCount = await getYesterdaysBoings();
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const yCount = await getYesterdaysBoings()
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
-    const modal = document.getElementById('boing-modal');
-    const modalContent = document.getElementById('boing-modal-content');
-    const message = document.getElementById('boing-message');
+    const modal = document.getElementById('boing-modal')
+    const modalContent = document.getElementById('boing-modal-content')
+    const message = document.getElementById('boing-message')
 
-    message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`;
-    modal.style.display = 'flex';
+    message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`
+    modal.style.display = 'flex'
 
     requestAnimationFrame(() => {
-      modalContent.style.transform = 'scale(1)';
-      modalContent.style.opacity = '1';
-    });
+      modalContent.style.transform = 'scale(1)'
+      modalContent.style.opacity = '1'
+    })
 
     document.getElementById('boing-ok').onclick = () => {
-      modalContent.style.transform = 'scale(0.9)';
-      modalContent.style.opacity = '0';
+      modalContent.style.transform = 'scale(0.9)'
+      modalContent.style.opacity = '0'
       setTimeout(() => {
-        modal.style.display = 'none';
-      }, 300);
-    };
+        modal.style.display = 'none'
+      }, 300)
+    }
 
-    // Update last login date in database
-    await updateLastLoginDate();
+    await updateLastLoginDate()
   }
 
-  document.getElementById('login-section').style.display = 'none';
-  document.getElementById('app-section').style.display = 'flex';
-  await setupApp();
-};
+  document.getElementById('login-section').style.display = 'none'
+  document.getElementById('app-section').style.display = 'flex'
+  await setupApp()
+}
 
-// MODALS
+// MODAL FUNCTIONS
 window.showPasswordModal = () => {
-  document.getElementById('password-modal').style.display = 'flex';
-};
+  document.getElementById('password-modal').style.display = 'flex'
+}
 
 window.closePasswordModal = () => {
-  document.getElementById('password-modal').style.display = 'none';
-  document.getElementById('password-change-message').textContent = '';
-};
+  document.getElementById('password-modal').style.display = 'none'
+  document.getElementById('password-change-message').textContent = ''
+}
 
-// VIEW BOING HISTORY
+// BOING HISTORY
 window.viewBoingHistory = async () => {
-  if (!currentUser) return;
+  if (!currentUser) return
   
   try {
     const { data, error } = await supabase
@@ -481,7 +450,7 @@ window.viewBoingHistory = async () => {
       history[date] = (history[date] || 0) + 1
     })
     
-    // Display history (you can customize this part)
+    // Display history
     const historyText = Object.entries(history)
       .map(([date, count]) => `${date}: ${count} boing${count === 1 ? '' : 's'}`)
       .join('\n')
@@ -496,13 +465,14 @@ window.viewBoingHistory = async () => {
 // Handle authentication state changes
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
-    currentUser = session.user
-    window.currentUser = session.user  // Set global reference
+    updateCurrentUser(session.user)
   } else if (event === 'SIGNED_OUT') {
-    currentUser = null
-    window.currentUser = null  // Clear global reference
+    updateCurrentUser(null)
   }
 })
 
-// AUTO-LOGIN CHECK
+// Make setupApp available globally
+window.setupApp = setupApp
+
+// Initialize authentication check
 checkAuth()
