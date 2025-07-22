@@ -5,6 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pookie's Home</title>
   <link rel="icon" href="/favicon.ico" />
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="A loving app for Pookie with boings and photo sharing">
+  <meta name="theme-color" content="#a18cd1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pookie's Home">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/pwa_manifest.json">
+  
+  <!-- iOS Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png">
+  
+  <!-- Standard Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192x192.png">
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     html, body {
@@ -155,6 +178,74 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
 
+    /* PWA Install Button */
+    .pwa-install-container {
+      margin-top: 1rem;
+    }
+    
+    .pwa-install-btn {
+      display: none;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.95);
+      color: #a18cd1;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pwa-install-btn:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    
+    .pwa-update-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+      color: #a18cd1;
+      padding: 15px 25px;
+      border-radius: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      gap: 15px;
+      z-index: 1000;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      animation: slideUp 0.3s ease;
+    }
+    
+    .pwa-update-banner.show {
+      display: flex;
+    }
+    
+    .pwa-update-banner button {
+      background: #a18cd1;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .pwa-update-banner .close-btn {
+      background: transparent;
+      color: #a18cd1;
+      border: 1px solid rgba(161, 140, 209, 0.3);
+      margin-left: 5px;
+    }
+
     /* Photo Preview Popup */
     .photo-preview-popup {
       position: fixed;
@@ -186,6 +277,11 @@
     @keyframes popupSlide {
       from { opacity: 0; transform: translateY(-30px) scale(0.9); }
       to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
     .popup-header {
@@ -294,6 +390,18 @@
       height: auto;
       display: block;
     }
+    
+    /* PWA Status Indicator */
+    .pwa-status {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.7);
+      text-shadow: 0 0 2px rgba(0,0,0,0.3);
+      z-index: 50;
+    }
   </style>
 </head>
 <body>
@@ -310,10 +418,18 @@
     <input type="email" id="reset-email" placeholder="Forgot password? Enter your email" />
     <button onclick="resetPassword()">Send Reset Link</button>
     <p id="reset-message"></p>
+    
+    <!-- PWA Install Button for Login Screen -->
+    <div class="pwa-install-container">
+      <button id="pwa-install-btn-login" class="pwa-install-btn">
+        📱 Install App
+      </button>
+    </div>
   </div>
 
   <!-- APP SECTION -->
   <div id="app-section">
+    <div class="pwa-status" id="pwa-status"></div>
     <div id="counter">Boings today: <span id="todayCount">0</span></div>
     <button id="menu-toggle" class="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -322,6 +438,7 @@
       <button onclick="logout()">Logout</button>
       <button onclick="showPasswordModal()">Change Password</button>
       <button onclick="window.open('/gallery.html', '_blank')">Full Gallery</button>
+      <button id="pwa-install-menu" onclick="installPWA()" style="display: none;">📱 Install App</button>
     </nav>
     
     <div id="emoji">🎎</div>
@@ -333,6 +450,13 @@
     <button class="gallery-toggle" onclick="showPhotoPreview()">
       📸 Show Recent Shared Photos
     </button>
+    
+    <!-- PWA Install Button for App Screen -->
+    <div class="pwa-install-container">
+      <button id="pwa-install-btn-app" class="pwa-install-btn">
+        📱 Install App
+      </button>
+    </div>
     
     <div class="history-link">
       <a href="/history.html" target="_blank">📊 View Boing History</a>
@@ -357,6 +481,13 @@
     </div>
     
     <div id="hint">Hint: Increase the audio and tap the emoji for a surprise booboo</div>
+  </div>
+
+  <!-- PWA Update Banner -->
+  <div id="pwa-update-banner" class="pwa-update-banner">
+    <span>🆕 App update available!</span>
+    <button onclick="updatePWA()">Update</button>
+    <button class="close-btn" onclick="hidePWAUpdateBanner()">Later</button>
   </div>
 
   <!-- Photo Preview Popup -->
@@ -394,6 +525,135 @@
   <audio id="boing" src="boing.mp3" preload="auto"></audio>
   <script type="module" src="main.js"></script>
   <script>
+    // PWA Variables
+    let deferredPrompt;
+    let isInstalled = false;
+    
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/service_worker.js');
+          console.log('ServiceWorker registered successfully:', registration);
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showPWAUpdateBanner();
+              }
+            });
+          });
+        } catch (error) {
+          console.log('ServiceWorker registration failed:', error);
+        }
+      });
+    }
+    
+    // PWA Install Prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallButton();
+    });
+    
+    // PWA Install Success
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('PWA was installed');
+      isInstalled = true;
+      hideInstallButton();
+      updatePWAStatus('Installed ✅');
+    });
+    
+    // Check if already installed
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check if running as PWA
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          window.navigator.standalone === true) {
+        isInstalled = true;
+        hideInstallButton();
+        updatePWAStatus('Running as PWA 📱');
+      } else {
+        updatePWAStatus('Web Version 🌐');
+      }
+    });
+    
+    // PWA Functions
+    function showInstallButton() {
+      const installBtns = document.querySelectorAll('.pwa-install-btn');
+      const menuInstallBtn = document.getElementById('pwa-install-menu');
+      
+      installBtns.forEach(btn => {
+        btn.style.display = 'inline-flex';
+        btn.onclick = installPWA;
+      });
+      
+      if (menuInstallBtn) {
+        menuInstallBtn.style.display = 'block';
+      }
+    }
+    
+    function hideInstallButton() {
+      const installBtns = document.querySelectorAll('.pwa-install-btn');
+      const menuInstallBtn = document.getElementById('pwa-install-menu');
+      
+      installBtns.forEach(btn => {
+        btn.style.display = 'none';
+      });
+      
+      if (menuInstallBtn) {
+        menuInstallBtn.style.display = 'none';
+      }
+    }
+    
+    async function installPWA() {
+      if (!deferredPrompt) {
+        alert('PWA installation not available');
+        return;
+      }
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('User accepted PWA install');
+        hideInstallButton();
+      }
+      
+      deferredPrompt = null;
+    }
+    
+    function showPWAUpdateBanner() {
+      document.getElementById('pwa-update-banner').classList.add('show');
+    }
+    
+    function hidePWAUpdateBanner() {
+      document.getElementById('pwa-update-banner').classList.remove('show');
+    }
+    
+    function updatePWA() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then((registration) => {
+          if (registration && registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            registration.waiting.addEventListener('statechange', (e) => {
+              if (e.target.state === 'activated') {
+                window.location.reload();
+              }
+            });
+          }
+        });
+      }
+    }
+    
+    function updatePWAStatus(status) {
+      const statusEl = document.getElementById('pwa-status');
+      if (statusEl) {
+        statusEl.textContent = status;
+      }
+    }
+    
     // Toggle menu
     const toggle = document.getElementById('menu-toggle');
     const menu = document.getElementById('menu');
@@ -521,6 +781,9 @@
     window.closePhotoPreview = closePhotoPreview;
     window.openImageModal = openImageModal;
     window.closeImageModal = closeImageModal;
+    window.installPWA = installPWA;
+    window.updatePWA = updatePWA;
+    window.hidePWAUpdateBanner = hidePWAUpdateBanner;
   </script>
 </body>
 </html>
