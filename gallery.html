@@ -237,6 +237,11 @@
       font-weight: 600;
     }
 
+    .email-tag.autoreceiver {
+      background: rgba(255, 215, 0, 0.3);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+    }
+
     .email-tag .remove-tag {
       cursor: pointer;
       width: 16px;
@@ -252,6 +257,21 @@
 
     .email-tag .remove-tag:hover {
       background: rgba(255,0,0,0.5);
+    }
+
+    .autoreceiver-info {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 10px;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.9);
+      display: none;
+    }
+
+    .autoreceiver-info.show {
+      display: block;
     }
 
     .images-section {
@@ -473,11 +493,14 @@
         
         <div class="share-controls">
           <div class="form-group">
-            <label>Choose emails to send this to (me ofc):</label>
+            <label>Choose emails to send this to:</label>
             <div class="autocomplete-container">
               <div class="email-tags" id="email-tags"></div>
               <input type="text" id="share-emails" placeholder="Start typing an email..." autocomplete="off">
               <div class="autocomplete-suggestions" id="autocomplete-suggestions"></div>
+            </div>
+            <div id="autoreceiver-info" class="autoreceiver-info">
+              <strong>💡 Auto-receiver:</strong> <span id="autoreceiver-email-display"></span> will be automatically added to all shares
             </div>
           </div>
           <button class="btn btn-primary" onclick="uploadAndShare()" id="upload-btn">
@@ -526,6 +549,7 @@
     let selectedEmails = []
     let allUsers = []
     let currentSuggestionIndex = -1
+    let autoreceiverEmail = null
 
     // Utility functions
     function showStatus(message, type, showSpinner = false) {
@@ -563,6 +587,7 @@
       currentUser = user
       document.getElementById('user-email').textContent = user.email
       await fetchUsers()
+      await loadUserSettings()
       setupAutocomplete()
       loadImages()
     }
@@ -572,7 +597,7 @@
       window.location.href = '/'
     }
 
-    // User management
+    // User management and settings
     async function fetchUsers() {
       try {
         const { data, error } = await supabase
@@ -588,6 +613,40 @@
       }
     }
 
+    async function loadUserSettings() {
+      if (!currentUser) return
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('autoreceiver_email')
+          .eq('id', currentUser.id)
+          .single()
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading user settings:', error)
+          return
+        }
+        
+        autoreceiverEmail = data?.autoreceiver_email || null
+        
+        // Show autoreceiver info if exists
+        if (autoreceiverEmail) {
+          document.getElementById('autoreceiver-email-display').textContent = autoreceiverEmail
+          document.getElementById('autoreceiver-info').classList.add('show')
+          
+          // Auto-add autoreceiver to selected emails if not already added
+          if (!selectedEmails.includes(autoreceiverEmail)) {
+            selectedEmails.push(autoreceiverEmail)
+            updateEmailTags()
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error loading user settings:', error)
+      }
+    }
+
     // Upload functionality
     async function uploadAndShare() {
       const fileInput = document.getElementById('image-input')
@@ -598,6 +657,12 @@
         return
       }
       
+      // Ensure autoreceiver is included if set
+      let emailsToShare = [...selectedEmails]
+      if (autoreceiverEmail && !emailsToShare.includes(autoreceiverEmail)) {
+        emailsToShare.push(autoreceiverEmail)
+      }
+      
       setButtonLoading('upload-btn', true, 'Uploading...')
       
       try {
@@ -605,7 +670,7 @@
           const file = files[i]
           showStatus(`Uploading image ${i + 1} of ${files.length}: ${file.name}`, 'info', true)
           
-          await uploadSingleImage(file, selectedEmails)
+          await uploadSingleImage(file, emailsToShare)
           
           showStatus(`✅ Image uploaded: ${file.name}`, 'success')
           await new Promise(resolve => setTimeout(resolve, 1000)) // Brief pause to show success
@@ -658,6 +723,12 @@
     function resetUploadForm() {
       document.getElementById('image-input').value = ''
       clearSelectedEmails()
+      
+      // Re-add autoreceiver if set
+      if (autoreceiverEmail) {
+        selectedEmails.push(autoreceiverEmail)
+        updateEmailTags()
+      }
     }
 
     // Image loading and display
@@ -797,7 +868,11 @@
           break
         case 'Backspace':
           if (e.target.value === '' && selectedEmails.length > 0) {
-            removeEmailTag(selectedEmails[selectedEmails.length - 1])
+            // Don't allow removing autoreceiver via backspace
+            const lastEmail = selectedEmails[selectedEmails.length - 1]
+            if (lastEmail !== autoreceiverEmail) {
+              removeEmailTag(lastEmail)
+            }
           }
           break
       }
