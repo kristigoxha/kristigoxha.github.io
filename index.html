@@ -779,13 +779,79 @@
   <!-- Minimal inline script - main logic is in main.js -->
   <script>
     // Toggle menu functionality
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggle = document.getElementById('menu-toggle');
-      const menu = document.getElementById('menu');
-      if (toggle && menu) {
-        toggle.addEventListener('click', () => menu.classList.toggle('open'));
+  // Safari-compatible hamburger menu JavaScript
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    
+    if (toggle && menu) {
+      // Multiple event listeners for better Safari compatibility
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+      });
+      
+      // Touch events for iOS Safari
+      toggle.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+          closeMenu();
+        }
+      });
+      
+      // Close menu on escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMenu();
+        }
+      });
+    }
+    
+    function toggleMenu() {
+      if (menu.classList.contains('open')) {
+        closeMenu();
+      } else {
+        openMenu();
       }
-    });
+    }
+    
+    function openMenu() {
+      menu.classList.add('open');
+      // Force reflow for Safari
+      menu.offsetHeight;
+    }
+    
+    function closeMenu() {
+      menu.classList.remove('open');
+    }
+    
+    // Global functions for menu items
+    window.toggleMenu = toggleMenu;
+    window.closeMenu = closeMenu;
+  });
+  
+  // Additional Safari debugging function
+  function debugSafariMenu() {
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    
+    console.log('Toggle element:', toggle);
+    console.log('Menu element:', menu);
+    console.log('Toggle computed style:', window.getComputedStyle(toggle));
+    console.log('Menu computed style:', window.getComputedStyle(menu));
+    
+    if (toggle) {
+      console.log('Toggle display:', window.getComputedStyle(toggle).display);
+      console.log('Toggle visibility:', window.getComputedStyle(toggle).visibility);
+    }
+  }
   </script>
   
   <script type="module" src="main.js"></script>
