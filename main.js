@@ -1,16 +1,20 @@
 // SUPABASE CONFIGURATION
 const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
+
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 window.supabase = supabase
+
 // Global user state
 let currentUser = null
+
 // Utility function to update global user reference
 function updateCurrentUser(user) {
   currentUser = user
   window.currentUser = user
 }
+
 // Check authentication status on page load
 async function checkAuth() {
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,6 +23,7 @@ async function checkAuth() {
     window.showApp()
   }
 }
+
 // AUTHENTICATION FUNCTIONS
 window.register = async () => {
   try {
@@ -42,6 +47,7 @@ window.register = async () => {
     document.getElementById('login-message').textContent = '❌ ' + error.message
   }
 }
+
 window.login = async () => {
   try {
     const email = document.getElementById('email').value
@@ -56,6 +62,7 @@ window.login = async () => {
     document.getElementById('login-message').textContent = '❌ ' + error.message
   }
 }
+
 window.logout = async () => {
   try {
     await supabase.auth.signOut()
@@ -67,6 +74,7 @@ window.logout = async () => {
     location.reload()
   }
 }
+
 window.resetPassword = async () => {
   const email = document.getElementById('reset-email').value
   const msgEl = document.getElementById('reset-message')
@@ -90,6 +98,7 @@ window.resetPassword = async () => {
     msgEl.textContent = '❌ ' + error.message
   }
 }
+
 window.changePassword = async () => {
   if (!currentUser) {
     alert("Not logged in")
@@ -109,6 +118,178 @@ window.changePassword = async () => {
     document.getElementById('password-change-message').textContent = '❌ ' + error.message
   }
 }
+
+// SETTINGS FUNCTIONS
+window.showSettingsModal = async () => {
+  const modal = document.getElementById('settings-modal')
+  if (!modal) return
+  
+  modal.classList.add('show')
+  
+  // Load current settings
+  await loadCurrentSettings()
+}
+
+window.closeSettingsModal = (event) => {
+  // Only close if clicking on the backdrop or close button
+  if (event && event.target !== event.currentTarget && !event.target.matches('.settings-btn-secondary')) return
+  
+  const modal = document.getElementById('settings-modal')
+  if (modal) {
+    modal.classList.remove('show')
+    clearSettingsForm()
+  }
+}
+
+async function loadCurrentSettings() {
+  if (!currentUser) return
+  
+  try {
+    // Load current username and autoreceiver from profiles table
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('username, autoreceiver_email')
+      .eq('id', currentUser.id)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error loading settings:', error)
+      return
+    }
+    
+    const currentUsername = data?.username || currentUser.email.split('@')[0]
+    const autoreceiverEmail = data?.autoreceiver_email
+    
+    // Update display
+    document.getElementById('current-username-text').textContent = currentUsername
+    document.getElementById('new-username').value = ''
+    document.getElementById('autoreceiver-email').value = ''
+    
+    // Show current autoreceiver if exists
+    if (autoreceiverEmail) {
+      document.getElementById('current-autoreceiver').style.display = 'block'
+      document.getElementById('autoreceiver-tag-container').innerHTML = `
+        <div class="autoreceiver-tag">
+          ${autoreceiverEmail}
+          <span class="remove-autoreceiver" onclick="removeAutoreceiver()">×</span>
+        </div>
+      `
+    } else {
+      document.getElementById('current-autoreceiver').style.display = 'none'
+    }
+    
+  } catch (error) {
+    console.error('Error loading current settings:', error)
+  }
+}
+
+window.saveSettings = async () => {
+  if (!currentUser) {
+    showSettingsMessage('❌ Not logged in', 'error')
+    return
+  }
+  
+  const newUsername = document.getElementById('new-username').value.trim()
+  const autoreceiverEmail = document.getElementById('autoreceiver-email').value.trim()
+  
+  // Validate inputs
+  if (newUsername && newUsername.length < 2) {
+    showSettingsMessage('❌ Username must be at least 2 characters', 'error')
+    return
+  }
+  
+  if (autoreceiverEmail && !validateEmail(autoreceiverEmail)) {
+    showSettingsMessage('❌ Please enter a valid email address', 'error')
+    return
+  }
+  
+  try {
+    const updates = {}
+    
+    if (newUsername) {
+      updates.username = newUsername
+    }
+    
+    if (autoreceiverEmail) {
+      updates.autoreceiver_email = autoreceiverEmail
+    }
+    
+    if (Object.keys(updates).length === 0) {
+      showSettingsMessage('❌ No changes to save', 'error')
+      return
+    }
+    
+    // Update profiles table
+    const { error } = await supabase
+      .from('profiles')
+      .upsert([{ 
+        id: currentUser.id,
+        ...updates
+      }])
+    
+    if (error) throw error
+    
+    showSettingsMessage('✅ Settings saved successfully!', 'success')
+    
+    // Reload current settings to show updates
+    setTimeout(() => {
+      loadCurrentSettings()
+      clearSettingsForm()
+    }, 1500)
+    
+  } catch (error) {
+    console.error('Error saving settings:', error)
+    showSettingsMessage('❌ Error saving settings: ' + error.message, 'error')
+  }
+}
+
+window.removeAutoreceiver = async () => {
+  if (!currentUser) return
+  
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ autoreceiver_email: null })
+      .eq('id', currentUser.id)
+    
+    if (error) throw error
+    
+    showSettingsMessage('✅ Auto-receiver removed', 'success')
+    
+    // Hide autoreceiver display
+    document.getElementById('current-autoreceiver').style.display = 'none'
+    
+  } catch (error) {
+    console.error('Error removing autoreceiver:', error)
+    showSettingsMessage('❌ Error removing auto-receiver', 'error')
+  }
+}
+
+function showSettingsMessage(message, type) {
+  const messageEl = document.getElementById('settings-message')
+  if (messageEl) {
+    messageEl.textContent = message
+    messageEl.style.color = type === 'error' ? '#dc3545' : '#28a745'
+    
+    // Clear message after 3 seconds if it's not an error
+    if (type !== 'error') {
+      setTimeout(() => {
+        messageEl.textContent = ''
+      }, 3000)
+    }
+  }
+}
+
+function clearSettingsForm() {
+  document.getElementById('new-username').value = ''
+  document.getElementById('autoreceiver-email').value = ''
+  document.getElementById('settings-message').textContent = ''
+}
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 // DATABASE FUNCTIONS
 async function getTodaysBoings() {
   if (!currentUser) return 0
@@ -129,6 +310,7 @@ async function getTodaysBoings() {
     return 0
   }
 }
+
 async function getYesterdaysBoings() {
   if (!currentUser) return 0
   
@@ -148,6 +330,7 @@ async function getYesterdaysBoings() {
     return 0
   }
 }
+
 async function recordBoing() {
   if (!currentUser) return false
   
@@ -163,6 +346,7 @@ async function recordBoing() {
     return false
   }
 }
+
 async function getLastLoginDate() {
   if (!currentUser) return null
   
@@ -180,6 +364,7 @@ async function getLastLoginDate() {
     return null
   }
 }
+
 async function updateLastLoginDate() {
   if (!currentUser) return
   
@@ -198,6 +383,7 @@ async function updateLastLoginDate() {
     console.error('Error updating last login date:', error)
   }
 }
+
 // PHOTO PREVIEW FUNCTIONALITY
 window.showPhotoPreview = async () => {
   if (!currentUser) {
@@ -276,30 +462,36 @@ window.showPhotoPreview = async () => {
     `
   }
 }
+
 window.closePhotoPreview = (event) => {
   // Only close if clicking on the backdrop, not the content
   if (event && event.target !== event.currentTarget) return
   
   document.getElementById('photo-preview-popup').classList.remove('show')
 }
+
 window.openImageModal = (imageUrl) => {
   document.getElementById('modal-image').src = imageUrl
   document.getElementById('image-modal').classList.add('show')
 }
+
 window.closeImageModal = () => {
   document.getElementById('image-modal').classList.remove('show')
 }
+
 // APP SETUP
 async function setupApp() {
   const emoji = document.getElementById("emoji")
   const boing = document.getElementById("boing")
   const counterSpan = document.getElementById("todayCount")
+
   // Load today's count from database
   let todayCount = await getTodaysBoings()
   
   function updateCounter() {
     counterSpan.textContent = todayCount
   }
+
   emoji.addEventListener("pointerdown", async () => {
     boing.currentTime = 0
     boing.play()
@@ -311,8 +503,10 @@ async function setupApp() {
       updateCounter()
     }
   })
+
   // Initial counter update
   updateCounter()
+
   // File input handler (if exists)
   const input = document.getElementById("imageInput")
   if (input) {
@@ -325,6 +519,7 @@ async function setupApp() {
     })
   }
 }
+
 // FILE UPLOAD FUNCTION
 async function uploadFile(file) {
   if (!currentUser || !file) return
@@ -358,22 +553,28 @@ async function uploadFile(file) {
     document.getElementById('file-name').textContent = `❌ Upload failed: ${error.message}`
   }
 }
+
 // SHOW APP WITH MODAL
 window.showApp = async () => {
   const today = new Date().toLocaleDateString('en-CA')
   const lastLogin = await getLastLoginDate()
+
   if (lastLogin !== today) {
     const yCount = await getYesterdaysBoings()
     const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA')
+
     const modal = document.getElementById('boing-modal')
     const modalContent = document.getElementById('boing-modal-content')
     const message = document.getElementById('boing-message')
+
     message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`
+
     modal.style.display = 'flex'
     requestAnimationFrame(() => {
       modalContent.style.transform = 'scale(1)'
       modalContent.style.opacity = '1'
     })
+
     document.getElementById('boing-ok').onclick = () => {
       modalContent.style.transform = 'scale(0.9)'
       modalContent.style.opacity = '0'
@@ -381,20 +582,25 @@ window.showApp = async () => {
         modal.style.display = 'none'
       }, 300)
     }
+
     await updateLastLoginDate()
   }
+
   document.getElementById('login-section').style.display = 'none'
   document.getElementById('app-section').style.display = 'flex'
   await setupApp()
 }
+
 // MODAL FUNCTIONS
 window.showPasswordModal = () => {
   document.getElementById('password-modal').style.display = 'flex'
 }
+
 window.closePasswordModal = () => {
   document.getElementById('password-modal').style.display = 'none'
   document.getElementById('password-change-message').textContent = ''
 }
+
 // BOING HISTORY
 window.viewBoingHistory = async () => {
   if (!currentUser) return
@@ -426,6 +632,7 @@ window.viewBoingHistory = async () => {
     alert('Error loading boing history')
   }
 }
+
 // Handle authentication state changes
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
@@ -434,7 +641,9 @@ supabase.auth.onAuthStateChange((event, session) => {
     updateCurrentUser(null)
   }
 })
+
 // Make setupApp available globally
 window.setupApp = setupApp
+
 // Initialize authentication check
 checkAuth()
