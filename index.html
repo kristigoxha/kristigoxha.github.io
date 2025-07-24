@@ -384,6 +384,161 @@
       height: auto;
       display: block;
     }
+
+    /* Settings Modal */
+    .settings-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .settings-modal.show {
+      display: flex;
+    }
+
+    .settings-modal-content {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #333;
+      animation: popupSlide 0.3s ease;
+    }
+
+    .settings-header {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      text-align: center;
+      color: #a18cd1;
+    }
+
+    .settings-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: rgba(161, 140, 209, 0.1);
+      border-radius: 15px;
+      border: 1px solid rgba(161, 140, 209, 0.2);
+    }
+
+    .settings-section h3 {
+      margin: 0 0 15px 0;
+      color: #a18cd1;
+      font-size: 1.2rem;
+    }
+
+    .settings-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid rgba(161, 140, 209, 0.3);
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      color: #333;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: #a18cd1;
+    }
+
+    .settings-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .settings-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .settings-btn-primary {
+      background: linear-gradient(45deg, #a18cd1, #d4a5e8);
+      color: white;
+    }
+
+    .settings-btn-secondary {
+      background: rgba(161, 140, 209, 0.2);
+      color: #a18cd1;
+      border: 2px solid rgba(161, 140, 209, 0.3);
+    }
+
+    .settings-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .autoreceiver-display {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(161, 140, 209, 0.1);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .autoreceiver-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #a18cd1;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+
+    .remove-autoreceiver {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: background-color 0.2s ease;
+    }
+
+    .remove-autoreceiver:hover {
+      background: rgba(255,0,0,0.5);
+    }
+
+    .current-username {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: rgba(40, 167, 69, 0.1);
+      border-radius: 8px;
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .settings-note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 10px;
+      font-style: italic;
+    }
     
     /* PWA Status Indicator */
     .pwa-status {
@@ -422,10 +577,11 @@
       <span></span><span></span><span></span>
     </button>
     <nav id="menu">
-      <button onclick="logout()">Logout</button>
-      <button onclick="showPasswordModal()">Change Password</button>
-      <button onclick="window.open('/gallery.html', '_blank')">Full Gallery</button>
+      <button onclick="showSettingsModal()">⚙️ Settings</button>
+      <button onclick="showPasswordModal()">🔒 Change Password</button>
+      <button onclick="window.open('/gallery.html', '_blank')">🖼️ Full Gallery</button>
       <button id="pwa-install-menu" class="pwa-install-menu-btn" onclick="installPWA()">📱 Install App</button>
+      <button onclick="logout()">👋 Logout</button>
     </nav>
     
     <div id="emoji">🎎</div>
@@ -457,6 +613,41 @@
           <button onclick="closePasswordModal()">Cancel</button>
         </div>
         <p id="password-change-message"></p>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="settings-modal" onclick="closeSettingsModal(event)">
+      <div class="settings-modal-content" onclick="event.stopPropagation()">
+        <div class="settings-header">⚙️ Settings</div>
+        
+        <div class="settings-section">
+          <h3>👤 Username</h3>
+          <div id="current-username-display" class="current-username">
+            Current: <span id="current-username-text">Loading...</span>
+          </div>
+          <input type="text" id="new-username" class="settings-input" placeholder="Enter new username">
+          <div class="settings-note">Your username will be displayed when sharing photos</div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>📧 Auto-receiver</h3>
+          <div class="settings-note" style="margin-bottom: 15px;">
+            Set an email that will automatically be added to all your photo shares
+          </div>
+          <input type="email" id="autoreceiver-email" class="settings-input" placeholder="Enter email address">
+          <div id="current-autoreceiver" class="autoreceiver-display" style="display: none;">
+            <strong>Current auto-receiver:</strong>
+            <div id="autoreceiver-tag-container" style="margin-top: 8px;"></div>
+          </div>
+        </div>
+        
+        <div class="settings-buttons">
+          <button class="settings-btn settings-btn-primary" onclick="saveSettings()">💾 Save Changes</button>
+          <button class="settings-btn settings-btn-secondary" onclick="closeSettingsModal()">❌ Cancel</button>
+        </div>
+        
+        <div id="settings-message" style="margin-top: 15px; text-align: center; font-weight: 600;"></div>
       </div>
     </div>
     
