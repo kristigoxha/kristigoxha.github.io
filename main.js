@@ -149,7 +149,7 @@ async function loadCurrentSettings() {
     const { data, error } = await supabase
       .from('profiles')
       .select('username, autoreceiver_email')
-      .eq('id', currentUser.id)
+      .eq('id', currentUser.id) // Using 'id' to match auth.users(id)
       .single()
     
     if (error && error.code !== 'PGRST116') {
@@ -219,13 +219,15 @@ window.saveSettings = async () => {
       return
     }
     
-    // Update profiles table
+    // Update profiles table using upsert to handle both insert and update
     const { error } = await supabase
       .from('profiles')
       .upsert([{ 
-        id: currentUser.id,
+        id: currentUser.id, // This matches auth.users(id)
         ...updates
-      }])
+      }], {
+        onConflict: 'id'
+      })
     
     if (error) throw error
     
@@ -250,7 +252,7 @@ window.removeAutoreceiver = async () => {
     const { error } = await supabase
       .from('profiles')
       .update({ autoreceiver_email: null })
-      .eq('id', currentUser.id)
+      .eq('id', currentUser.id) // Using 'id' to match auth.users(id)
     
     if (error) throw error
     
@@ -354,7 +356,7 @@ async function getLastLoginDate() {
     const { data, error } = await supabase
       .from('profiles')
       .select('last_login_date')
-      .eq('id', currentUser.id)
+      .eq('id', currentUser.id) // Using 'id' to match auth.users(id)
       .single()
     
     if (error && error.code !== 'PGRST116') throw error
@@ -374,9 +376,11 @@ async function updateLastLoginDate() {
     const { error } = await supabase
       .from('profiles')
       .upsert([{ 
-        id: currentUser.id,
+        id: currentUser.id, // Using 'id' to match auth.users(id)
         last_login_date: today
-      }])
+      }], {
+        onConflict: 'id'
+      })
     
     if (error) throw error
   } catch (error) {
