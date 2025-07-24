@@ -86,34 +86,115 @@
       max-width: 40%;
     }
 
+    /* Safari-compatible hamburger menu styles */
     .hamburger {
       position: absolute;
-      top: 10px; right: 10px;
-      width: 24px; height: 18px;
-      background: none; border: none; cursor: pointer;
-      display: flex; flex-direction: column;
+      top: 10px; 
+      right: 10px;
+      width: 24px; 
+      height: 18px;
+      background: none; 
+      border: none; 
+      cursor: pointer;
+      display: -webkit-flex; /* Safari prefix */
+      display: flex;
+      -webkit-flex-direction: column; /* Safari prefix */
+      flex-direction: column;
+      -webkit-justify-content: space-between; /* Safari prefix */
       justify-content: space-between;
-      padding: 0; z-index: 100;
+      padding: 0; 
+      z-index: 100;
+      /* Force hardware acceleration for better Safari performance */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
+    
     .hamburger span {
-      height: 2px; border-radius: 1px; background: white;
+      height: 2px; 
+      border-radius: 1px; 
+      background: white;
+      display: block; /* Ensure spans are block elements */
+      width: 100%; /* Explicitly set width */
+      /* Safari sometimes needs explicit transitions */
+      -webkit-transition: all 0.3s ease;
+      transition: all 0.3s ease;
     }
+    
     #menu {
       position: absolute;
-      top: 36px; right: 10px;
-      display: none; flex-direction: column;
+      top: 36px; 
+      right: 10px;
+      display: none; 
+      -webkit-flex-direction: column; /* Safari prefix */
+      flex-direction: column;
       background: rgba(0,0,0,0.6);
-      border-radius: 6px; overflow: hidden; z-index: 100;
+      border-radius: 6px; 
+      overflow: hidden; 
+      z-index: 100;
+      /* Safari backdrop filter support */
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      /* Minimum width to prevent collapse */
+      min-width: 150px;
+      /* Box shadow for better visibility */
+      -webkit-box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    #menu.open { display: flex; }
+    
+    #menu.open { 
+      display: -webkit-flex; /* Safari prefix */
+      display: flex; 
+    }
+    
     #menu a, #menu button {
-      padding: 6px 10px;
-      color: white; text-decoration: none;
-      font-size: 0.9rem; white-space: nowrap;
-      background: none; border: none; cursor: pointer;
+      padding: 12px 15px; /* Increased padding for better touch targets */
+      color: white; 
+      text-decoration: none;
+      font-size: 0.9rem; 
+      white-space: nowrap;
+      background: none; 
+      border: none; 
+      cursor: pointer;
       text-align: left;
+      width: 100%; /* Full width for better touch targets */
+      box-sizing: border-box;
+      /* Safari hover fix */
+      -webkit-tap-highlight-color: rgba(255,255,255,0.1);
     }
-    #menu a:hover, #menu button:hover { background: rgba(255,255,255,0.1); }
+    
+    #menu a:hover, #menu button:hover { 
+      background: rgba(255,255,255,0.1); 
+    }
+    
+    /* Additional Safari-specific fixes */
+    @supports (-webkit-appearance: none) {
+      .hamburger {
+        /* Additional Safari-only styles if needed */
+        -webkit-appearance: none;
+      }
+      
+      .hamburger span {
+        /* Ensure proper rendering in Safari */
+        position: relative;
+      }
+    }
+    
+    /* iOS Safari specific fixes */
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      .hamburger span {
+        /* Ensure crisp lines on retina displays */
+        height: 2px;
+      }
+    }
+    
+    /* Fix for Safari's aggressive caching */
+    .hamburger:focus {
+      outline: none;
+    }
+    
+    .hamburger:active span {
+      opacity: 0.7;
+    }
 
     #emoji {
       font-size: clamp(80px,20vw,200px);
