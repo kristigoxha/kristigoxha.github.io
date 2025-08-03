@@ -790,8 +790,8 @@
       }
 
       .cookie-character {
-        width: 120px;
-        height: 120px;
+        width: 160px;
+        height: 160px;
         margin: 0 auto 20px;
         position: relative;
         animation: float 3s ease-in-out infinite;
@@ -808,8 +808,8 @@
       }
 
       .character-image {
-        width: 100px;
-        height: 100px;
+        width: 140px;
+        height: 140px;
         border-radius: 50%;
         object-fit: cover;
         border: 4px solid rgba(161, 140, 209, 0.3);
@@ -818,87 +818,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
+        font-size: 3.5rem;
         margin: 0 auto;
-      }
-
-      .cookie-plate {
-        position: absolute;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100px;
-        height: 15px;
-        background: linear-gradient(45deg, #c0c0c0, #e8e8e8);
-        border-radius: 50%;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-      }
-
-      .cookie {
-        position: absolute;
-        top: -8px;
-        background: #d2691e;
-        border-radius: 50%;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      }
-
-      .cookie:nth-child(1) {
-        left: 20px;
-        width: 20px;
-        height: 20px;
-      }
-
-      .cookie:nth-child(2) {
-        left: 45px;
-        width: 18px;
-        height: 18px;
-        top: -10px;
-      }
-
-      .cookie:nth-child(3) {
-        right: 20px;
-        width: 16px;
-        height: 16px;
-        top: -6px;
-      }
-
-      .cookie-chip {
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        background: #654321;
-        border-radius: 50%;
-      }
-
-      .cookie:nth-child(1) .cookie-chip:nth-child(1) {
-        top: 3px;
-        left: 5px;
-      }
-      .cookie:nth-child(1) .cookie-chip:nth-child(2) {
-        top: 8px;
-        right: 4px;
-      }
-      .cookie:nth-child(1) .cookie-chip:nth-child(3) {
-        bottom: 4px;
-        left: 8px;
-      }
-
-      .cookie:nth-child(2) .cookie-chip:nth-child(1) {
-        top: 2px;
-        left: 4px;
-      }
-      .cookie:nth-child(2) .cookie-chip:nth-child(2) {
-        bottom: 3px;
-        right: 3px;
-      }
-
-      .cookie:nth-child(3) .cookie-chip:nth-child(1) {
-        top: 2px;
-        right: 3px;
-      }
-      .cookie:nth-child(3) .cookie-chip:nth-child(2) {
-        bottom: 2px;
-        left: 4px;
       }
 
       .cookie-title {
@@ -1020,7 +941,7 @@
         <div class="cookie-character">
           <!-- Your uploaded image goes here -->
           <img
-            src="Cookie.png"
+            src="cookie.png"
             alt="Friendly guy offering cookies"
             class="character-image"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
@@ -1028,30 +949,14 @@
 
           <!-- Fallback emoji if image fails to load -->
           <div class="character-image" style="display: none">🧑‍🍳</div>
-
-          <div class="cookie-plate">
-            <div class="cookie">
-              <div class="cookie-chip"></div>
-              <div class="cookie-chip"></div>
-              <div class="cookie-chip"></div>
-            </div>
-            <div class="cookie">
-              <div class="cookie-chip"></div>
-              <div class="cookie-chip"></div>
-            </div>
-            <div class="cookie">
-              <div class="cookie-chip"></div>
-              <div class="cookie-chip"></div>
-            </div>
-          </div>
         </div>
 
-        <div class="cookie-title">🍪 Hey there, friend!</div>
+        <div class="cookie-title">🍪 Hi there Pookie!</div>
 
         <div class="cookie-speech">
           <div class="speech-text">
-            "Would you like some fresh-baked cookies? They help us remember your
-            preferences and make your Pookie experience even sweeter! 😊"
+            "Would you like some fresh-baked cookies booboo? They help us
+            remember your preferences and make your experience even sweeter! 😊"
           </div>
         </div>
 
@@ -1066,13 +971,13 @@
             class="cookie-btn cookie-btn-accept"
             onclick="acceptCookies()"
           >
-            🍪 Yes, I'll take some!
+            🍪 Yes boo, I'll take some!
           </button>
           <button
             class="cookie-btn cookie-btn-reject"
             onclick="rejectCookies()"
           >
-            😔 No thanks
+            😔 No doodoo thanks.
           </button>
         </div>
 
