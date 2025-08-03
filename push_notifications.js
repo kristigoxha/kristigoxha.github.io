@@ -3,7 +3,7 @@ class PushNotificationManager {
   constructor(supabase, currentUser) {
     this.supabase = supabase;
     this.currentUser = currentUser;
-    this.publicVapidKey = 'YOUR_VAPID_PUBLIC_KEY'; // You'll need to generate this
+    this.publicVapidKey = 'BHf1R0k7G3nYzOhJbjsNstrxSw5UvbeWqx-sDFdV3q2qlR_Q-ViS1S0CnjLBGVpbK1VGedj742k0VDGk9IoYV_g'; // You'll need to generate this
     this.isSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   }
 
