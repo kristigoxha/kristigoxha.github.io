@@ -18,6 +18,20 @@ const authLimiter = rateLimit({
 
 app.use('/login', authLimiter);
 app.use('/register', authLimiter);
+app.use((req, res, next) => {
+  // Force HTTPS in production
+  if (process.env.NODE_ENV === 'production' && !req.secure && req.get('x-forwarded-proto') !== 'https') {
+    return res.redirect(301, 'https://' + req.get('host') + req.url);
+  }
+  
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  
+  next();
+});
 
 // Where we'll store users on disk
 const USERS_FILE = path.resolve(process.cwd(), 'users.json');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pookie-app-v1';
+const CACHE_NAME = 'pookie-app-v' + new Date().getTime(); // Dynamic versioning
 const urlsToCache = [
   '/',
   '/index.html',
@@ -58,61 +58,32 @@ self.addEventListener('activate', event => {
 self.addEventListener('push', event => {
   console.log('Push received:', event);
   
-  let notificationData = {};
+  const defaultOptions = {
+    title: 'Pookie\'s App',
+    body: 'You have a new notification!',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-72x72.png',
+    vibrate: [100, 50, 100],
+    requireInteraction: false, // Don't force user interaction
+    tag: 'pookie-notification'
+  };
+  
+  let notificationData = defaultOptions;
   
   if (event.data) {
     try {
-      notificationData = event.data.json();
+      const pushData = event.data.json();
+      notificationData = { ...defaultOptions, ...pushData };
     } catch (e) {
-      notificationData = {
-        title: 'Pookie\'s App',
-        body: event.data.text() || 'You have a new notification!',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-72x72.png'
-      };
+      console.error('Failed to parse push data:', e);
     }
-  } else {
-    notificationData = {
-      title: 'Pookie\'s App',
-      body: 'You have a new notification!',
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/icon-72x72.png'
-    };
   }
-
-  const options = {
-    body: notificationData.body || 'You have a new notification!',
-    icon: notificationData.icon || '/icons/icon-192x192.png',
-    badge: notificationData.badge || '/icons/icon-72x72.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: notificationData.primaryKey || 1,
-      url: notificationData.url || '/'
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Open App',
-        icon: '/icons/icon-192x192.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: '/icons/icon-192x192.png'
-      }
-    ],
-    requireInteraction: true,
-    tag: 'pookie-notification'
-  };
-
+  
   event.waitUntil(
-    self.registration.showNotification(
-      notificationData.title || 'Pookie\'s App',
-      options
-    )
+    self.registration.showNotification(notificationData.title, notificationData)
   );
 });
+
 
 // Notification click event
 self.addEventListener('notificationclick', event => {
