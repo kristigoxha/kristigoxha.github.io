@@ -4,10 +4,20 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: 'Too many login attempts, please try again later.'
+});
+
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
 
 // Where we'll store users on disk
 const USERS_FILE = path.resolve(process.cwd(), 'users.json');
@@ -70,13 +80,21 @@ app.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-// ----------------------------------------------------------------------------
-// List users (dev only — never expose in prod)
-// ----------------------------------------------------------------------------
-app.get('/users', (req, res) => {
-  // returns all email keys (no hashes)
-  return res.json(Object.keys(users));
-});
+function validateInput(req, res, next) {
+  const { email, password } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+  
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+  
+  next();
+}
+
+app.use(['/login', '/register'], validateInput);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
