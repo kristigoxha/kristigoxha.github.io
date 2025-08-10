@@ -327,12 +327,12 @@
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
       }
 
-      /* PWA Install Button - Only for hamburger menu */
+      /* PWA Install Button - Always visible in hamburger menu */
       .pwa-install-menu-btn {
-        display: none;
+        display: flex; /* Changed from display: none to always show */
         align-items: center;
         gap: 8px;
-        padding: 6px 10px;
+        padding: 12px 15px;
         color: white;
         text-decoration: none;
         font-size: 0.9rem;
@@ -342,10 +342,24 @@
         cursor: pointer;
         text-align: left;
         width: 100%;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
       }
 
       .pwa-install-menu-btn:hover {
         background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Special styling for iOS devices */
+      .ios-install-btn {
+        background: rgba(0, 122, 255, 0.2) !important;
+        border: 1px solid rgba(0, 122, 255, 0.3) !important;
+        border-radius: 8px !important;
+        margin: 2px 0 !important;
+      }
+
+      .ios-install-btn:hover {
+        background: rgba(0, 122, 255, 0.3) !important;
       }
 
       .pwa-update-banner {
@@ -734,6 +748,79 @@
         z-index: 50;
       }
 
+      /* iOS Installation Instructions Modal */
+      .ios-install-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+      }
+
+      .ios-install-modal.show {
+        display: flex;
+      }
+
+      .ios-install-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: popupSlide 0.3s ease;
+        color: #333;
+      }
+
+      .ios-install-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #a18cd1;
+      }
+
+      .ios-step {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        padding: 12px;
+        background: rgba(161, 140, 209, 0.1);
+        border-radius: 10px;
+        text-align: left;
+      }
+
+      .ios-step-number {
+        background: #a18cd1;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        margin-right: 12px;
+        flex-shrink: 0;
+      }
+
+      .ios-step-text {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .ios-emoji {
+        font-size: 18px;
+        margin: 0 4px;
+      }
+
       /* COOKIE CONSENT STYLES */
       .cookie-overlay {
         position: fixed;
@@ -1024,7 +1111,7 @@
         <button
           id="pwa-install-menu"
           class="pwa-install-menu-btn"
-          onclick="installPWA()"
+          onclick="handlePWAInstall()"
         >
           📱 Install App
         </button>
@@ -1163,6 +1250,55 @@
             id="settings-message"
             style="margin-top: 15px; text-align: center; font-weight: 600"
           ></div>
+        </div>
+      </div>
+
+      <!-- iOS Installation Instructions Modal -->
+      <div
+        id="ios-install-modal"
+        class="ios-install-modal"
+        onclick="closeIOSInstallModal(event)"
+      >
+        <div class="ios-install-content" onclick="event.stopPropagation()">
+          <div class="ios-install-header">📱 Install on iOS</div>
+          
+          <div style="margin-bottom: 20px; color: #666; font-size: 14px;">
+            Follow these steps to add Pookie's app to your home screen:
+          </div>
+
+          <div class="ios-step">
+            <div class="ios-step-number">1</div>
+            <div class="ios-step-text">
+              Tap the <strong>Share</strong> button <span class="ios-emoji">⬆️</span> at the bottom of Safari
+            </div>
+          </div>
+
+          <div class="ios-step">
+            <div class="ios-step-number">2</div>
+            <div class="ios-step-text">
+              Scroll down and tap <strong>"Add to Home Screen"</strong> <span class="ios-emoji">📱</span>
+            </div>
+          </div>
+
+          <div class="ios-step">
+            <div class="ios-step-number">3</div>
+            <div class="ios-step-text">
+              Tap <strong>"Add"</strong> to confirm and create the app icon
+            </div>
+          </div>
+
+          <div style="margin-top: 25px;">
+            <button
+              class="settings-btn settings-btn-primary"
+              onclick="closeIOSInstallModal()"
+            >
+              ✅ Got it!
+            </button>
+          </div>
+
+          <div style="margin-top: 15px; font-size: 12px; color: #888;">
+            The app will appear on your home screen and work like a native app!
+          </div>
         </div>
       </div>
 
@@ -1309,6 +1445,75 @@
       // Initialize cookie consent check on page load
       document.addEventListener("DOMContentLoaded", function () {
         checkCookieConsent();
+      });
+
+      // iOS device detection
+      function isIOSDevice() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      }
+
+      // Check if running in standalone mode (already installed as PWA)
+      function isRunningStandalone() {
+        return window.navigator.standalone === true || 
+               window.matchMedia('(display-mode: standalone)').matches;
+      }
+
+      // Handle PWA installation for different platforms
+      function handlePWAInstall() {
+        // Close the menu first
+        closeMenu();
+        
+        if (isRunningStandalone()) {
+          // Already installed
+          showAlreadyInstalledMessage();
+          return;
+        }
+
+        if (isIOSDevice()) {
+          // Show iOS-specific instructions
+          showIOSInstallModal();
+        } else {
+          // Try standard PWA install prompt
+          if (window.deferredPrompt) {
+            installPWA();
+          } else {
+            showManualInstallInstructions();
+          }
+        }
+      }
+
+      // Show iOS installation modal
+      function showIOSInstallModal() {
+        document.getElementById("ios-install-modal").classList.add("show");
+      }
+
+      // Close iOS installation modal
+      function closeIOSInstallModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        document.getElementById("ios-install-modal").classList.remove("show");
+      }
+
+      // Show message when app is already installed
+      function showAlreadyInstalledMessage() {
+        alert("✅ Pookie's app is already installed on your device!");
+      }
+
+      // Show manual installation instructions for other browsers
+      function showManualInstallInstructions() {
+        const instructions = isIOSDevice() 
+          ? "Tap the Share button (⬆️) at the bottom of Safari, then 'Add to Home Screen'"
+          : "Look for the install prompt in your browser's address bar, or check your browser menu for 'Install' or 'Add to Home Screen' options.";
+        
+        alert(`📱 To install Pookie's app:\n\n${instructions}`);
+      }
+
+      // Update the install button text based on device
+      document.addEventListener("DOMContentLoaded", function () {
+        const installBtn = document.getElementById("pwa-install-menu");
+        if (installBtn && isIOSDevice()) {
+          installBtn.innerHTML = '📱 Install on iPhone';
+          installBtn.classList.add('ios-install-btn');
+        }
       });
     </script>
 
