@@ -17,10 +17,24 @@ function updateCurrentUser(user) {
 
 // Check authentication status on page load
 async function checkAuth() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    updateCurrentUser(user)
-    window.showApp()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Hide loading screen
+    document.getElementById('loading-section').style.display = 'none'
+    
+    if (user) {
+      updateCurrentUser(user)
+      window.showApp()
+    } else {
+      // Show login section if not authenticated
+      document.getElementById('login-section').style.display = 'flex'
+    }
+  } catch (error) {
+    console.error('Auth check error:', error)
+    // Hide loading and show login on error
+    document.getElementById('loading-section').style.display = 'none'
+    document.getElementById('login-section').style.display = 'flex'
   }
 }
 
@@ -57,6 +71,9 @@ window.login = async () => {
     if (error) throw error
     
     updateCurrentUser(data.user)
+    
+    // Hide login section before showing app
+    document.getElementById('login-section').style.display = 'none'
     window.showApp()
   } catch (error) {
     document.getElementById('login-message').textContent = '❌ ' + error.message
@@ -590,6 +607,8 @@ window.showApp = async () => {
     await updateLastLoginDate()
   }
 
+  // Hide loading and login sections, show app
+  document.getElementById('loading-section').style.display = 'none'
   document.getElementById('login-section').style.display = 'none'
   document.getElementById('app-section').style.display = 'flex'
   await setupApp()

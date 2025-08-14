@@ -85,10 +85,59 @@
         box-sizing: border-box;
       }
 
+      /* LOADING SCREEN */
+      #loading-section {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      #loading-emoji {
+        font-size: clamp(80px, 20vw, 200px);
+        margin-bottom: 20px;
+        animation: loadingPulse 2s ease-in-out infinite;
+      }
+
+      #loading-text {
+        font-size: clamp(1rem, 4vw, 1.5rem);
+        color: white;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        font-weight: 600;
+        animation: loadingFade 2s ease-in-out infinite;
+      }
+
+      @keyframes loadingPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      @keyframes loadingFade {
+        0%,
+        100% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
       /* LOGIN */
       #login-section {
         min-height: 100vh;
-        display: flex;
+        display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -1022,6 +1071,12 @@
     </style>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div id="loading-section">
+      <div id="loading-emoji">🎎</div>
+      <div id="loading-text">Loading...</div>
+    </div>
+
     <!-- Cookie Consent Overlay -->
     <div id="cookie-overlay" class="cookie-overlay">
       <div class="cookie-popup">
@@ -1261,22 +1316,24 @@
       >
         <div class="ios-install-content" onclick="event.stopPropagation()">
           <div class="ios-install-header">📱 Install on iOS</div>
-          
-          <div style="margin-bottom: 20px; color: #666; font-size: 14px;">
+
+          <div style="margin-bottom: 20px; color: #666; font-size: 14px">
             Follow these steps to add Pookie's app to your home screen:
           </div>
 
           <div class="ios-step">
             <div class="ios-step-number">1</div>
             <div class="ios-step-text">
-              Tap the <strong>Share</strong> button <span class="ios-emoji">⬆️</span> at the bottom of Safari
+              Tap the <strong>Share</strong> button
+              <span class="ios-emoji">⬆️</span> at the bottom of Safari
             </div>
           </div>
 
           <div class="ios-step">
             <div class="ios-step-number">2</div>
             <div class="ios-step-text">
-              Scroll down and tap <strong>"Add to Home Screen"</strong> <span class="ios-emoji">📱</span>
+              Scroll down and tap <strong>"Add to Home Screen"</strong>
+              <span class="ios-emoji">📱</span>
             </div>
           </div>
 
@@ -1287,7 +1344,7 @@
             </div>
           </div>
 
-          <div style="margin-top: 25px;">
+          <div style="margin-top: 25px">
             <button
               class="settings-btn settings-btn-primary"
               onclick="closeIOSInstallModal()"
@@ -1296,7 +1353,7 @@
             </button>
           </div>
 
-          <div style="margin-top: 15px; font-size: 12px; color: #888;">
+          <div style="margin-top: 15px; font-size: 12px; color: #888">
             The app will appear on your home screen and work like a native app!
           </div>
         </div>
@@ -1454,15 +1511,17 @@
 
       // Check if running in standalone mode (already installed as PWA)
       function isRunningStandalone() {
-        return window.navigator.standalone === true || 
-               window.matchMedia('(display-mode: standalone)').matches;
+        return (
+          window.navigator.standalone === true ||
+          window.matchMedia("(display-mode: standalone)").matches
+        );
       }
 
       // Handle PWA installation for different platforms
       function handlePWAInstall() {
         // Close the menu first
         closeMenu();
-        
+
         if (isRunningStandalone()) {
           // Already installed
           showAlreadyInstalledMessage();
@@ -1500,10 +1559,10 @@
 
       // Show manual installation instructions for other browsers
       function showManualInstallInstructions() {
-        const instructions = isIOSDevice() 
+        const instructions = isIOSDevice()
           ? "Tap the Share button (⬆️) at the bottom of Safari, then 'Add to Home Screen'"
           : "Look for the install prompt in your browser's address bar, or check your browser menu for 'Install' or 'Add to Home Screen' options.";
-        
+
         alert(`📱 To install Pookie's app:\n\n${instructions}`);
       }
 
@@ -1511,8 +1570,8 @@
       document.addEventListener("DOMContentLoaded", function () {
         const installBtn = document.getElementById("pwa-install-menu");
         if (installBtn && isIOSDevice()) {
-          installBtn.innerHTML = '📱 Install on iPhone';
-          installBtn.classList.add('ios-install-btn');
+          installBtn.innerHTML = "📱 Install on iPhone";
+          installBtn.classList.add("ios-install-btn");
         }
       });
     </script>
