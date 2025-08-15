@@ -11,9 +11,8 @@
   padding: var(--spacing-sm);
 }
 
-/* APP SECTION */
+/* APP SECTION - Fixed display conflict */
 #app-section {
-  display: none;
   position: relative;
   min-height: 100vh;
   display: flex;
@@ -21,6 +20,10 @@
   align-items: center;
   justify-content: center;
   padding: 0 var(--spacing-sm);
+}
+
+#app-section.hidden {
+  display: none;
 }
 
 /* COUNTER */
@@ -64,6 +67,12 @@
   user-select: none;
   margin: 0;
   transition: transform var(--transition-fast);
+  /* Ensure touch targets are large enough on mobile */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #emoji:hover {
@@ -98,6 +107,10 @@
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   user-select: none;
   text-decoration: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #gift-box:hover {
@@ -121,6 +134,10 @@
   font-size: 1rem;
   font-weight: 600;
   transition: all var(--transition-medium);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .gallery-toggle:hover {
@@ -145,6 +162,10 @@
   font-size: 0.9rem;
   margin: 0 var(--spacing-sm);
   transition: opacity var(--transition-fast);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px;
 }
 
 .history-link a:hover,
@@ -169,6 +190,10 @@
   z-index: var(--z-menu);
   /* Force hardware acceleration for better Safari performance */
   transform: translateZ(0);
+  /* Ensure touch target is large enough */
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
 }
 
 .hamburger span {
@@ -189,13 +214,14 @@
 }
 
 .hamburger:focus {
-  outline: none;
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }
 
 /* MENU */
 #menu {
   position: absolute;
-  top: 36px;
+  top: 50px;
   right: var(--spacing-sm);
   display: none;
   flex-direction: column;
@@ -204,12 +230,18 @@
   overflow: hidden;
   z-index: var(--z-menu);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   min-width: 150px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all var(--transition-medium);
 }
 
 #menu.open {
   display: flex;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 #menu a,
@@ -227,6 +259,9 @@
   box-sizing: border-box;
   transition: background-color var(--transition-fast);
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 #menu a:hover,
@@ -236,6 +271,49 @@
 
 #menu a:active,
 #menu button:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#menu a:focus,
+#menu button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -2px;
+}
+
+/* PWA UPDATE BANNER */
+.pwa-update-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 15px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 9999;
+  font-size: 14px;
+  animation: slideUp 0.3s ease;
+}
+
+.pwa-update-banner.show {
+  display: flex;
+}
+
+.pwa-update-banner button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 10px;
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.pwa-update-banner .close-btn {
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -261,6 +339,7 @@
   
   #menu {
     right: 5px;
+    top: 50px;
     min-width: 140px;
   }
   
@@ -291,5 +370,38 @@
   #menu button {
     padding: 10px 12px;
     font-size: 0.85rem;
+  }
+  
+  .hamburger {
+    top: 3px;
+    right: 3px;
+  }
+  
+  #menu {
+    right: 3px;
+  }
+}
+
+/* Landscape phone optimization */
+@media (orientation: landscape) and (max-height: 500px) {
+  #emoji {
+    font-size: clamp(40px, 15vw, 100px);
+  }
+  
+  #message {
+    font-size: clamp(1rem, 4vw, 1.8rem);
+    margin-top: 0.5rem;
+  }
+  
+  #gift-box {
+    margin-top: 1rem;
+    padding: 8px 15px;
+    font-size: 0.8rem;
+  }
+  
+  .gallery-toggle {
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
   }
 }

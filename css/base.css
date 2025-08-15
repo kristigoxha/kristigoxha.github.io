@@ -123,6 +123,8 @@ body {
   color: #333;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS safe area support */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Typography */
@@ -165,6 +167,20 @@ input, button, select, textarea {
 input:focus, button:focus, select:focus, textarea:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
+}
+
+/* iOS input zoom prevention */
+@media (max-width: 767px) {
+  input[type="email"],
+  input[type="password"],
+  input[type="text"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
 }
 
 /* Utility Classes */
