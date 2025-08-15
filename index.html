@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pookie's Home</title>
     <link rel="icon" href="/favicon.ico" />
+    
+    <!-- Security -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
-  default-src 'self' https://bcjmlhxuakqqqdjrtntj.supabase.co https://cdn.jsdelivr.net;
-  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https:;
-  font-src 'self' data:;
-  connect-src 'self' https://bcjmlhxuakqqqdjrtntj.supabase.co wss://bcjmlhxuakqqqdjrtntj.supabase.co;
-"
+        default-src 'self' https://bcjmlhxuakqqqdjrtntj.supabase.co https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https:;
+        font-src 'self' data:;
+        connect-src 'self' https://bcjmlhxuakqqqdjrtntj.supabase.co wss://bcjmlhxuakqqqdjrtntj.supabase.co;
+      "
     />
+    
     <!-- PWA Meta Tags -->
-    <meta
-      name="description"
-      content="A loving app for Pookie with boings and photo sharing"
-    />
+    <meta name="description" content="A loving app for Pookie with boings and photo sharing" />
     <meta name="theme-color" content="#a18cd1" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -30,1051 +30,36 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/pwa_manifest.json" />
 
-    <!-- iOS Icons -->
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/icons/icon-192x192.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="152x152"
-      href="/icons/icon-152x152.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="144x144"
-      href="/icons/icon-144x144.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="120x120"
-      href="/icons/icon-128x128.png"
-    />
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192x192.png" />
 
-    <!-- Standard Icons -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="/icons/icon-192x192.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/icons/icon-192x192.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/icons/icon-192x192.png"
-    />
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/animations.css" />
 
+    <!-- External Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: "Segoe UI", sans-serif;
-        background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-        overflow-x: hidden;
-        height: 100%;
-        box-sizing: border-box;
-      }
-
-      /* LOADING SCREEN */
-      #loading-section {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-      }
-
-      #loading-emoji {
-        font-size: clamp(80px, 20vw, 200px);
-        margin-bottom: 20px;
-        animation: loadingPulse 2s ease-in-out infinite;
-      }
-
-      #loading-text {
-        font-size: clamp(1rem, 4vw, 1.5rem);
-        color: white;
-        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        font-weight: 600;
-        animation: loadingFade 2s ease-in-out infinite;
-      }
-
-      @keyframes loadingPulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.1);
-        }
-      }
-
-      @keyframes loadingFade {
-        0%,
-        100% {
-          opacity: 0.7;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-
-      /* LOGIN */
-      #login-section {
-        min-height: 100vh;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-      }
-      input,
-      button {
-        padding: 12px;
-        font-size: 1rem;
-        margin: 5px;
-        border-radius: 8px;
-        border: none;
-        max-width: 90vw;
-        box-sizing: border-box;
-      }
-      #login-message,
-      #reset-message {
-        margin-top: 8px;
-        font-size: 0.9rem;
-        color: white;
-        text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-      }
-
-      /* APP */
-      #app-section {
-        display: none;
-        position: relative;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 0 10px;
-      }
-
-      #counter {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 0.8rem;
-        color: white;
-        text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-      }
-
-      #hint {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        font-size: 0.7rem;
-        color: white;
-        text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-        text-align: right;
-        max-width: 40%;
-      }
-
-      /* Safari-compatible hamburger menu styles */
-      .hamburger {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 24px;
-        height: 18px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        display: -webkit-flex; /* Safari prefix */
-        display: flex;
-        -webkit-flex-direction: column; /* Safari prefix */
-        flex-direction: column;
-        -webkit-justify-content: space-between; /* Safari prefix */
-        justify-content: space-between;
-        padding: 0;
-        z-index: 100;
-        /* Force hardware acceleration for better Safari performance */
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-      }
-
-      .hamburger span {
-        height: 2px;
-        border-radius: 1px;
-        background: white;
-        display: block; /* Ensure spans are block elements */
-        width: 100%; /* Explicitly set width */
-        /* Safari sometimes needs explicit transitions */
-        -webkit-transition: all 0.3s ease;
-        transition: all 0.3s ease;
-      }
-
-      #menu {
-        position: absolute;
-        top: 36px;
-        right: 10px;
-        display: none;
-        -webkit-flex-direction: column; /* Safari prefix */
-        flex-direction: column;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 6px;
-        overflow: hidden;
-        z-index: 100;
-        /* Safari backdrop filter support */
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        /* Minimum width to prevent collapse */
-        min-width: 150px;
-        /* Box shadow for better visibility */
-        -webkit-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      }
-
-      #menu.open {
-        display: -webkit-flex; /* Safari prefix */
-        display: flex;
-      }
-
-      #menu a,
-      #menu button {
-        padding: 12px 15px; /* Increased padding for better touch targets */
-        color: white;
-        text-decoration: none;
-        font-size: 0.9rem;
-        white-space: nowrap;
-        background: none;
-        border: none;
-        cursor: pointer;
-        text-align: left;
-        width: 100%; /* Full width for better touch targets */
-        box-sizing: border-box;
-        /* Safari hover fix */
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
-      }
-
-      #menu a:hover,
-      #menu button:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      /* Additional Safari-specific fixes */
-      @supports (-webkit-appearance: none) {
-        .hamburger {
-          /* Additional Safari-only styles if needed */
-          -webkit-appearance: none;
-        }
-
-        .hamburger span {
-          /* Ensure proper rendering in Safari */
-          position: relative;
-        }
-      }
-
-      /* iOS Safari specific fixes */
-      @media screen and (-webkit-min-device-pixel-ratio: 2) {
-        .hamburger span {
-          /* Ensure crisp lines on retina displays */
-          height: 2px;
-        }
-      }
-
-      /* Fix for Safari's aggressive caching */
-      .hamburger:focus {
-        outline: none;
-      }
-
-      .hamburger:active span {
-        opacity: 0.7;
-      }
-
-      #emoji {
-        font-size: clamp(80px, 20vw, 200px);
-        cursor: pointer;
-        user-select: none;
-        margin: 0;
-      }
-      #message {
-        margin-top: 1rem;
-        font-size: clamp(1.5rem, 5vw, 3rem);
-        font-weight: bold;
-        color: white;
-        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        text-align: center;
-      }
-
-      #gift-box {
-        margin-top: 2rem;
-        display: inline-block;
-        font-size: 1rem;
-        padding: 15px 25px;
-        background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-        border: 2px dashed white;
-        color: white;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        user-select: none;
-        text-decoration: none;
-      }
-      #gift-box:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-      }
-      #gift-box:active {
-        transform: scale(0.97);
-      }
-
-      .history-link {
-        margin-top: 1.5rem;
-      }
-      .history-link a,
-      .gallery-link a {
-        color: white;
-        text-decoration: underline;
-        font-size: 0.9rem;
-        margin: 0 10px;
-      }
-
-      .logout {
-        display: none;
-      }
-
-      /* Gallery Toggle Button */
-      .gallery-toggle {
-        margin-top: 1rem;
-        padding: 12px 24px;
-        background: rgba(255, 255, 255, 0.2);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-      }
-      .gallery-toggle:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      /* PWA Install Button - Always visible in hamburger menu */
-      .pwa-install-menu-btn {
-        display: flex; /* Changed from display: none to always show */
-        align-items: center;
-        gap: 8px;
-        padding: 12px 15px;
-        color: white;
-        text-decoration: none;
-        font-size: 0.9rem;
-        white-space: nowrap;
-        background: none;
-        border: none;
-        cursor: pointer;
-        text-align: left;
-        width: 100%;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .pwa-install-menu-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      /* Special styling for iOS devices */
-      .ios-install-btn {
-        background: rgba(0, 122, 255, 0.2) !important;
-        border: 1px solid rgba(0, 122, 255, 0.3) !important;
-        border-radius: 8px !important;
-        margin: 2px 0 !important;
-      }
-
-      .ios-install-btn:hover {
-        background: rgba(0, 122, 255, 0.3) !important;
-      }
-
-      .pwa-update-banner {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.95);
-        color: #a18cd1;
-        padding: 15px 25px;
-        border-radius: 25px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        display: none;
-        align-items: center;
-        gap: 15px;
-        z-index: 1000;
-        font-weight: 600;
-        backdrop-filter: blur(10px);
-        animation: slideUp 0.3s ease;
-      }
-
-      .pwa-update-banner.show {
-        display: flex;
-      }
-
-      .pwa-update-banner button {
-        background: #a18cd1;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 15px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-
-      .pwa-update-banner .close-btn {
-        background: transparent;
-        color: #a18cd1;
-        border: 1px solid rgba(161, 140, 209, 0.3);
-        margin-left: 5px;
-      }
-
-      /* Photo Preview Popup */
-      .photo-preview-popup {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-
-      .photo-preview-popup.show {
-        display: flex;
-      }
-
-      .popup-content {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 500px;
-        width: 90%;
-        text-align: center;
-        color: white;
-        animation: popupSlide 0.3s ease;
-      }
-
-      @keyframes popupSlide {
-        from {
-          opacity: 0;
-          transform: translateY(-30px) scale(0.9);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateX(-50%) translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-      }
-
-      .popup-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-        text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      }
-
-      .latest-photo {
-        width: 100%;
-        max-height: 250px;
-        object-fit: cover;
-        border-radius: 15px;
-        margin-bottom: 15px;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-      }
-
-      .latest-photo:hover {
-        transform: scale(1.05);
-      }
-
-      .photo-info {
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        opacity: 0.9;
-      }
-
-      .popup-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .popup-btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 25px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .popup-btn-primary {
-        background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-        color: white;
-      }
-
-      .popup-btn-secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-      }
-
-      .popup-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      .no-photos {
-        padding: 40px 20px;
-        text-align: center;
-        opacity: 0.8;
-      }
-
-      /* Spring animation for custom alert */
-      @keyframes spring {
-        0% {
-          transform: scale(1);
-        }
-        25% {
-          transform: scale(1.2);
-        }
-        50% {
-          transform: scale(0.9);
-        }
-        75% {
-          transform: scale(1.1);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      #boing-ok:active {
-        animation: spring 0.4s ease;
-      }
-
-      /* Modal styles */
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-      .modal.show {
-        display: flex;
-      }
-      .modal-content {
-        max-width: 90vw;
-        max-height: 90vh;
-        border-radius: 15px;
-        overflow: hidden;
-      }
-      .modal img {
-        width: 100%;
-        height: auto;
-        display: block;
-      }
-
-      /* Settings Modal */
-      .settings-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-
-      .settings-modal.show {
-        display: flex;
-      }
-
-      .settings-modal-content {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 500px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        color: #333;
-        animation: popupSlide 0.3s ease;
-      }
-
-      .settings-header {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 25px;
-        text-align: center;
-        color: #a18cd1;
-      }
-
-      .settings-section {
-        margin-bottom: 25px;
-        padding: 20px;
-        background: rgba(161, 140, 209, 0.1);
-        border-radius: 15px;
-        border: 1px solid rgba(161, 140, 209, 0.2);
-      }
-
-      .settings-section h3 {
-        margin: 0 0 15px 0;
-        color: #a18cd1;
-        font-size: 1.2rem;
-      }
-
-      .settings-input {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid rgba(161, 140, 209, 0.3);
-        border-radius: 10px;
-        font-size: 16px;
-        background: white;
-        color: #333;
-        box-sizing: border-box;
-        margin-bottom: 10px;
-      }
-
-      .settings-input:focus {
-        outline: none;
-        border-color: #a18cd1;
-      }
-
-      .settings-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 25px;
-      }
-
-      .settings-btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 25px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 600;
-      }
-
-      .settings-btn-primary {
-        background: linear-gradient(45deg, #a18cd1, #d4a5e8);
-        color: white;
-      }
-
-      .settings-btn-secondary {
-        background: rgba(161, 140, 209, 0.2);
-        color: #a18cd1;
-        border: 2px solid rgba(161, 140, 209, 0.3);
-      }
-
-      .settings-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      .autoreceiver-display {
-        margin-top: 10px;
-        padding: 10px;
-        background: rgba(161, 140, 209, 0.1);
-        border-radius: 8px;
-        font-size: 0.9rem;
-      }
-
-      .autoreceiver-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        background: #a18cd1;
-        color: white;
-        border-radius: 20px;
-        font-size: 0.85em;
-        font-weight: 600;
-      }
-
-      .remove-autoreceiver {
-        cursor: pointer;
-        width: 16px;
-        height: 16px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        transition: background-color 0.2s ease;
-      }
-
-      .remove-autoreceiver:hover {
-        background: rgba(255, 0, 0, 0.5);
-      }
-
-      .current-username {
-        margin-bottom: 10px;
-        padding: 10px;
-        background: rgba(40, 167, 69, 0.1);
-        border-radius: 8px;
-        color: #28a745;
-        font-weight: 600;
-      }
-
-      .settings-note {
-        font-size: 0.85rem;
-        color: #666;
-        margin-top: 10px;
-        font-style: italic;
-      }
-
-      /* PWA Status Indicator */
-      .pwa-status {
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.7);
-        text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-        z-index: 50;
-      }
-
-      /* iOS Installation Instructions Modal */
-      .ios-install-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        padding: 20px;
-      }
-
-      .ios-install-modal.show {
-        display: flex;
-      }
-
-      .ios-install-content {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        animation: popupSlide 0.3s ease;
-        color: #333;
-      }
-
-      .ios-install-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: #a18cd1;
-      }
-
-      .ios-step {
-        display: flex;
-        align-items: center;
-        margin: 15px 0;
-        padding: 12px;
-        background: rgba(161, 140, 209, 0.1);
-        border-radius: 10px;
-        text-align: left;
-      }
-
-      .ios-step-number {
-        background: #a18cd1;
-        color: white;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
-        margin-right: 12px;
-        flex-shrink: 0;
-      }
-
-      .ios-step-text {
-        font-size: 14px;
-        line-height: 1.4;
-      }
-
-      .ios-emoji {
-        font-size: 18px;
-        margin: 0 4px;
-      }
-
-      /* COOKIE CONSENT STYLES */
-      .cookie-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        padding: 20px;
-        backdrop-filter: blur(5px);
-      }
-
-      .cookie-overlay.show {
-        display: flex;
-      }
-
-      .cookie-popup {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 25px;
-        padding: 30px;
-        max-width: 500px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: cookieSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 3px solid rgba(161, 140, 209, 0.3);
-      }
-
-      @keyframes cookieSlideIn {
-        from {
-          opacity: 0;
-          transform: translateY(-50px) scale(0.8);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      @keyframes cookieSlideOut {
-        from {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(-50px) scale(0.8);
-        }
-      }
-
-      .cookie-character {
-        width: 160px;
-        height: 160px;
-        margin: 0 auto 20px;
-        position: relative;
-        animation: float 3s ease-in-out infinite;
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-      }
-
-      .character-image {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid rgba(161, 140, 209, 0.3);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        background: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.5rem;
-        margin: 0 auto;
-      }
-
-      .cookie-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: #a18cd1;
-        margin-bottom: 15px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .cookie-speech {
-        background: rgba(161, 140, 209, 0.1);
-        padding: 15px;
-        border-radius: 15px;
-        margin: 20px 0;
-        position: relative;
-        border: 2px dashed rgba(161, 140, 209, 0.3);
-      }
-
-      .cookie-speech::before {
-        content: "";
-        position: absolute;
-        top: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 10px solid rgba(161, 140, 209, 0.1);
-      }
-
-      .speech-text {
-        font-size: 1rem;
-        color: #555;
-        line-height: 1.5;
-        font-style: italic;
-      }
-
-      .cookie-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 25px;
-      }
-
-      .cookie-btn {
-        padding: 12px 25px;
-        border: none;
-        border-radius: 25px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .cookie-btn-accept {
-        background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-        color: white;
-        box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
-      }
-
-      .cookie-btn-reject {
-        background: rgba(161, 140, 209, 0.2);
-        color: #a18cd1;
-        border: 2px solid rgba(161, 140, 209, 0.3);
-      }
-
-      .cookie-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-
-      .cookie-btn:active {
-        transform: translateY(-1px);
-      }
-
-      .cookie-btn::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-      }
-
-      .cookie-btn:active::before {
-        width: 300px;
-        height: 300px;
-      }
-    </style>
   </head>
+  
   <body>
-    <!-- Loading Screen -->
-    <div id="loading-section">
-      <div id="loading-emoji">🎎</div>
-      <div id="loading-text">Loading...</div>
-    </div>
-
     <!-- Cookie Consent Overlay -->
     <div id="cookie-overlay" class="cookie-overlay">
       <div class="cookie-popup">
         <div class="cookie-character">
-          <!-- Your uploaded image goes here -->
           <img
-            src="Cookie.png"
+            src="assets/images/Cookie.png"
             alt="Friendly guy offering cookies"
             class="character-image"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
           />
-
-          <!-- Fallback emoji if image fails to load -->
           <div class="character-image" style="display: none">🧑‍🍳</div>
         </div>
 
@@ -1082,23 +67,31 @@
 
         <div class="cookie-speech">
           <div class="speech-text">
-            "Would you like some freshly baked cookies made with love booboo?"
+            "Would you like some fresh-baked cookies booboo? They help us
+            remember your preferences and make your experience even sweeter! 😊"
           </div>
         </div>
 
+        <div class="cookie-description">
+          We use cookies to enhance your experience, remember your login, and
+          keep track of your precious boing count. No weird tracking stuff, just
+          the good cookies that make the app work better for you!
+        </div>
+
         <div class="cookie-buttons">
-          <button
-            class="cookie-btn cookie-btn-accept"
-            onclick="acceptCookies()"
-          >
+          <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">
             🍪 Yes boo, I'll take some!
           </button>
-          <button
-            class="cookie-btn cookie-btn-reject"
-            onclick="rejectCookies()"
-          >
+          <button class="cookie-btn cookie-btn-reject" onclick="rejectCookies()">
             😔 No doodoo thanks.
           </button>
+        </div>
+
+        <div class="cookie-details">
+          <strong>What we store:</strong> Login sessions, app preferences, and
+          your daily boing achievements.<br />
+          <strong>What we don't:</strong> Sell your data, track you across
+          sites, or share with third parties.
         </div>
       </div>
     </div>
@@ -1112,11 +105,7 @@
         <button onclick="login()">Login</button>
       </div>
       <p id="login-message"></p>
-      <input
-        type="email"
-        id="reset-email"
-        placeholder="Forgot password? Enter your email"
-      />
+      <input type="email" id="reset-email" placeholder="Forgot password? Enter your email" />
       <button onclick="resetPassword()">Send Reset Link</button>
       <p id="reset-message"></p>
     </div>
@@ -1125,20 +114,16 @@
     <div id="app-section">
       <div class="pwa-status" id="pwa-status"></div>
       <div id="counter">Boings today: <span id="todayCount">0</span></div>
+      
       <button id="menu-toggle" class="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
+      
       <nav id="menu">
         <button onclick="showSettingsModal()">⚙️ Settings</button>
         <button onclick="showPasswordModal()">🔒 Change Password</button>
-        <button onclick="window.open('/gallery.html', '_blank')">
-          🖼️ Full Gallery
-        </button>
-        <button
-          id="pwa-install-menu"
-          class="pwa-install-menu-btn"
-          onclick="handlePWAInstall()"
-        >
+        <button onclick="window.open('/gallery.html', '_blank')">🖼️ Full Gallery</button>
+        <button id="pwa-install-menu" class="pwa-install-menu-btn" onclick="handlePWAInstall()">
           📱 Install App
         </button>
         <button onclick="logout()">👋 Logout</button>
@@ -1147,10 +132,9 @@
       <div id="emoji">🎎</div>
       <div id="message">I LOVE YOU POOKIE</div>
 
-      <!-- Updated gift box to redirect to gallery -->
-      <a id="gift-box" href="/gallery.html" target="_blank"
-        >🎁 Upload a surprise for Pookie</a
-      >
+      <a id="gift-box" href="/gallery.html" target="_blank">
+        🎁 Upload a surprise for Pookie
+      </a>
 
       <button class="gallery-toggle" onclick="showPhotoPreview()">
         📸 Show Recent Shared Photos
@@ -1158,176 +142,6 @@
 
       <div class="history-link">
         <a href="/history.html" target="_blank">📊 View Boing History</a>
-      </div>
-
-      <!-- Password Modal -->
-      <div
-        id="password-modal"
-        style="
-          display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          align-items: center;
-          justify-content: center;
-          z-index: 10;
-        "
-      >
-        <div
-          style="
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-          "
-        >
-          <h3>Change Password</h3>
-          <input
-            type="password"
-            id="current-password"
-            placeholder="Current Password"
-            style="width: 100%; margin: 10px 0"
-          />
-          <input
-            type="password"
-            id="new-password"
-            placeholder="New Password"
-            style="width: 100%; margin: 10px 0"
-          />
-          <div style="margin-top: 10px">
-            <button onclick="changePassword()">Submit</button>
-            <button onclick="closePasswordModal()">Cancel</button>
-          </div>
-          <p id="password-change-message"></p>
-        </div>
-      </div>
-
-      <!-- Settings Modal -->
-      <div
-        id="settings-modal"
-        class="settings-modal"
-        onclick="closeSettingsModal(event)"
-      >
-        <div class="settings-modal-content" onclick="event.stopPropagation()">
-          <div class="settings-header">⚙️ Settings</div>
-
-          <div class="settings-section">
-            <h3>👤 Username</h3>
-            <div id="current-username-display" class="current-username">
-              Current: <span id="current-username-text">Loading...</span>
-            </div>
-            <input
-              type="text"
-              id="new-username"
-              class="settings-input"
-              placeholder="Enter new username"
-            />
-            <div class="settings-note">
-              Your username will be displayed when sharing photos
-            </div>
-          </div>
-
-          <div class="settings-section">
-            <h3>📧 Auto-receiver</h3>
-            <div class="settings-note" style="margin-bottom: 15px">
-              Set an email that will automatically be added to all your photo
-              shares
-            </div>
-            <input
-              type="email"
-              id="autoreceiver-email"
-              class="settings-input"
-              placeholder="Enter email address"
-            />
-            <div
-              id="current-autoreceiver"
-              class="autoreceiver-display"
-              style="display: none"
-            >
-              <strong>Current auto-receiver:</strong>
-              <div
-                id="autoreceiver-tag-container"
-                style="margin-top: 8px"
-              ></div>
-            </div>
-          </div>
-
-          <div class="settings-buttons">
-            <button
-              class="settings-btn settings-btn-primary"
-              onclick="saveSettings()"
-            >
-              💾 Save Changes
-            </button>
-            <button
-              class="settings-btn settings-btn-secondary"
-              onclick="closeSettingsModal()"
-            >
-              ❌ Cancel
-            </button>
-          </div>
-
-          <div
-            id="settings-message"
-            style="margin-top: 15px; text-align: center; font-weight: 600"
-          ></div>
-        </div>
-      </div>
-
-      <!-- iOS Installation Instructions Modal -->
-      <div
-        id="ios-install-modal"
-        class="ios-install-modal"
-        onclick="closeIOSInstallModal(event)"
-      >
-        <div class="ios-install-content" onclick="event.stopPropagation()">
-          <div class="ios-install-header">📱 Install on iOS</div>
-
-          <div style="margin-bottom: 20px; color: #666; font-size: 14px">
-            Follow these steps to add Pookie's app to your home screen:
-          </div>
-
-          <div class="ios-step">
-            <div class="ios-step-number">1</div>
-            <div class="ios-step-text">
-              Tap the <strong>Share</strong> button
-              <span class="ios-emoji">⬆️</span> at the bottom of Safari
-            </div>
-          </div>
-
-          <div class="ios-step">
-            <div class="ios-step-number">2</div>
-            <div class="ios-step-text">
-              Scroll down and tap <strong>"Add to Home Screen"</strong>
-              <span class="ios-emoji">📱</span>
-            </div>
-          </div>
-
-          <div class="ios-step">
-            <div class="ios-step-number">3</div>
-            <div class="ios-step-text">
-              Tap <strong>"Add"</strong> to confirm and create the app icon
-            </div>
-          </div>
-
-          <div style="margin-top: 25px">
-            <button
-              class="settings-btn settings-btn-primary"
-              onclick="closeIOSInstallModal()"
-            >
-              ✅ Got it!
-            </button>
-          </div>
-
-          <div style="margin-top: 15px; font-size: 12px; color: #888">
-            The app will appear on your home screen and work like a native app!
-          </div>
-        </div>
       </div>
 
       <div id="hint">
@@ -1342,12 +156,103 @@
       <button class="close-btn" onclick="hidePWAUpdateBanner()">Later</button>
     </div>
 
+    <!-- Password Modal -->
+    <div id="password-modal">
+      <div>
+        <h3>Change Password</h3>
+        <input type="password" id="current-password" placeholder="Current Password" />
+        <input type="password" id="new-password" placeholder="New Password" />
+        <div>
+          <button onclick="changePassword()">Submit</button>
+          <button onclick="closePasswordModal()">Cancel</button>
+        </div>
+        <p id="password-change-message"></p>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="settings-modal" onclick="closeSettingsModal(event)">
+      <div class="settings-modal-content" onclick="event.stopPropagation()">
+        <div class="settings-header">⚙️ Settings</div>
+
+        <div class="settings-section">
+          <h3>👤 Username</h3>
+          <div id="current-username-display" class="current-username">
+            Current: <span id="current-username-text">Loading...</span>
+          </div>
+          <input type="text" id="new-username" class="settings-input" placeholder="Enter new username" />
+          <div class="settings-note">Your username will be displayed when sharing photos</div>
+        </div>
+
+        <div class="settings-section">
+          <h3>📧 Auto-receiver</h3>
+          <div class="settings-note" style="margin-bottom: 15px">
+            Set an email that will automatically be added to all your photo shares
+          </div>
+          <input type="email" id="autoreceiver-email" class="settings-input" placeholder="Enter email address" />
+          <div id="current-autoreceiver" class="autoreceiver-display" style="display: none">
+            <strong>Current auto-receiver:</strong>
+            <div id="autoreceiver-tag-container" style="margin-top: 8px"></div>
+          </div>
+        </div>
+
+        <div class="settings-buttons">
+          <button class="settings-btn settings-btn-primary" onclick="saveSettings()">
+            💾 Save Changes
+          </button>
+          <button class="settings-btn settings-btn-secondary" onclick="closeSettingsModal()">
+            ❌ Cancel
+          </button>
+        </div>
+
+        <div id="settings-message" style="margin-top: 15px; text-align: center; font-weight: 600"></div>
+      </div>
+    </div>
+
+    <!-- iOS Installation Instructions Modal -->
+    <div id="ios-install-modal" class="ios-install-modal" onclick="closeIOSInstallModal(event)">
+      <div class="ios-install-content" onclick="event.stopPropagation()">
+        <div class="ios-install-header">📱 Install on iOS</div>
+        
+        <div style="margin-bottom: 20px; color: #666; font-size: 14px;">
+          Follow these steps to add Pookie's app to your home screen:
+        </div>
+
+        <div class="ios-step">
+          <div class="ios-step-number">1</div>
+          <div class="ios-step-text">
+            Tap the <strong>Share</strong> button <span class="ios-emoji">⬆️</span> at the bottom of Safari
+          </div>
+        </div>
+
+        <div class="ios-step">
+          <div class="ios-step-number">2</div>
+          <div class="ios-step-text">
+            Scroll down and tap <strong>"Add to Home Screen"</strong> <span class="ios-emoji">📱</span>
+          </div>
+        </div>
+
+        <div class="ios-step">
+          <div class="ios-step-number">3</div>
+          <div class="ios-step-text">
+            Tap <strong>"Add"</strong> to confirm and create the app icon
+          </div>
+        </div>
+
+        <div style="margin-top: 25px;">
+          <button class="settings-btn settings-btn-primary" onclick="closeIOSInstallModal()">
+            ✅ Got it!
+          </button>
+        </div>
+
+        <div style="margin-top: 15px; font-size: 12px; color: #888;">
+          The app will appear on your home screen and work like a native app!
+        </div>
+      </div>
+    </div>
+
     <!-- Photo Preview Popup -->
-    <div
-      id="photo-preview-popup"
-      class="photo-preview-popup"
-      onclick="closePhotoPreview(event)"
-    >
+    <div id="photo-preview-popup" class="photo-preview-popup" onclick="closePhotoPreview(event)">
       <div class="popup-content" onclick="event.stopPropagation()">
         <div class="popup-header">💝 Latest Shared Photo</div>
         <div id="photo-preview-content">
@@ -1357,53 +262,11 @@
     </div>
 
     <!-- Custom Boing Modal -->
-    <div
-      id="boing-modal"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-        align-items: center;
-        justify-content: center;
-      "
-    >
-      <div
-        id="boing-modal-content"
-        style="
-          background: white;
-          border-radius: 12px;
-          padding: 20px;
-          width: 90%;
-          max-width: 400px;
-          text-align: center;
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-          transform: scale(0.9);
-          opacity: 0;
-          transition: all 0.3s ease;
-        "
-      >
+    <div id="boing-modal">
+      <div id="boing-modal-content">
         <h3>Your Boings Yesterday</h3>
-        <p id="boing-message" style="font-size: 1.1rem; color: #444"></p>
-        <button
-          id="boing-ok"
-          style="
-            margin-top: 1rem;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background: #a18cd1;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-          "
-        >
-          OK
-        </button>
+        <p id="boing-message"></p>
+        <button id="boing-ok">OK</button>
       </div>
     </div>
 
@@ -1414,223 +277,10 @@
       </div>
     </div>
 
-    <audio id="boing" src="boing.mp3" preload="auto"></audio>
+    <!-- Audio -->
+    <audio id="boing" src="assets/sounds/boing.mp3" preload="auto"></audio>
 
-    <!-- Cookie Consent JavaScript -->
-    <script>
-      // Cookie consent functionality
-      function showCookieConsent() {
-        document.getElementById("cookie-overlay").classList.add("show");
-      }
-
-      function hideCookieConsent() {
-        const overlay = document.getElementById("cookie-overlay");
-        overlay.style.animation = "cookieSlideOut 0.4s ease-in-out";
-        setTimeout(() => {
-          overlay.classList.remove("show");
-          overlay.style.animation = "";
-        }, 400);
-      }
-
-      function acceptCookies() {
-        // Store consent in localStorage
-        localStorage.setItem("cookieConsent", "accepted");
-        hideCookieConsent();
-
-        // Initialize enhanced features (analytics, etc.)
-        console.log("🍪 Cookies accepted! Initializing enhanced features...");
-
-        // You can add your analytics initialization here
-        // initializeAnalytics();
-      }
-
-      function rejectCookies() {
-        // Store rejection in localStorage
-        localStorage.setItem("cookieConsent", "rejected");
-        hideCookieConsent();
-
-        // Run in minimal mode
-        console.log("😔 Cookies rejected. Running in minimal mode...");
-      }
-
-      // Check if consent has already been given
-      function checkCookieConsent() {
-        const consent = localStorage.getItem("cookieConsent");
-        if (consent === "accepted") {
-          // Initialize enhanced features
-          console.log("🍪 Cookies previously accepted");
-          return true;
-        } else if (consent === "rejected") {
-          // Run in minimal mode
-          console.log("😔 Cookies previously rejected");
-          return false;
-        }
-        // If no consent yet, show the popup after a delay
-        setTimeout(showCookieConsent, 2000);
-        return null;
-      }
-
-      // Initialize cookie consent check on page load
-      document.addEventListener("DOMContentLoaded", function () {
-        checkCookieConsent();
-      });
-
-      // iOS device detection
-      function isIOSDevice() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      }
-
-      // Check if running in standalone mode (already installed as PWA)
-      function isRunningStandalone() {
-        return (
-          window.navigator.standalone === true ||
-          window.matchMedia("(display-mode: standalone)").matches
-        );
-      }
-
-      // Handle PWA installation for different platforms
-      function handlePWAInstall() {
-        // Close the menu first
-        closeMenu();
-
-        if (isRunningStandalone()) {
-          // Already installed
-          showAlreadyInstalledMessage();
-          return;
-        }
-
-        if (isIOSDevice()) {
-          // Show iOS-specific instructions
-          showIOSInstallModal();
-        } else {
-          // Try standard PWA install prompt
-          if (window.deferredPrompt) {
-            installPWA();
-          } else {
-            showManualInstallInstructions();
-          }
-        }
-      }
-
-      // Show iOS installation modal
-      function showIOSInstallModal() {
-        document.getElementById("ios-install-modal").classList.add("show");
-      }
-
-      // Close iOS installation modal
-      function closeIOSInstallModal(event) {
-        if (event && event.target !== event.currentTarget) return;
-        document.getElementById("ios-install-modal").classList.remove("show");
-      }
-
-      // Show message when app is already installed
-      function showAlreadyInstalledMessage() {
-        alert("✅ Pookie's app is already installed on your device!");
-      }
-
-      // Show manual installation instructions for other browsers
-      function showManualInstallInstructions() {
-        const instructions = isIOSDevice()
-          ? "Tap the Share button (⬆️) at the bottom of Safari, then 'Add to Home Screen'"
-          : "Look for the install prompt in your browser's address bar, or check your browser menu for 'Install' or 'Add to Home Screen' options.";
-
-        alert(`📱 To install Pookie's app:\n\n${instructions}`);
-      }
-
-      // Update the install button text based on device
-      document.addEventListener("DOMContentLoaded", function () {
-        const installBtn = document.getElementById("pwa-install-menu");
-        if (installBtn && isIOSDevice()) {
-          installBtn.innerHTML = "📱 Install on iPhone";
-          installBtn.classList.add("ios-install-btn");
-        }
-      });
-    </script>
-
-    <!-- Minimal inline script - main logic is in main.js -->
-    <script>
-      // Toggle menu functionality
-      // Safari-compatible hamburger menu JavaScript
-      document.addEventListener("DOMContentLoaded", function () {
-        const toggle = document.getElementById("menu-toggle");
-        const menu = document.getElementById("menu");
-
-        if (toggle && menu) {
-          // Multiple event listeners for better Safari compatibility
-          toggle.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-          });
-
-          // Touch events for iOS Safari
-          toggle.addEventListener("touchend", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-          });
-
-          // Close menu when clicking outside
-          document.addEventListener("click", function (e) {
-            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-              closeMenu();
-            }
-          });
-
-          // Close menu on escape key
-          document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape") {
-              closeMenu();
-            }
-          });
-        }
-
-        function toggleMenu() {
-          if (menu.classList.contains("open")) {
-            closeMenu();
-          } else {
-            openMenu();
-          }
-        }
-
-        function openMenu() {
-          menu.classList.add("open");
-          // Force reflow for Safari
-          menu.offsetHeight;
-        }
-
-        function closeMenu() {
-          menu.classList.remove("open");
-        }
-
-        // Global functions for menu items
-        window.toggleMenu = toggleMenu;
-        window.closeMenu = closeMenu;
-      });
-
-      // Additional Safari debugging function
-      function debugSafariMenu() {
-        const toggle = document.getElementById("menu-toggle");
-        const menu = document.getElementById("menu");
-
-        console.log("Toggle element:", toggle);
-        console.log("Menu element:", menu);
-        console.log("Toggle computed style:", window.getComputedStyle(toggle));
-        console.log("Menu computed style:", window.getComputedStyle(menu));
-
-        if (toggle) {
-          console.log(
-            "Toggle display:",
-            window.getComputedStyle(toggle).display
-          );
-          console.log(
-            "Toggle visibility:",
-            window.getComputedStyle(toggle).visibility
-          );
-        }
-      }
-    </script>
-
-    <script type="module" src="main.js"></script>
+    <!-- JavaScript -->
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>
