@@ -1,0 +1,672 @@
+/* css/responsive.css */
+/* Responsive design and mobile-first styles */
+
+/* ===== MOBILE-FIRST BREAKPOINTS ===== */
+/* xs: 0-479px (phones) */
+/* sm: 480-767px (large phones, small tablets) */
+/* md: 768-1023px (tablets) */
+/* lg: 1024-1199px (small desktops) */
+/* xl: 1200px+ (large desktops) */
+
+/* ===== BASE RESPONSIVE STYLES ===== */
+/* Default styles are mobile-first */
+
+/* Extra Small Devices (phones, up to 479px) */
+@media (max-width: 479px) {
+  :root {
+    --spacing-xs: 3px;
+    --spacing-sm: 6px;
+    --spacing-md: 10px;
+    --spacing-lg: 15px;
+    --spacing-xl: 20px;
+  }
+  
+  html {
+    font-size: 12px;
+  }
+  
+  body {
+    padding: 0;
+  }
+  
+  /* Login Section */
+  #login-section {
+    padding: var(--spacing-sm);
+    min-height: 100vh;
+  }
+  
+  #login-section input,
+  #login-section button {
+    width: 100%;
+    max-width: none;
+    margin: 3px 0;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  /* App Section */
+  #app-section {
+    padding: 0 3px;
+  }
+  
+  /* Counter */
+  #counter {
+    font-size: 0.6rem;
+    top: 3px;
+    left: 3px;
+  }
+  
+  /* Hint */
+  #hint {
+    font-size: 0.5rem;
+    bottom: 3px;
+    right: 3px;
+    max-width: 70%;
+  }
+  
+  /* Main emoji */
+  #emoji {
+    font-size: clamp(50px, 30vw, 120px);
+  }
+  
+  /* Message */
+  #message {
+    font-size: clamp(1rem, 6vw, 2rem);
+    margin-top: 0.5rem;
+  }
+  
+  /* Gift box */
+  #gift-box {
+    padding: 10px 15px;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  /* Gallery toggle */
+  .gallery-toggle {
+    padding: 10px 15px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  
+  /* Menu */
+  .hamburger {
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 15px;
+  }
+  
+  #menu {
+    right: 3px;
+    top: 30px;
+    min-width: 120px;
+  }
+  
+  #menu a,
+  #menu button {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+  
+  /* PWA Status */
+  .pwa-status {
+    font-size: 0.5rem;
+  }
+}
+
+/* Small Devices (large phones, 480px and up) */
+@media (min-width: 480px) and (max-width: 767px) {
+  html {
+    font-size: 13px;
+  }
+  
+  /* Login Section */
+  #login-section input,
+  #login-section button {
+    max-width: 300px;
+  }
+  
+  /* App elements */
+  #counter {
+    font-size: var(--font-size-xs);
+    top: 5px;
+    left: 5px;
+  }
+  
+  #hint {
+    font-size: 0.6rem;
+    bottom: 5px;
+    right: 5px;
+    max-width: 60%;
+  }
+  
+  #emoji {
+    font-size: clamp(60px, 25vw, 150px);
+  }
+  
+  #message {
+    font-size: clamp(1.2rem, 5vw, 2.5rem);
+  }
+  
+  #gift-box {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .gallery-toggle {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  
+  /* Menu */
+  .hamburger {
+    top: 5px;
+    right: 5px;
+  }
+  
+  #menu {
+    right: 5px;
+    min-width: 140px;
+  }
+  
+  #menu a,
+  #menu button {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Medium Devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  html {
+    font-size: 14px;
+  }
+  
+  /* Login Section */
+  #login-section {
+    padding: var(--spacing-md);
+  }
+  
+  #login-section input,
+  #login-section button {
+    max-width: 350px;
+  }
+  
+  /* App Section */
+  #app-section {
+    padding: 0 var(--spacing-md);
+  }
+  
+  #emoji {
+    font-size: clamp(80px, 18vw, 180px);
+  }
+  
+  #message {
+    font-size: clamp(1.5rem, 4vw, 2.8rem);
+  }
+  
+  #gift-box {
+    padding: 15px 25px;
+    font-size: 1rem;
+  }
+  
+  .gallery-toggle {
+    padding: 15px 25px;
+    font-size: 1rem;
+  }
+  
+  /* Menu remains standard size */
+  #menu {
+    min-width: 150px;
+  }
+}
+
+/* Large Devices (desktops, 1024px and up) */
+@media (min-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+  
+  /* Login Section */
+  #login-section input,
+  #login-section button {
+    max-width: 400px;
+  }
+  
+  #emoji {
+    font-size: clamp(100px, 15vw, 220px);
+  }
+  
+  #message {
+    font-size: clamp(2rem, 3vw, 3.5rem);
+  }
+  
+  /* Hover effects only on larger screens */
+  #emoji:hover {
+    transform: scale(1.05);
+  }
+  
+  #gift-box:hover {
+    transform: scale(1.05);
+  }
+  
+  .gallery-toggle:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Extra Large Devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  html {
+    font-size: 16px;
+  }
+  
+  #emoji {
+    font-size: clamp(120px, 12vw, 250px);
+  }
+  
+  #message {
+    font-size: clamp(2.5rem, 2.5vw, 4rem);
+  }
+}
+
+/* ===== MODAL RESPONSIVENESS ===== */
+@media (max-width: 479px) {
+  .modal {
+    padding: var(--spacing-xs);
+  }
+  
+  .modal-content {
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+  
+  .settings-modal {
+    padding: var(--spacing-xs);
+  }
+  
+  .settings-modal-content {
+    padding: var(--spacing-md);
+    max-width: 95%;
+    max-height: 85vh;
+  }
+  
+  .settings-header {
+    font-size: var(--font-size-xl);
+    margin-bottom: 15px;
+  }
+  
+  .settings-section {
+    padding: var(--spacing-md);
+    margin-bottom: 15px;
+  }
+  
+  .settings-section h3 {
+    font-size: var(--font-size-base);
+  }
+  
+  .settings-buttons {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .settings-btn {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+  
+  /* iOS Install Modal */
+  .ios-install-content {
+    padding: var(--spacing-md);
+    max-width: 95%;
+  }
+  
+  .ios-install-header {
+    font-size: var(--font-size-lg);
+  }
+  
+  .ios-step {
+    margin-bottom: 15px;
+  }
+  
+  .ios-step-text {
+    font-size: 0.85rem;
+  }
+  
+  /* Photo Preview Popup */
+  .photo-preview-popup .popup-content {
+    padding: var(--spacing-md);
+    max-width: 95%;
+  }
+  
+  .photo-preview-popup .popup-header {
+    font-size: var(--font-size-lg);
+  }
+  
+  .popup-buttons {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .popup-btn {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+  
+  /* Password Modal */
+  #password-modal > div {
+    width: 95%;
+    max-width: none;
+    padding: var(--spacing-md);
+  }
+  
+  #password-modal input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  #password-modal button {
+    width: 100%;
+    margin: 3px 0;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .settings-modal-content {
+    padding: var(--spacing-lg);
+    max-width: 90%;
+  }
+  
+  .settings-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .settings-btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .settings-modal-content {
+    max-width: 500px;
+  }
+  
+  .settings-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* ===== FORM RESPONSIVENESS ===== */
+@media (max-width: 767px) {
+  input, button {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .settings-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
+/* ===== COOKIE CONSENT RESPONSIVENESS ===== */
+@media (max-width: 479px) {
+  .cookie-popup {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .cookie-title {
+    font-size: 1.2rem;
+  }
+  
+  .cookie-description {
+    font-size: 0.8rem;
+  }
+  
+  .cookie-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .cookie-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+  
+  .cookie-details {
+    font-size: 0.7rem;
+  }
+  
+  .cookie-character {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .character-image {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .cookie-popup {
+    margin: 15px;
+    padding: 20px;
+  }
+  
+  .cookie-btn {
+    padding: 12px 20px;
+  }
+}
+
+/* ===== PWA UPDATE BANNER RESPONSIVENESS ===== */
+@media (max-width: 479px) {
+  .pwa-update-banner {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+  
+  .pwa-update-banner button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    margin: 0 3px;
+  }
+}
+
+/* ===== GALLERY RESPONSIVENESS ===== */
+@media (max-width: 767px) {
+  .history-link {
+    margin-top: 1rem;
+  }
+  
+  .history-link a {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== ORIENTATION SPECIFIC STYLES ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Landscape phones */
+  #emoji {
+    font-size: clamp(40px, 15vw, 100px);
+  }
+  
+  #message {
+    font-size: clamp(1rem, 4vw, 1.8rem);
+    margin-top: 0.5rem;
+  }
+  
+  #gift-box {
+    margin-top: 1rem;
+    padding: 8px 15px;
+    font-size: 0.8rem;
+  }
+  
+  .gallery-toggle {
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  
+  #counter {
+    font-size: 0.6rem;
+  }
+  
+  #hint {
+    font-size: 0.5rem;
+    max-width: 40%;
+  }
+}
+
+/* ===== HIGH DPI / RETINA DISPLAYS ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders and shadows on high DPI displays */
+  .settings-modal-content,
+  .modal-content,
+  .cookie-popup {
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .settings-input,
+  input,
+  button {
+    border: 0.5px solid transparent;
+  }
+}
+
+/* ===== DARK MODE PREFERENCES ===== */
+@media (prefers-color-scheme: dark) {
+  /* Already using dark theme, but could adjust for better dark mode support */
+  .settings-modal-content {
+    background: rgba(30, 30, 30, 0.95);
+    color: #e0e0e0;
+  }
+  
+  .settings-input {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .settings-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* ===== REDUCED MOTION COMPATIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  /* Already handled in animations.css, but ensure responsive elements respect this */
+  .hover-lift:hover,
+  .hover-scale:hover,
+  #emoji:hover,
+  #gift-box:hover,
+  .gallery-toggle:hover {
+    transform: none !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  #hamburger,
+  #menu,
+  .pwa-update-banner,
+  .cookie-overlay,
+  .modal,
+  .settings-modal {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  #message {
+    color: black !important;
+    text-shadow: none !important;
+  }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (max-width: 767px) {
+  /* Larger touch targets for mobile */
+  button,
+  .hamburger,
+  #emoji,
+  #gift-box,
+  .gallery-toggle {
+    min-height: 44px; /* Apple's recommended minimum touch target */
+  }
+  
+  .hamburger {
+    min-width: 44px;
+    padding: 10px;
+  }
+  
+  #menu a,
+  #menu button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+@media (max-width: 767px) {
+  button:focus,
+  input:focus,
+  .hamburger:focus,
+  #menu a:focus,
+  #menu button:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+}
+
+/* ===== CONTAINER QUERIES (if supported) ===== */
+@supports (container-type: inline-size) {
+  .settings-modal-content {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 400px) {
+    .settings-buttons {
+      flex-direction: column;
+    }
+    
+    .settings-btn {
+      width: 100%;
+    }
+  }
+}
+
+/* ===== FALLBACKS FOR OLDER BROWSERS ===== */
+/* Flexbox fallbacks */
+.settings-buttons {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/* Grid fallbacks where needed */
+@supports not (display: grid) {
+  /* Fallback layouts for very old browsers */
+  .popup-buttons {
+    text-align: center;
+  }
+  
+  .popup-btn {
+    display: inline-block;
+    margin: 5px;
+  }
+}
