@@ -31,7 +31,7 @@
   
   /* Login Section */
   #login-section {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-sm, 6px);
     min-height: 100vh;
   }
   
@@ -129,7 +129,7 @@
   
   /* App elements */
   #counter {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-xs, 0.7rem);
     top: 5px;
     left: 5px;
   }
@@ -185,7 +185,7 @@
   
   /* Login Section */
   #login-section {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 15px);
   }
   
   #login-section input,
@@ -195,7 +195,7 @@
   
   /* App Section */
   #app-section {
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-md, 15px);
   }
   
   #emoji {
@@ -242,17 +242,22 @@
     font-size: clamp(2rem, 3vw, 3.5rem);
   }
   
-  /* Hover effects only on larger screens */
-  #emoji:hover {
-    transform: scale(1.05);
-  }
-  
-  #gift-box:hover {
-    transform: scale(1.05);
-  }
-  
-  .gallery-toggle:hover {
-    transform: translateY(-2px);
+  /* Hover effects only on larger screens with mouse */
+  @media (hover: hover) and (pointer: fine) {
+    #emoji:hover {
+      transform: scale(1.05);
+      -webkit-transform: scale(1.05);
+    }
+    
+    #gift-box:hover {
+      transform: scale(1.05);
+      -webkit-transform: scale(1.05);
+    }
+    
+    .gallery-toggle:hover {
+      transform: translateY(-2px);
+      -webkit-transform: translateY(-2px);
+    }
   }
 }
 
@@ -274,7 +279,7 @@
 /* ===== MODAL RESPONSIVENESS ===== */
 @media (max-width: 479px) {
   .modal {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-xs, 3px);
   }
   
   .modal-content {
@@ -283,32 +288,32 @@
   }
   
   .settings-modal {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-xs, 3px);
   }
   
   .settings-modal-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 10px);
     max-width: 95%;
     max-height: 85vh;
   }
   
   .settings-header {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-xl, 1.5rem);
     margin-bottom: 15px;
   }
   
   .settings-section {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 10px);
     margin-bottom: 15px;
   }
   
   .settings-section h3 {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-base, 1rem);
   }
   
   .settings-buttons {
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-sm, 6px);
   }
   
   .settings-btn {
@@ -319,12 +324,12 @@
   
   /* iOS Install Modal */
   .ios-install-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 10px);
     max-width: 95%;
   }
   
   .ios-install-header {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-lg, 1.2rem);
   }
   
   .ios-step {
@@ -337,17 +342,17 @@
   
   /* Photo Preview Popup */
   .photo-preview-popup .popup-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 10px);
     max-width: 95%;
   }
   
   .photo-preview-popup .popup-header {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-lg, 1.2rem);
   }
   
   .popup-buttons {
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-sm, 6px);
   }
   
   .popup-btn {
@@ -360,7 +365,7 @@
   #password-modal > div {
     width: 95%;
     max-width: none;
-    padding: var(--spacing-md);
+    padding: var(--spacing-md, 10px);
   }
   
   #password-modal input {
@@ -372,50 +377,8 @@
     width: 100%;
     margin: 3px 0;
   }
-}
-
-@media (min-width: 480px) and (max-width: 767px) {
-  .settings-modal-content {
-    padding: var(--spacing-lg);
-    max-width: 90%;
-  }
   
-  .settings-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .settings-btn {
-    width: 100%;
-  }
-}
-
-@media (min-width: 768px) {
-  .settings-modal-content {
-    max-width: 500px;
-  }
-  
-  .settings-buttons {
-    flex-direction: row;
-    justify-content: center;
-  }
-}
-
-/* ===== FORM RESPONSIVENESS ===== */
-@media (max-width: 767px) {
-  input, button {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  
-  .settings-input {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-}
-
-/* ===== COOKIE CONSENT RESPONSIVENESS ===== */
-@media (max-width: 479px) {
+  /* Cookie popup */
   .cookie-popup {
     margin: 10px;
     padding: 15px;
@@ -456,6 +419,20 @@
 }
 
 @media (min-width: 480px) and (max-width: 767px) {
+  .settings-modal-content {
+    padding: var(--spacing-lg, 20px);
+    max-width: 90%;
+  }
+  
+  .settings-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .settings-btn {
+    width: 100%;
+  }
+  
   .cookie-popup {
     margin: 15px;
     padding: 20px;
@@ -466,17 +443,58 @@
   }
 }
 
+@media (min-width: 768px) {
+  .settings-modal-content {
+    max-width: 500px;
+  }
+  
+  .settings-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* ===== FORM RESPONSIVENESS ===== */
+@media (max-width: 767px) {
+  input, button {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .settings-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
 /* ===== PWA UPDATE BANNER RESPONSIVENESS ===== */
 @media (max-width: 479px) {
   .pwa-update-banner {
     padding: 8px;
     font-size: 0.8rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
   }
   
   .pwa-update-banner button {
     padding: 6px 10px;
     font-size: 0.75rem;
     margin: 0 3px;
+    width: auto;
+    min-width: 80px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .pwa-update-banner {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+  
+  .pwa-update-banner button {
+    padding: 8px 14px;
+    font-size: 0.85rem;
   }
 }
 
@@ -488,6 +506,7 @@
   
   .history-link a {
     font-size: 0.8rem;
+    padding: 12px 8px;
   }
 }
 
@@ -523,6 +542,14 @@
     font-size: 0.5rem;
     max-width: 40%;
   }
+  
+  /* Adjust modals for landscape */
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content {
+    max-height: 75vh;
+    overflow-y: auto;
+  }
 }
 
 /* ===== HIGH DPI / RETINA DISPLAYS ===== */
@@ -530,7 +557,9 @@
   /* Sharper borders and shadows on high DPI displays */
   .settings-modal-content,
   .modal-content,
-  .cookie-popup {
+  .cookie-popup,
+  .popup-content,
+  .ios-install-content {
     border: 0.5px solid rgba(255, 255, 255, 0.1);
   }
   
@@ -539,12 +568,20 @@
   button {
     border: 0.5px solid transparent;
   }
+  
+  /* Adjust text shadows for high DPI */
+  #message {
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* ===== DARK MODE PREFERENCES ===== */
 @media (prefers-color-scheme: dark) {
-  /* Already using dark theme, but could adjust for better dark mode support */
-  .settings-modal-content {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  #password-modal > div,
+  #boing-modal-content {
     background: rgba(30, 30, 30, 0.95);
     color: #e0e0e0;
   }
@@ -558,28 +595,37 @@
   .settings-input::placeholder {
     color: rgba(255, 255, 255, 0.6);
   }
-}
-
-/* ===== REDUCED MOTION COMPATIBILITY ===== */
-@media (prefers-reduced-motion: reduce) {
-  /* Already handled in animations.css, but ensure responsive elements respect this */
-  .hover-lift:hover,
-  .hover-scale:hover,
-  #emoji:hover,
-  #gift-box:hover,
-  .gallery-toggle:hover {
-    transform: none !important;
+  
+  .settings-section {
+    background: rgba(161, 140, 209, 0.2);
+    border-color: rgba(161, 140, 209, 0.3);
+  }
+  
+  .cookie-popup {
+    background: rgba(40, 40, 40, 0.95);
+    color: #e0e0e0;
+  }
+  
+  .cookie-title,
+  .popup-header,
+  .ios-install-header,
+  .settings-header {
+    color: #b8a5d4;
   }
 }
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  #hamburger,
+  .hamburger,
   #menu,
   .pwa-update-banner,
   .cookie-overlay,
   .modal,
-  .settings-modal {
+  .settings-modal,
+  .photo-preview-popup,
+  .ios-install-modal,
+  #password-modal,
+  #boing-modal {
     display: none !important;
   }
   
@@ -592,6 +638,12 @@
     color: black !important;
     text-shadow: none !important;
   }
+  
+  #hint,
+  #counter {
+    color: black !important;
+    text-shadow: none !important;
+  }
 }
 
 /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
@@ -601,12 +653,15 @@
   .hamburger,
   #emoji,
   #gift-box,
-  .gallery-toggle {
-    min-height: 44px; /* Apple's recommended minimum touch target */
+  .gallery-toggle,
+  .cookie-btn,
+  .settings-btn,
+  .popup-btn {
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .hamburger {
-    min-width: 44px;
     padding: 10px;
   }
   
@@ -616,10 +671,8 @@
     display: flex;
     align-items: center;
   }
-}
-
-/* Focus indicators for keyboard navigation */
-@media (max-width: 767px) {
+  
+  /* Better focus indicators */
   button:focus,
   input:focus,
   .hamburger:focus,
@@ -647,9 +700,27 @@
   }
 }
 
+/* ===== SAFE AREA SUPPORT ===== */
+@supports (padding: max(0px)) {
+  body {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  
+  .pwa-update-banner {
+    padding-bottom: max(15px, calc(15px + env(safe-area-inset-bottom)));
+  }
+  
+  #menu {
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
 /* ===== FALLBACKS FOR OLDER BROWSERS ===== */
 /* Flexbox fallbacks */
-.settings-buttons {
+.settings-buttons,
+.cookie-buttons,
+.popup-buttons {
+  display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -660,7 +731,6 @@
 
 /* Grid fallbacks where needed */
 @supports not (display: grid) {
-  /* Fallback layouts for very old browsers */
   .popup-buttons {
     text-align: center;
   }
@@ -668,5 +738,316 @@
   .popup-btn {
     display: inline-block;
     margin: 5px;
+  }
+}
+
+/* ===== HOVER DEVICE DETECTION ===== */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch devices - disable hover effects */
+  .hover-lift:hover,
+  .hover-scale:hover,
+  .hover-glow:hover,
+  .hover-bounce:hover,
+  #emoji:hover,
+  #gift-box:hover,
+  .gallery-toggle:hover {
+    transform: none !important;
+    -webkit-transform: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+  }
+  
+  /* Enhanced tap feedback */
+  button:active,
+  #emoji:active,
+  #gift-box:active,
+  .gallery-toggle:active,
+  .cookie-btn:active {
+    transform: scale(0.98);
+    -webkit-transform: scale(0.98);
+  }
+}
+
+/* ===== REDUCED MOTION COMPATIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift:hover,
+  .hover-scale:hover,
+  #emoji:hover,
+  #gift-box:hover,
+  .gallery-toggle:hover {
+    transform: none !important;
+    -webkit-transform: none !important;
+  }
+  
+  /* Remove all animations for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    -webkit-animation-duration: 0.01ms !important;
+    -webkit-animation-iteration-count: 1 !important;
+    -webkit-transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE SUPPORT ===== */
+@media (prefers-contrast: high) {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup,
+  #password-modal > div,
+  #boing-modal-content {
+    background: white;
+    color: black;
+    border: 2px solid black;
+  }
+  
+  button,
+  .settings-btn,
+  .cookie-btn,
+  .popup-btn {
+    border: 2px solid currentColor;
+  }
+  
+  input,
+  .settings-input {
+    border: 2px solid black;
+    background: white;
+    color: black;
+  }
+}
+
+/* ===== FORCED COLORS MODE SUPPORT ===== */
+@media (forced-colors: active) {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup,
+  #password-modal > div,
+  #boing-modal-content {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid ButtonBorder;
+  }
+  
+  button,
+  .settings-btn,
+  .cookie-btn,
+  .popup-btn {
+    background: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonBorder;
+  }
+  
+  button:hover,
+  .settings-btn:hover,
+  .cookie-btn:hover,
+  .popup-btn:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+  
+  input,
+  .settings-input {
+    background: Field;
+    color: FieldText;
+    border: 1px solid ButtonBorder;
+  }
+}
+
+/* ===== WIDE SCREEN OPTIMIZATIONS ===== */
+@media (min-width: 1600px) {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content {
+    max-width: 600px;
+  }
+  
+  #emoji {
+    font-size: clamp(150px, 10vw, 280px);
+  }
+  
+  #message {
+    font-size: clamp(3rem, 2vw, 4.5rem);
+  }
+}
+
+/* ===== ULTRA-WIDE SCREEN SUPPORT ===== */
+@media (min-aspect-ratio: 21/9) {
+  #app-section {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .settings-modal,
+  .photo-preview-popup,
+  .ios-install-modal {
+    padding: 40px;
+  }
+}
+
+/* ===== VERTICAL SCREEN OPTIMIZATIONS ===== */
+@media (max-aspect-ratio: 1/2) {
+  #emoji {
+    font-size: clamp(60px, 20vw, 140px);
+  }
+  
+  #message {
+    font-size: clamp(1.2rem, 6vw, 2.2rem);
+  }
+  
+  #gift-box,
+  .gallery-toggle {
+    margin-top: 0.8rem;
+  }
+}
+
+/* ===== FOLDABLE DEVICE SUPPORT ===== */
+@media (spanning: single-fold-vertical) {
+  #app-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 2rem;
+  }
+  
+  #emoji {
+    grid-column: 1;
+  }
+  
+  #message {
+    grid-column: 2;
+  }
+}
+
+/* ===== POINTER PRECISION ADJUSTMENTS ===== */
+@media (pointer: coarse) {
+  /* Large touch targets for imprecise pointers */
+  button,
+  .hamburger,
+  #emoji,
+  .cookie-btn,
+  .settings-btn,
+  .popup-btn {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  #menu a,
+  #menu button {
+    min-height: 48px;
+    padding: 14px 16px;
+  }
+}
+
+@media (pointer: fine) {
+  /* Smaller, more precise targets for mouse/stylus */
+  button,
+  .cookie-btn,
+  .settings-btn,
+  .popup-btn {
+    min-height: 36px;
+    min-width: auto;
+  }
+  
+  #menu a,
+  #menu button {
+    min-height: 36px;
+    padding: 10px 14px;
+  }
+}
+
+/* ===== BANDWIDTH CONSIDERATIONS ===== */
+@media (prefers-reduced-data) {
+  /* Reduce animations and effects for users on slow connections */
+  .animate-float,
+  .cookie-character,
+  .animate-pulse {
+    animation: none !important;
+    -webkit-animation: none !important;
+  }
+  
+  /* Reduce backdrop blur effects */
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup,
+  #menu {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ===== ENVIRONMENTAL ADJUSTMENTS ===== */
+@media (environment-blending: additive) {
+  /* AR/VR environment adjustments */
+  body {
+    background: transparent;
+  }
+  
+  .settings-modal,
+  .photo-preview-popup,
+  .ios-install-modal,
+  .cookie-overlay {
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* ===== FUTURE-PROOFING ===== */
+/* Support for upcoming CSS features */
+@supports (color: color(display-p3 1 0 0)) {
+  /* Wide color gamut support */
+  :root {
+    --primary-color: color(display-p3 0.63 0.55 0.82);
+  }
+}
+
+@supports (backdrop-filter: blur(10px)) {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup {
+    background: rgba(255, 255, 255, 0.8);
+  }
+}
+
+@supports not (backdrop-filter: blur(10px)) {
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* ===== DEBUG HELPERS (remove in production) ===== */
+@media (max-width: 479px) {
+  /* Uncomment for mobile debugging */
+  /*
+  * {
+    outline: 1px solid red !important;
+  }
+  */
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+@media (max-width: 767px) {
+  /* Reduce complexity on mobile */
+  .settings-modal-content,
+  .popup-content,
+  .ios-install-content,
+  .cookie-popup {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Simplified gradients on mobile */
+  .btn-primary,
+  .cookie-btn-accept {
+    background: var(--primary-color, #a18cd1);
   }
 }
