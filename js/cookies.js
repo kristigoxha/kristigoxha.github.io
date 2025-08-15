@@ -1,20 +1,22 @@
-// js/cookies.js - FIXED VERSION
-// Cookie consent functionality with debugging and safeguards
+// js/cookies.js - FINAL FIXED VERSION
+// Cookie consent functionality with proper global scope
 
-// Global flag to prevent multiple simultaneous displays
-let cookieConsentShowing = false;
-let cookieConsentProcessed = false;
+// IMPORTANT: Use window object for global state since HTML uses onclick handlers
+window.cookieConsentShowing = window.cookieConsentShowing || false;
+window.cookieConsentProcessed = window.cookieConsentProcessed || false;
+window.cookieSystemInitialized = window.cookieSystemInitialized || false;
+window.eventListenersSetup = window.eventListenersSetup || false;
 
 // Cookie consent functionality
 export function showCookieConsent() {
-  console.log('🍪 showCookieConsent called, showing:', cookieConsentShowing);
+  console.log('🍪 showCookieConsent called, showing:', window.cookieConsentShowing);
   
-  if (cookieConsentShowing) {
-    console.log('🍪 Cookie consent already showing, skipping');
+  if (window.cookieConsentShowing || window.cookieConsentProcessed) {
+    console.log('🍪 Cookie consent already showing/processed, skipping');
     return;
   }
   
-  cookieConsentShowing = true;
+  window.cookieConsentShowing = true;
   const overlay = document.getElementById("cookie-overlay");
   if (overlay) {
     overlay.classList.add("show");
@@ -30,7 +32,7 @@ export function hideCookieConsent() {
     setTimeout(() => {
       overlay.classList.remove("show");
       overlay.style.animation = "";
-      cookieConsentShowing = false;
+      window.cookieConsentShowing = false;
       console.log('🍪 Cookie overlay hidden');
     }, 400);
   }
@@ -57,7 +59,7 @@ export function acceptCookies() {
     }
   }
   
-  cookieConsentProcessed = true;
+  window.cookieConsentProcessed = true;
   hideCookieConsent();
 
   // Initialize enhanced features
@@ -84,7 +86,7 @@ export function rejectCookies() {
     }
   }
   
-  cookieConsentProcessed = true;
+  window.cookieConsentProcessed = true;
   hideCookieConsent();
 
   // Run in minimal mode
@@ -131,7 +133,7 @@ export function getCookieConsent() {
 // Check if consent has already been given - WITH SAFEGUARDS
 export function checkCookieConsent() {
   // Prevent multiple simultaneous checks
-  if (cookieConsentProcessed) {
+  if (window.cookieConsentProcessed) {
     console.log('🍪 Cookie consent already processed, skipping check');
     return getCookieConsent();
   }
@@ -142,20 +144,24 @@ export function checkCookieConsent() {
   if (consent === "accepted") {
     console.log("🍪 Cookies previously accepted");
     enableEnhancedFeatures();
-    cookieConsentProcessed = true;
+    window.cookieConsentProcessed = true;
     return true;
   } else if (consent === "rejected") {
     console.log("😔 Cookies previously rejected");
     disableNonEssentialFeatures();
-    cookieConsentProcessed = true;
+    window.cookieConsentProcessed = true;
     return false;
   }
   
-  // Only show popup if we haven't processed consent yet
-  if (!cookieConsentShowing && !cookieConsentProcessed) {
+  // Only show popup if we haven't processed consent yet AND not currently showing
+  if (!window.cookieConsentShowing && !window.cookieConsentProcessed) {
     console.log('🍪 No consent found, will show popup in 2 seconds');
-    setTimeout(() => {
-      if (!cookieConsentProcessed && !cookieConsentShowing) {
+    
+    // Use a timeout ID so we can clear it if needed
+    window.cookieTimeoutId = setTimeout(() => {
+      // Double-check conditions before showing
+      if (!window.cookieConsentProcessed && !window.cookieConsentShowing) {
+        console.log('🍪 Showing cookie popup now');
         showCookieConsent();
       } else {
         console.log('🍪 Consent processed while waiting, skipping popup');
@@ -169,6 +175,12 @@ export function checkCookieConsent() {
 // Reset cookie consent (for testing or user preference change)
 export function resetCookieConsent() {
   console.log('🍪 Resetting cookie consent');
+  
+  // Clear any pending timeouts
+  if (window.cookieTimeoutId) {
+    clearTimeout(window.cookieTimeoutId);
+    window.cookieTimeoutId = null;
+  }
   
   // Clear all storage methods
   try {
@@ -186,8 +198,9 @@ export function resetCookieConsent() {
   delete window.cookieConsentMemory;
   
   // Reset flags
-  cookieConsentProcessed = false;
-  cookieConsentShowing = false;
+  window.cookieConsentProcessed = false;
+  window.cookieConsentShowing = false;
+  window.cookieSystemInitialized = false;
   
   console.log("🍪 Cookie consent reset");
 }
@@ -284,6 +297,12 @@ export function deleteCookie(name) {
 export function clearAllCookies() {
   console.log('🍪 Clearing all cookies...');
   
+  // Clear any pending timeouts
+  if (window.cookieTimeoutId) {
+    clearTimeout(window.cookieTimeoutId);
+    window.cookieTimeoutId = null;
+  }
+  
   // Clear browser cookies
   document.cookie.split(";").forEach(function(c) { 
     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
@@ -305,17 +324,16 @@ export function clearAllCookies() {
   delete window.cookieConsentMemory;
   
   // Reset flags
-  cookieConsentProcessed = false;
-  cookieConsentShowing = false;
+  window.cookieConsentProcessed = false;
+  window.cookieConsentShowing = false;
+  window.cookieSystemInitialized = false;
   
   console.log("🍪 All cookies cleared");
 }
 
 // Setup cookie consent event listeners - ONLY ONCE
-let eventListenersSetup = false;
-
 export function setupCookieEventListeners() {
-  if (eventListenersSetup) {
+  if (window.eventListenersSetup) {
     console.log('🍪 Event listeners already setup, skipping');
     return;
   }
@@ -330,16 +348,15 @@ export function setupCookieEventListeners() {
   window.checkCookieConsent = checkCookieConsent;
   window.resetCookieConsent = resetCookieConsent;
   window.clearAllCookies = clearAllCookies;
+  window.getCookieConsent = getCookieConsent;
   
-  eventListenersSetup = true;
+  window.eventListenersSetup = true;
   console.log('🍪 Event listeners setup complete');
 }
 
 // Initialize cookie consent system - ONLY ONCE
-let cookieSystemInitialized = false;
-
 export function initializeCookieConsent() {
-  if (cookieSystemInitialized) {
+  if (window.cookieSystemInitialized) {
     console.log('🍪 Cookie system already initialized, skipping');
     return;
   }
@@ -350,9 +367,9 @@ export function initializeCookieConsent() {
   
   // Check consent on page load with a delay to not block initial render
   setTimeout(() => {
-    if (!cookieSystemInitialized) {
+    if (!window.cookieSystemInitialized) {
       checkCookieConsent();
-      cookieSystemInitialized = true;
+      window.cookieSystemInitialized = true;
       console.log('🍪 Cookie system initialization complete');
     }
   }, 1000);
@@ -362,10 +379,11 @@ export function initializeCookieConsent() {
 window.debugCookies = function() {
   console.log('🍪 Cookie Debug Info:', {
     consent: getCookieConsent(),
-    showing: cookieConsentShowing,
-    processed: cookieConsentProcessed,
-    initialized: cookieSystemInitialized,
-    eventListeners: eventListenersSetup,
+    showing: window.cookieConsentShowing,
+    processed: window.cookieConsentProcessed,
+    initialized: window.cookieSystemInitialized,
+    eventListeners: window.eventListenersSetup,
+    timeoutId: window.cookieTimeoutId || 'none',
     localStorage: (() => {
       try { return localStorage.getItem("cookieConsent"); } catch { return 'unavailable'; }
     })(),
@@ -373,5 +391,14 @@ window.debugCookies = function() {
       try { return sessionStorage.getItem("cookieConsent"); } catch { return 'unavailable'; }
     })(),
     memory: window.cookieConsentMemory || 'none'
+  });
+  
+  // Also show current popup state
+  const overlay = document.getElementById("cookie-overlay");
+  console.log('🍪 Popup DOM state:', {
+    exists: !!overlay,
+    hasShowClass: overlay ? overlay.classList.contains('show') : false,
+    display: overlay ? overlay.style.display : 'no element',
+    visible: overlay ? (overlay.offsetParent !== null) : false
   });
 };
