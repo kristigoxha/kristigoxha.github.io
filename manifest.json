@@ -67,7 +67,7 @@
       "name": "Photo Gallery",
       "short_name": "Gallery",
       "description": "View shared photos",
-      "url": "/gallery.html",
+      "url": "/pages/gallery.html",
       "icons": [
         {
           "src": "/icons/icon-192x192.png",
