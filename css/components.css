@@ -1,4 +1,4 @@
-/* css/components.css */
+ /* css/components.css */
 /* Reusable components: buttons, forms, modals, cards */
 
 /* FORM ELEMENTS */
@@ -540,11 +540,6 @@ button:focus {
   height: 300px;
 }
 
-.cookie-details {
-  font-size: 0.75rem;
-  color: #888;
-  line-height: 1.4;
-}
 
 /* PHOTO PREVIEW POPUP */
 .photo-preview-popup {
