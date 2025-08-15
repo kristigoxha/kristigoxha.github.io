@@ -541,7 +541,7 @@ button:focus {
 }
 
 
-/* PHOTO PREVIEW POPUP */
+/* PHOTO PREVIEW POPUP - UPDATED */
 .photo-preview-popup {
   position: fixed;
   top: 0;
@@ -552,8 +552,9 @@ button:focus {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: var(--z-modal, 1000);
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .photo-preview-popup.show {
@@ -565,13 +566,13 @@ button:focus {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
-  padding: 30px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
+  padding: 20px;
+  max-width: min(90vw, 500px);
+  max-height: 85vh;
   overflow-y: auto;
   text-align: center;
   animation: popupSlide 0.3s ease-out;
+  box-sizing: border-box;
 }
 
 .popup-header {
@@ -579,6 +580,79 @@ button:focus {
   font-weight: 600;
   color: var(--primary-color);
   margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+/* ADD THESE NEW RULES FOR PHOTO CONTENT */
+#photo-preview-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#photo-preview-content img {
+  max-width: 100%;
+  max-height: 50vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: block;
+}
+
+.photo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.photo-item img {
+  max-width: 100%;
+  max-height: 40vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.photo-info {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.popup-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.popup-close:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .popup-buttons {
