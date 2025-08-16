@@ -632,6 +632,27 @@ button:focus {
   max-width: 100%;
 }
 
+/* Photo caption styling for the preview popup */
+.photo-caption {
+  font-style: italic;
+  margin: 15px 0;
+  padding: 12px 15px;
+  background: rgba(161, 140, 209, 0.1);
+  border-radius: 10px;
+  font-size: 0.95em;
+  line-height: 1.4;
+  border-left: 3px solid rgba(161, 140, 209, 0.4);
+  color: rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+/* Ensure the caption is readable */
+.popup-content .photo-caption {
+  background: rgba(161, 140, 209, 0.15);
+  border-left-color: rgba(161, 140, 209, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .popup-close {
   position: absolute;
   top: 15px;
