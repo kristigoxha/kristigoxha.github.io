@@ -521,7 +521,7 @@
         
         <div class="form-group">
           <label>Add a caption (optional):</label>
-          <textarea id="image-caption" placeholder="Write something to poopookie 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
+          <textarea id="image-caption" placeholder="Write something sweet for pookie... 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
         </div>
         
         <div class="share-controls">
@@ -677,11 +677,19 @@
         
         if (profilesError) throw profilesError
         
+        // Get all unique emails from shared_images to catch any users not in profiles
+        const { data: sharedImages, error: sharedError } = await supabase
+          .from('shared_images')
+          .select('owner_email, shared_with_emails')
+        
+        if (sharedError) throw sharedError
+        
         // Build mappings
         emailToUsername = {}
         usernameToEmail = {}
         allUsers = []
         
+        // First, add all profiles
         profiles.forEach(profile => {
           if (profile.email && profile.email !== currentUser.email) {
             emailToUsername[profile.email] = profile.username || profile.email
@@ -696,18 +704,54 @@
           }
         })
         
+        // Then add any emails from shared images that don't have profiles
+        const allEmails = new Set()
+        sharedImages.forEach(image => {
+          if (image.owner_email) allEmails.add(image.owner_email)
+          if (image.shared_with_emails && Array.isArray(image.shared_with_emails)) {
+            image.shared_with_emails.forEach(email => allEmails.add(email))
+          }
+        })
+        
+        // Add emails that don't have profiles yet
+        allEmails.forEach(email => {
+          if (email && email !== currentUser.email && !emailToUsername[email]) {
+            emailToUsername[email] = email // Use email as display name if no username
+            allUsers.push({
+              email: email,
+              username: email,
+              id: null
+            })
+          }
+        })
+        
       } catch (error) {
         console.error('Error fetching users:', error)
-        // Fallback to getting users from shared_images
+        // Fallback to getting users from shared_images only
         try {
           const { data, error } = await supabase
             .from('shared_images')
-            .select('owner_email')
+            .select('owner_email, shared_with_emails')
           
           if (!error) {
-            const emails = [...new Set(data.map(item => item.owner_email))]
-            allUsers = emails.filter(email => email && email !== currentUser.email)
-              .map(email => ({ email, username: email, id: null }))
+            const allEmails = new Set()
+            data.forEach(image => {
+              if (image.owner_email) allEmails.add(image.owner_email)
+              if (image.shared_with_emails && Array.isArray(image.shared_with_emails)) {
+                image.shared_with_emails.forEach(email => allEmails.add(email))
+              }
+            })
+            
+            emailToUsername = {}
+            usernameToEmail = {}
+            allUsers = []
+            
+            allEmails.forEach(email => {
+              if (email && email !== currentUser.email) {
+                emailToUsername[email] = email
+                allUsers.push({ email, username: email, id: null })
+              }
+            })
           }
         } catch (fallbackError) {
           console.error('Fallback user fetch failed:', fallbackError)
@@ -855,6 +899,9 @@
         const { data: images, error } = await query.order('created_at', { ascending: false })
         
         if (error) throw error
+        
+        // Refresh user mappings before displaying to ensure we have latest data
+        await fetchUsers()
         
         displayImages(images || [])
       } catch (error) {
