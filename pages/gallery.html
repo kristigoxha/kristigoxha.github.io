@@ -521,7 +521,7 @@
         
         <div class="form-group">
           <label>Add a caption (optional):</label>
-          <textarea id="image-caption" placeholder="Write something sweet for pookie... 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
+          <textarea id="image-caption" placeholder="Write something for poopookie 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
         </div>
         
         <div class="share-controls">
@@ -615,7 +615,12 @@
     }
 
     function getUserDisplay(email) {
-      return emailToUsername[email] || email
+      // First check if we have a username mapping
+      if (emailToUsername[email]) {
+        return emailToUsername[email]
+      }
+      // If not found, just return the email
+      return email
     }
 
     function getEmailFromUsernameOrEmail(input) {
@@ -715,7 +720,7 @@
         
         // Add emails that don't have profiles yet
         allEmails.forEach(email => {
-          if (email && email !== currentUser.email && !emailToUsername[email]) {
+          if (email && email !== currentUser.email && !emailToUsername.hasOwnProperty(email)) {
             emailToUsername[email] = email // Use email as display name if no username
             allUsers.push({
               email: email,
@@ -724,6 +729,9 @@
             })
           }
         })
+        
+        console.log('Built email mappings:', emailToUsername)
+        console.log('Built user list:', allUsers)
         
       } catch (error) {
         console.error('Error fetching users:', error)
@@ -903,6 +911,9 @@
         // Refresh user mappings before displaying to ensure we have latest data
         await fetchUsers()
         
+        console.log('Email to Username mapping:', emailToUsername)
+        console.log('All Users:', allUsers)
+        
         displayImages(images || [])
       } catch (error) {
         console.error('Error loading images:', error)
@@ -943,9 +954,10 @@
               ${image.shared_with_emails && image.shared_with_emails.length > 0 ? `
                 <div class="shared-with">
                   <strong>Shared with:</strong>
-                  ${image.shared_with_emails.map(email => 
-                    `<span class="user-badge">${getUserDisplay(email)}</span>`
-                  ).join('')}
+                  ${image.shared_with_emails.map(email => {
+                    const displayName = getUserDisplay(email)
+                    return `<span class="user-badge" title="${email}">${displayName}</span>`
+                  }).join('')}
                 </div>
               ` : '<div class="image-meta">Private</div>'}
             </div>
@@ -1103,7 +1115,7 @@
         const isAutoreceiver = email === autoreceiverEmail
         const displayName = getUserDisplay(email)
         
-        return `<div class="email-tag ${isAutoreceiver ? 'autoreceiver' : ''}">
+        return `<div class="email-tag ${isAutoreceiver ? 'autoreceiver' : ''}" title="${email}">
           ${displayName}
           ${!isAutoreceiver ? `<span class="remove-tag" onclick="removeEmailTag('${email}')">×</span>` : '⭐'}
         </div>`
