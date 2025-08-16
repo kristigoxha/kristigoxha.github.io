@@ -37,14 +37,22 @@ export async function showPhotoPreview() {
       return;
     }
     
+    // Build the caption section if caption exists
+    const captionSection = latestPhoto.caption ? 
+      `<div class="photo-caption">"${latestPhoto.caption}"</div>` : '';
+    
+    // Get the display name (username or email)
+    const ownerDisplay = latestPhoto.owner_username || latestPhoto.owner_email;
+    
     content.innerHTML = `
       <img src="${latestPhoto.file_url}" 
            alt="${latestPhoto.filename}" 
            class="latest-photo"
            onclick="window.openImageModal('${latestPhoto.file_url}')">
+      ${captionSection}
       <div class="photo-info">
         <div><strong>${latestPhoto.filename}</strong></div>
-        <div>Shared by: ${latestPhoto.owner_email}</div>
+        <div>Shared by: ${ownerDisplay}</div>
         <div>Date: ${new Date(latestPhoto.created_at).toLocaleDateString()}</div>
       </div>
       <div class="popup-buttons">
