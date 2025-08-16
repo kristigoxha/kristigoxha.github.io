@@ -218,6 +218,21 @@
       background: rgba(161, 140, 209, 0.3);
     }
 
+    .suggestion-user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .suggestion-username {
+      font-weight: 600;
+    }
+
+    .suggestion-email {
+      font-size: 0.8em;
+      opacity: 0.7;
+    }
+
     .email-tags {
       display: flex;
       flex-wrap: wrap;
@@ -472,7 +487,7 @@
 
     <div class="nav-bar">
       <div class="user-info">
-        Welcome, <span id="user-email">Loading...</span>
+        Welcome, <span id="user-display">Loading...</span>
       </div>
       <div class="nav-buttons">
         <a href="/" class="btn btn-secondary">🏠 Home</a>
@@ -493,14 +508,14 @@
         
         <div class="share-controls">
           <div class="form-group">
-            <label>Choose emails to send this to:</label>
+            <label>Choose people to send this to:</label>
             <div class="autocomplete-container">
               <div class="email-tags" id="email-tags"></div>
-              <input type="text" id="share-emails" placeholder="Start typing an email..." autocomplete="off">
+              <input type="text" id="share-emails" placeholder="Start typing a username or email..." autocomplete="off">
               <div class="autocomplete-suggestions" id="autocomplete-suggestions"></div>
             </div>
             <div id="autoreceiver-info" class="autoreceiver-info">
-              <strong>💡 Auto-receiver:</strong> <span id="autoreceiver-email-display"></span> will be automatically added to all shares
+              <strong>💡 Auto-receiver:</strong> <span id="autoreceiver-display"></span> will be automatically added to all shares
             </div>
           </div>
           <button class="btn btn-primary" onclick="uploadAndShare()" id="upload-btn">
@@ -545,11 +560,15 @@
     
     // State
     let currentUser = null
+    let currentUsername = null
     let currentFilter = 'all'
     let selectedEmails = []
-    let allUsers = []
+    let allUsers = [] // Will store {email, username, id} objects
+    let emailToUsername = {} // Map for quick lookups
+    let usernameToEmail = {} // Map for quick lookups
     let currentSuggestionIndex = -1
     let autoreceiverEmail = null
+    let autoreceiverUsername = null
 
     // Utility functions
     function showStatus(message, type, showSpinner = false) {
@@ -577,6 +596,19 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     }
 
+    function getUserDisplay(email) {
+      return emailToUsername[email] || email
+    }
+
+    function getEmailFromUsernameOrEmail(input) {
+      // If it's already an email, return it
+      if (validateEmail(input)) {
+        return input
+      }
+      // Otherwise, treat as username and look up email
+      return usernameToEmail[input] || null
+    }
+
     // Authentication
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -585,11 +617,31 @@
         return
       }
       currentUser = user
-      document.getElementById('user-email').textContent = user.email
+      
+      // Get current user's username
+      await loadCurrentUserProfile()
+      
+      document.getElementById('user-display').textContent = currentUsername || user.email
       await fetchUsers()
       await loadUserSettings()
       setupAutocomplete()
       loadImages()
+    }
+
+    async function loadCurrentUserProfile() {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', currentUser.id)
+          .single()
+        
+        if (!error && data?.username) {
+          currentUsername = data.username
+        }
+      } catch (error) {
+        console.error('Error loading current user profile:', error)
+      }
     }
 
     async function logout() {
@@ -600,16 +652,48 @@
     // User management and settings
     async function fetchUsers() {
       try {
-        const { data, error } = await supabase
-          .from('shared_images')
-          .select('owner_email')
+        // Get all profiles to build username mappings
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, email')
         
-        if (error) throw error
+        if (profilesError) throw profilesError
         
-        const emails = [...new Set(data.map(item => item.owner_email))]
-        allUsers = emails.filter(email => email && email !== currentUser.email)
+        // Build mappings
+        emailToUsername = {}
+        usernameToEmail = {}
+        allUsers = []
+        
+        profiles.forEach(profile => {
+          if (profile.email && profile.email !== currentUser.email) {
+            emailToUsername[profile.email] = profile.username || profile.email
+            if (profile.username) {
+              usernameToEmail[profile.username] = profile.email
+            }
+            allUsers.push({
+              email: profile.email,
+              username: profile.username || profile.email,
+              id: profile.id
+            })
+          }
+        })
+        
       } catch (error) {
         console.error('Error fetching users:', error)
+        // Fallback to getting users from shared_images
+        try {
+          const { data, error } = await supabase
+            .from('shared_images')
+            .select('owner_email')
+          
+          if (!error) {
+            const emails = [...new Set(data.map(item => item.owner_email))]
+            allUsers = emails.filter(email => email && email !== currentUser.email)
+              .map(email => ({ email, username: email, id: null }))
+          }
+        } catch (fallbackError) {
+          console.error('Fallback user fetch failed:', fallbackError)
+        }
       }
     }
 
@@ -629,10 +713,11 @@
         }
         
         autoreceiverEmail = data?.autoreceiver_email || null
+        autoreceiverUsername = autoreceiverEmail ? getUserDisplay(autoreceiverEmail) : null
         
         // Show autoreceiver info if exists
         if (autoreceiverEmail) {
-          document.getElementById('autoreceiver-email-display').textContent = autoreceiverEmail
+          document.getElementById('autoreceiver-display').textContent = autoreceiverUsername
           document.getElementById('autoreceiver-info').classList.add('show')
           
           // Auto-add autoreceiver to selected emails if not already added
@@ -703,12 +788,13 @@
         .from('pookiepics')
         .getPublicUrl(fileName)
       
-      // Save to database
+      // Save to database with owner_username
       const { error: dbError } = await supabase
         .from('shared_images')
         .insert([{
           owner_id: currentUser.id,
           owner_email: currentUser.email,
+          owner_username: currentUsername || currentUser.email,
           filename: file.name,
           file_path: fileName,
           file_url: publicUrl,
@@ -768,27 +854,34 @@
         return
       }
       
-      grid.innerHTML = images.map(image => `
-        <div class="image-card">
-          <img src="${image.file_url}" alt="${image.filename}" onclick="openModal('${image.file_url}')">
-          <div class="image-info">
-            <div class="image-title">${image.filename}</div>
-            <div class="image-meta">By: ${image.owner_email}</div>
-            <div class="image-meta">
-              Uploaded: ${new Date(image.created_at).toLocaleDateString()}
-            </div>
-            <div class="image-meta">
-              Size: ${(image.file_size / 1024 / 1024).toFixed(2)} MB
-            </div>
-            ${image.shared_with_emails && image.shared_with_emails.length > 0 ? `
-              <div class="shared-with">
-                <strong>Shared with:</strong>
-                ${image.shared_with_emails.map(email => `<span class="user-badge">${email}</span>`).join('')}
+      grid.innerHTML = images.map(image => {
+        // Use owner_username if available, otherwise fall back to email lookup or email itself
+        const ownerDisplay = image.owner_username || getUserDisplay(image.owner_email)
+        
+        return `
+          <div class="image-card">
+            <img src="${image.file_url}" alt="${image.filename}" onclick="openModal('${image.file_url}')">
+            <div class="image-info">
+              <div class="image-title">${image.filename}</div>
+              <div class="image-meta">By: ${ownerDisplay}</div>
+              <div class="image-meta">
+                Uploaded: ${new Date(image.created_at).toLocaleDateString()}
               </div>
-            ` : '<div class="image-meta">Private</div>'}
+              <div class="image-meta">
+                Size: ${(image.file_size / 1024 / 1024).toFixed(2)} MB
+              </div>
+              ${image.shared_with_emails && image.shared_with_emails.length > 0 ? `
+                <div class="shared-with">
+                  <strong>Shared with:</strong>
+                  ${image.shared_with_emails.map(email => 
+                    `<span class="user-badge">${getUserDisplay(email)}</span>`
+                  ).join('')}
+                </div>
+              ` : '<div class="image-meta">Private</div>'}
+            </div>
           </div>
-        </div>
-      `).join('')
+        `
+      }).join('')
     }
 
     function filterImages(filter) {
@@ -825,11 +918,14 @@
     function handleInput(e) {
       const query = e.target.value.trim().toLowerCase()
       
-      if (query.length >= 3) {
-        const filtered = allUsers.filter(email => 
-          email.toLowerCase().includes(query) && 
-          !selectedEmails.includes(email)
-        )
+      if (query.length >= 2) {
+        const filtered = allUsers.filter(user => {
+          const isAlreadySelected = selectedEmails.includes(user.email)
+          const matchesUsername = user.username.toLowerCase().includes(query)
+          const matchesEmail = user.email.toLowerCase().includes(query)
+          
+          return !isAlreadySelected && (matchesUsername || matchesEmail)
+        })
         showSuggestions(filtered)
       } else {
         hideSuggestions()
@@ -855,10 +951,17 @@
         case 'Enter':
           e.preventDefault()
           if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
-            addEmailTag(suggestions[currentSuggestionIndex].textContent)
+            const selectedUser = allUsers.find(user => 
+              user.username === suggestions[currentSuggestionIndex].dataset.username ||
+              user.email === suggestions[currentSuggestionIndex].dataset.email
+            )
+            if (selectedUser) {
+              addEmailTag(selectedUser.email)
+            }
           } else {
-            const email = e.target.value.trim()
-            if (validateEmail(email)) {
+            const input = e.target.value.trim()
+            const email = getEmailFromUsernameOrEmail(input)
+            if (email && validateEmail(email)) {
               addEmailTag(email)
             }
           }
@@ -878,16 +981,21 @@
       }
     }
 
-    function showSuggestions(emails) {
+    function showSuggestions(users) {
       const suggestionsDiv = document.getElementById('autocomplete-suggestions')
       
-      if (emails.length === 0) {
+      if (users.length === 0) {
         hideSuggestions()
         return
       }
       
-      suggestionsDiv.innerHTML = emails.map(email => 
-        `<div class="suggestion-item" onclick="addEmailTag('${email}')">${email}</div>`
+      suggestionsDiv.innerHTML = users.map(user => 
+        `<div class="suggestion-item" data-email="${user.email}" data-username="${user.username}" onclick="addEmailTag('${user.email}')">
+          <div class="suggestion-user">
+            <span class="suggestion-username">${user.username}</span>
+            <span class="suggestion-email">${user.email}</span>
+          </div>
+        </div>`
       ).join('')
       
       suggestionsDiv.style.display = 'block'
@@ -921,12 +1029,15 @@
 
     function updateEmailTags() {
       const tagsDiv = document.getElementById('email-tags')
-      tagsDiv.innerHTML = selectedEmails.map(email => 
-        `<div class="email-tag">
-          ${email}
-          <span class="remove-tag" onclick="removeEmailTag('${email}')">×</span>
+      tagsDiv.innerHTML = selectedEmails.map(email => {
+        const isAutoreceiver = email === autoreceiverEmail
+        const displayName = getUserDisplay(email)
+        
+        return `<div class="email-tag ${isAutoreceiver ? 'autoreceiver' : ''}">
+          ${displayName}
+          ${!isAutoreceiver ? `<span class="remove-tag" onclick="removeEmailTag('${email}')">×</span>` : '⭐'}
         </div>`
-      ).join('')
+      }).join('')
     }
 
     function clearSelectedEmails() {
