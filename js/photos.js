@@ -48,7 +48,7 @@ export async function showPhotoPreview() {
         <div>Date: ${new Date(latestPhoto.created_at).toLocaleDateString()}</div>
       </div>
       <div class="popup-buttons">
-        <a href="/gallery.html?filter=shared-with-me" target="_blank" class="popup-btn popup-btn-primary">
+        <a href="/pages/gallery.html?filter=shared-with-me" target="_blank" class="popup-btn popup-btn-primary">
           🌟 Go to Gallery
         </a>
         <button class="popup-btn popup-btn-secondary" onclick="window.closePhotoPreview()">
@@ -116,11 +116,11 @@ export async function handleFileUpload(file) {
 
 // GALLERY INTEGRATION
 export function redirectToGallery() {
-  window.open('/gallery.html', '_blank');
+  window.open('/pages/gallery.html', '_blank');
 }
 
 export function redirectToGalleryWithFilter(filter) {
-  window.open(`/gallery.html?filter=${filter}`, '_blank');
+  window.open(`/pages/gallery.html?filter=${filter}`, '_blank');
 }
 
 // IMAGE VALIDATION
