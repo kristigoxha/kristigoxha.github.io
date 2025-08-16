@@ -170,7 +170,8 @@
       opacity: 0.9;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group textarea {
       padding: 12px 15px;
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 10px;
@@ -180,8 +181,20 @@
       backdrop-filter: blur(5px);
     }
 
-    .form-group input::placeholder {
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
       color: rgba(255,255,255,0.7);
+    }
+
+    .image-caption {
+      font-style: italic;
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      font-size: 0.9em;
+      line-height: 1.4;
+      border-left: 3px solid rgba(255,255,255,0.3);
     }
 
     .autocomplete-container {
@@ -506,6 +519,11 @@
           </label>
         </div>
         
+        <div class="form-group">
+          <label>Add a caption (optional):</label>
+          <textarea id="image-caption" placeholder="Write something to poopookie 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
+        </div>
+        
         <div class="share-controls">
           <div class="form-group">
             <label>Choose people to send this to:</label>
@@ -753,9 +771,11 @@
       try {
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
+          const caption = document.getElementById('image-caption').value.trim()
+          
           showStatus(`Uploading image ${i + 1} of ${files.length}: ${file.name}`, 'info', true)
           
-          await uploadSingleImage(file, emailsToShare)
+          await uploadSingleImage(file, emailsToShare, caption)
           
           showStatus(`✅ Image uploaded: ${file.name}`, 'success')
           await new Promise(resolve => setTimeout(resolve, 1000)) // Brief pause to show success
@@ -773,7 +793,7 @@
       }
     }
 
-    async function uploadSingleImage(file, shareEmails) {
+    async function uploadSingleImage(file, shareEmails, caption = '') {
       const fileName = `${currentUser.id}/${Date.now()}-${file.name}`
       
       // Upload to storage
@@ -788,7 +808,7 @@
         .from('pookiepics')
         .getPublicUrl(fileName)
       
-      // Save to database with owner_username
+      // Save to database with owner_username and caption
       const { error: dbError } = await supabase
         .from('shared_images')
         .insert([{
@@ -800,7 +820,8 @@
           file_url: publicUrl,
           file_size: file.size,
           mime_type: file.type,
-          shared_with_emails: shareEmails
+          shared_with_emails: shareEmails,
+          caption: caption || null
         }])
       
       if (dbError) throw dbError
@@ -808,6 +829,7 @@
 
     function resetUploadForm() {
       document.getElementById('image-input').value = ''
+      document.getElementById('image-caption').value = ''
       clearSelectedEmails()
       
       // Re-add autoreceiver if set
@@ -863,6 +885,7 @@
             <img src="${image.file_url}" alt="${image.filename}" onclick="openModal('${image.file_url}')">
             <div class="image-info">
               <div class="image-title">${image.filename}</div>
+              ${image.caption ? `<div class="image-caption">"${image.caption}"</div>` : ''}
               <div class="image-meta">By: ${ownerDisplay}</div>
               <div class="image-meta">
                 Uploaded: ${new Date(image.created_at).toLocaleDateString()}
