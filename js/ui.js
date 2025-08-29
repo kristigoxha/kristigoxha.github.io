@@ -79,8 +79,10 @@ export function closePasswordModal() {
   document.getElementById('password-change-message').textContent = '';
   
   // Clear form
-  document.getElementById('current-password').value = '';
-  document.getElementById('new-password').value = '';
+  const currentPass = document.getElementById('current-password');
+  const newPass = document.getElementById('new-password');
+  if (currentPass) currentPass.value = '';
+  if (newPass) newPass.value = '';
 }
 
 export function openImageModal(imageUrl) {
@@ -94,6 +96,8 @@ export function closeImageModal() {
 
 // APP SETUP AND MAIN FUNCTIONALITY
 export async function setupApp() {
+  console.log('🎮 Setting up app functionality...');
+  
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
   const counterSpan = document.getElementById("todayCount");
@@ -177,6 +181,8 @@ export async function setupApp() {
       }
     });
   }
+  
+  console.log('✅ App setup complete');
 }
 
 // SHOW APP WITH PROPER STATE MANAGEMENT
@@ -184,13 +190,7 @@ export async function showApp() {
   console.log('🎎 Showing main app...');
   
   try {
-    // Hide loading screen if it exists
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-      loadingScreen.remove();
-    }
-    
-    // Hide login section
+    // Ensure login section is hidden
     const loginSection = document.getElementById('login-section');
     if (loginSection) {
       loginSection.style.display = 'none';
@@ -200,7 +200,7 @@ export async function showApp() {
     const appSection = document.getElementById('app-section');
     if (appSection) {
       appSection.style.display = 'flex';
-      appSection.classList.remove('hidden'); // Remove any hidden class
+      appSection.classList.remove('hidden');
     }
     
     // Check if we should show yesterday's boing modal
@@ -215,11 +215,11 @@ export async function showApp() {
     // Setup the app functionality
     await setupApp();
     
-    console.log('✅ App display complete');
+    console.log('✅ App displayed successfully');
     
   } catch (error) {
     console.error('Error showing app:', error);
-    // Fallback: just show the app section
+    // Fallback: just show the app section and setup
     const appSection = document.getElementById('app-section');
     if (appSection) {
       appSection.style.display = 'flex';
@@ -228,7 +228,7 @@ export async function showApp() {
   }
 }
 
-// Show yesterday's boing modal
+// Show yesterday's boing modal with better animations
 async function showYesterdayBoingModal() {
   try {
     const yCount = await getYesterdaysBoings();
@@ -245,6 +245,7 @@ async function showYesterdayBoingModal() {
 
     message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`;
 
+    // Show modal with smooth animation
     modal.style.display = 'flex';
     modal.style.opacity = '0';
     
@@ -266,6 +267,7 @@ async function showYesterdayBoingModal() {
         setTimeout(() => {
           modal.style.display = 'none';
           modal.style.transition = '';
+          modal.style.opacity = '';
         }, 300);
       };
     }
@@ -337,44 +339,57 @@ export function updatePWAStatusIndicator() {
   }
 }
 
-// Enhanced app visibility management
-export function ensureAppVisibility() {
-  const loginSection = document.getElementById('login-section');
-  const appSection = document.getElementById('app-section');
-  const loadingScreen = document.getElementById('loading-screen');
-  
-  // Hide loading and login
-  if (loadingScreen) loadingScreen.remove();
-  if (loginSection) loginSection.style.display = 'none';
-  
-  // Show app
-  if (appSection) {
-    appSection.style.display = 'flex';
-    appSection.classList.remove('hidden');
+// SHOW PHOTO PREVIEW FUNCTIONALITY
+export async function showPhotoPreview() {
+  try {
+    const { getSharedImages } = await import('./database.js');
+    const images = await getSharedImages();
+    
+    const popup = document.getElementById('photo-preview-popup');
+    const content = document.getElementById('photo-preview-content');
+    
+    if (!popup || !content) {
+      console.error('Photo preview elements not found');
+      return;
+    }
+    
+    if (images.length === 0) {
+      content.innerHTML = '<div style="text-align: center; color: white; padding: 20px;">No shared photos yet! 📸</div>';
+    } else {
+      content.innerHTML = images.map(img => `
+        <div class="photo-item">
+          <img src="${img.url}" alt="${img.name}" onclick="openImageModal('${img.url}')" />
+          <div class="photo-name">${img.name}</div>
+        </div>
+      `).join('');
+    }
+    
+    popup.classList.add('show');
+    
+    // Close button functionality
+    const closeBtn = popup.querySelector('.close-btn');
+    if (closeBtn) {
+      closeBtn.onclick = closePhotoPreview;
+    }
+    
+  } catch (error) {
+    console.error('Error loading photo preview:', error);
+    alert('Error loading photos. Please try again.');
   }
 }
 
-// Enhanced login visibility management
-export function ensureLoginVisibility() {
-  const loginSection = document.getElementById('login-section');
-  const appSection = document.getElementById('app-section');
-  const loadingScreen = document.getElementById('loading-screen');
-  
-  // Hide loading and app
-  if (loadingScreen) loadingScreen.remove();
-  if (appSection) {
-    appSection.style.display = 'none';
-    appSection.classList.add('hidden');
-  }
-  
-  // Show login
-  if (loginSection) {
-    loginSection.style.display = 'flex';
+// Close photo preview
+export function closePhotoPreview() {
+  const popup = document.getElementById('photo-preview-popup');
+  if (popup) {
+    popup.classList.remove('show');
   }
 }
 
 // SETUP ALL UI EVENT LISTENERS
 export function setupUIEventListeners() {
+  console.log('🔗 Setting up UI event listeners...');
+  
   setupMenuHandlers();
   updatePWAStatus();
   updatePWAStatusIndicator();
@@ -391,6 +406,8 @@ export function setupUIEventListeners() {
   window.closeImageModal = closeImageModal;
   window.viewBoingHistory = viewBoingHistory;
   window.updatePWAStatusIndicator = updatePWAStatusIndicator;
-  window.ensureAppVisibility = ensureAppVisibility;
-  window.ensureLoginVisibility = ensureLoginVisibility;
+  window.showPhotoPreview = showPhotoPreview;
+  window.closePhotoPreview = closePhotoPreview;
+  
+  console.log('✅ UI event listeners setup complete');
 }
