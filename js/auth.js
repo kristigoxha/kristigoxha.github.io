@@ -31,7 +31,7 @@ function showLoadingState() {
   `;
   
   loadingDiv.innerHTML = `
-    <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">💖</div>
+    <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">🎎</div>
     <div style="font-size: 1rem;">loading...</div>
   `;
   
