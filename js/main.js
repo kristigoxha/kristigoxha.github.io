@@ -13,12 +13,12 @@ import { initializeCookieConsent } from './cookies.js';
 import { register, login, logout, resetPassword, changePassword } from './auth.js';
 import { showApp } from './ui.js';
 
-// App initialization
+// App initialization with proper loading states
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🎎 Initializing Pookie\'s App...');
   
   try {
-    // Initialize cookie consent first
+    // Initialize cookie consent first (but don't wait)
     initializeCookieConsent();
     
     // Setup all event listeners
@@ -30,10 +30,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Setup authentication state handler
     setupAuthStateHandler();
     
-    // Initialize PWA functionality
-    await initializePWA();
+    // Initialize PWA functionality (don't wait)
+    initializePWA().catch(error => {
+      console.warn('PWA initialization failed:', error);
+    });
     
-    // Check if user is already authenticated
+    // Check if user is already authenticated (this will handle loading states)
     await checkAuth();
     
     console.log('✅ App initialized successfully');
@@ -84,6 +86,7 @@ function setupFormHandlers() {
     [emailInput, passwordInput].forEach(input => {
       input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
+          e.preventDefault();
           login();
         }
       });
@@ -95,6 +98,7 @@ function setupFormHandlers() {
   if (resetEmailInput) {
     resetEmailInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
         resetPassword();
       }
     });
@@ -105,9 +109,18 @@ function setupFormHandlers() {
   settingsInputs.forEach(input => {
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
         const { saveSettings } = window;
         if (saveSettings) saveSettings();
       }
+    });
+  });
+  
+  // Disable form submission on Enter to prevent page reload
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
     });
   });
 }
@@ -124,7 +137,7 @@ function setupKeyboardShortcuts() {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       const emailInput = document.getElementById('email');
-      if (emailInput && emailInput.style.display !== 'none') {
+      if (emailInput && emailInput.offsetParent !== null) {
         emailInput.focus();
       }
     }
@@ -132,7 +145,7 @@ function setupKeyboardShortcuts() {
     // Ctrl/Cmd + Enter - quick login if on login page
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       const loginSection = document.getElementById('login-section');
-      if (loginSection && loginSection.style.display !== 'none') {
+      if (loginSection && loginSection.offsetParent !== null) {
         e.preventDefault();
         login();
       }
@@ -184,8 +197,16 @@ function closeAllModals() {
 
 // Show initialization error
 function showInitializationError(error) {
+  // Remove any loading screens first
+  const existingLoading = document.getElementById('loading-screen');
+  if (existingLoading) {
+    existingLoading.remove();
+  }
+  
   const loginSection = document.getElementById('login-section');
   if (loginSection) {
+    loginSection.style.display = 'flex'; // Show login section
+    
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
       background: rgba(255, 0, 0, 0.1);
@@ -195,11 +216,21 @@ function showInitializationError(error) {
       margin: 10px 0;
       color: white;
       text-align: center;
+      backdrop-filter: blur(5px);
     `;
     errorDiv.innerHTML = `
       <h3>⚠️ Initialization Error</h3>
       <p>Something went wrong while starting the app. Please refresh the page.</p>
-      <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: white; color: #333; border: none; border-radius: 4px; cursor: pointer;">
+      <button onclick="location.reload()" style="
+        margin-top: 10px; 
+        padding: 8px 16px; 
+        background: white; 
+        color: #333; 
+        border: none; 
+        border-radius: 4px; 
+        cursor: pointer;
+        font-weight: 600;
+      ">
         🔄 Refresh Page
       </button>
     `;
@@ -211,9 +242,13 @@ function showInitializationError(error) {
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
   
-  // You could show a user-friendly error message here
-  // For now, just log it and prevent the default browser behavior
+  // Prevent default browser error handling
   event.preventDefault();
+  
+  // Show user-friendly message for auth errors
+  if (event.reason && event.reason.message && event.reason.message.includes('auth')) {
+    showStatus('Authentication error occurred. Please try logging in again.', 'error');
+  }
 });
 
 // Global error handler for JavaScript errors
@@ -228,13 +263,20 @@ window.addEventListener('error', (event) => {
     colno: event.colno,
     error: event.error
   });
+  
+  // Don't show error to user unless it's critical
+  if (event.message && event.message.includes('supabase')) {
+    console.warn('Supabase error detected, might need to refresh');
+  }
 });
 
 // Service worker update handler
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // Service worker has been updated, could show a message to user
-    console.log('Service worker updated');
+    if (window.refreshing) return;
+    window.refreshing = true;
+    console.log('Service worker updated, reloading...');
+    window.location.reload();
   });
 }
 
@@ -249,6 +291,13 @@ document.addEventListener('visibilitychange', () => {
     if (updatePWAStatusIndicator) {
       setTimeout(updatePWAStatusIndicator, 100);
     }
+    
+    // Re-check auth status if user has been away for a while
+    const { getCurrentUser } = window;
+    if (!getCurrentUser || !getCurrentUser()) {
+      console.log('No current user, rechecking auth...');
+      checkAuth().catch(console.error);
+    }
   }
 });
 
@@ -256,5 +305,53 @@ document.addEventListener('visibilitychange', () => {
 if (window.performance && window.performance.mark) {
   window.performance.mark('app-initialization-complete');
 }
+
+// Utility function to show status messages (used by error handlers)
+function showStatus(message, type) {
+  // Try to find a status container
+  let statusContainer = document.getElementById('login-message') || 
+                       document.getElementById('upload-status') ||
+                       document.getElementById('settings-message');
+  
+  if (statusContainer) {
+    statusContainer.textContent = message;
+    statusContainer.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc';
+    
+    // Clear after 5 seconds unless it's an error
+    if (type !== 'error') {
+      setTimeout(() => {
+        statusContainer.textContent = '';
+      }, 5000);
+    }
+  } else {
+    // Fallback: create a temporary status message
+    const tempStatus = document.createElement('div');
+    tempStatus.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: ${type === 'error' ? 'rgba(255, 107, 107, 0.9)' : 'rgba(81, 207, 102, 0.9)'};
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      z-index: 10000;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    tempStatus.textContent = message;
+    document.body.appendChild(tempStatus);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (document.body.contains(tempStatus)) {
+        tempStatus.remove();
+      }
+    }, 4000);
+  }
+}
+
+// Make showStatus globally available
+window.showStatus = showStatus;
 
 console.log('🎎 Main.js loaded successfully');

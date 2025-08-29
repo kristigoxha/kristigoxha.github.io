@@ -151,6 +151,97 @@
       box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
     }
 
+    /* Image Preview Section */
+    .image-preview-section {
+      margin: 20px 0;
+      display: none;
+    }
+
+    .image-preview-section.show {
+      display: block;
+    }
+
+    .selected-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .image-preview {
+      position: relative;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px;
+      backdrop-filter: blur(5px);
+      max-width: 200px;
+    }
+
+    .image-preview img {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .image-info {
+      margin-top: 8px;
+      font-size: 0.85em;
+      opacity: 0.9;
+    }
+
+    .image-info .filename {
+      font-weight: 600;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .image-info .filesize {
+      opacity: 0.7;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .remove-image:hover {
+      background: rgba(255, 0, 0, 1);
+      transform: scale(1.1);
+    }
+
+    .clear-all-images {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+      align-self: flex-start;
+    }
+
+    .clear-all-images:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
     .share-controls {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -364,7 +455,7 @@
       cursor: pointer;
     }
 
-    .image-info {
+    .image-card-info {
       padding: 20px;
     }
 
@@ -488,6 +579,14 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+
+      .selected-images {
+        flex-direction: column;
+      }
+
+      .image-preview {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -518,10 +617,23 @@
             📸 Choose Images to Share
           </label>
         </div>
+
+        <!-- Image Preview Section -->
+        <div class="image-preview-section" id="image-preview-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1em;">Selected Images:</h3>
+            <button class="clear-all-images" onclick="clearAllSelectedImages()">
+              🗑️ Clear All
+            </button>
+          </div>
+          <div class="selected-images" id="selected-images">
+            <!-- Selected images will appear here -->
+          </div>
+        </div>
         
         <div class="form-group">
           <label>Add a caption (optional):</label>
-          <textarea id="image-caption" placeholder="Write something for poopookie 💕" rows="3" style="padding: 12px 15px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 16px; background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(5px); resize: vertical; font-family: inherit;"></textarea>
+          <textarea id="image-caption" placeholder="Write something for poopookie 💕" rows="3"></textarea>
         </div>
         
         <div class="share-controls">
@@ -587,6 +699,7 @@
     let currentSuggestionIndex = -1
     let autoreceiverEmail = null
     let autoreceiverUsername = null
+    let selectedFiles = [] // Store selected files with preview data
 
     // Utility functions
     function showStatus(message, type, showSpinner = false) {
@@ -632,6 +745,113 @@
       return usernameToEmail[input] || null
     }
 
+    // Format file size
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    }
+
+    // Image preview functions
+    function handleFileSelection(files) {
+      console.log('Files selected:', files.length)
+      
+      Array.from(files).forEach(file => {
+        // Validate file
+        if (!validateImageFile(file)) return
+        
+        // Check if file already selected (by name and size)
+        const isAlreadySelected = selectedFiles.some(f => 
+          f.file.name === file.name && f.file.size === file.size
+        )
+        
+        if (isAlreadySelected) {
+          showStatus(`Image "${file.name}" is already selected`, 'info')
+          return
+        }
+        
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = function(e) {
+          const fileData = {
+            file: file,
+            id: Date.now() + Math.random(),
+            preview: e.target.result,
+            name: file.name,
+            size: formatFileSize(file.size)
+          }
+          
+          selectedFiles.push(fileData)
+          updateImagePreviews()
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+
+    function updateImagePreviews() {
+      const previewSection = document.getElementById('image-preview-section')
+      const selectedImagesDiv = document.getElementById('selected-images')
+      
+      if (selectedFiles.length === 0) {
+        previewSection.classList.remove('show')
+        selectedImagesDiv.innerHTML = ''
+        return
+      }
+      
+      previewSection.classList.add('show')
+      
+      selectedImagesDiv.innerHTML = selectedFiles.map(fileData => `
+        <div class="image-preview" data-id="${fileData.id}">
+          <button class="remove-image" onclick="removeSelectedImage('${fileData.id}')">×</button>
+          <img src="${fileData.preview}" alt="${fileData.name}">
+          <div class="image-info">
+            <div class="filename">${fileData.name}</div>
+            <div class="filesize">${fileData.size}</div>
+          </div>
+        </div>
+      `).join('')
+      
+      console.log('Updated previews, selected files:', selectedFiles.length)
+    }
+
+    function removeSelectedImage(fileId) {
+      selectedFiles = selectedFiles.filter(f => f.id !== fileId)
+      updateImagePreviews()
+      
+      // Clear file input if no files selected
+      if (selectedFiles.length === 0) {
+        document.getElementById('image-input').value = ''
+      }
+      
+      showStatus('Image removed', 'info')
+    }
+
+    function clearAllSelectedImages() {
+      selectedFiles = []
+      document.getElementById('image-input').value = ''
+      updateImagePreviews()
+      showStatus('All images cleared', 'info')
+    }
+
+    function validateImageFile(file) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      
+      if (!validTypes.includes(file.type)) {
+        showStatus(`"${file.name}" is not a valid image file (JPEG, PNG, GIF, or WebP)`, 'error')
+        return false
+      }
+      
+      if (file.size > maxSize) {
+        showStatus(`"${file.name}" is too large (max 10MB)`, 'error')
+        return false
+      }
+      
+      return true
+    }
+
     // Authentication
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -648,6 +868,7 @@
       await fetchUsers()
       await loadUserSettings()
       setupAutocomplete()
+      setupFileInput()
       loadImages()
     }
 
@@ -670,6 +891,43 @@
     async function logout() {
       await supabase.auth.signOut()
       window.location.href = '/'
+    }
+
+    // File input setup
+    function setupFileInput() {
+      const fileInput = document.getElementById('image-input')
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileSelection(e.target.files)
+        }
+      })
+      
+      // Drag and drop for file input label
+      const label = document.querySelector('.file-input-label')
+      
+      label.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        label.style.background = 'linear-gradient(45deg, #20c997, #28a745)'
+        label.style.transform = 'translateY(-2px)'
+      })
+      
+      label.addEventListener('dragleave', (e) => {
+        e.preventDefault()
+        label.style.background = 'linear-gradient(45deg, #28a745, #20c997)'
+        label.style.transform = 'none'
+      })
+      
+      label.addEventListener('drop', (e) => {
+        e.preventDefault()
+        label.style.background = 'linear-gradient(45deg, #28a745, #20c997)'
+        label.style.transform = 'none'
+        
+        const files = e.dataTransfer.files
+        if (files.length > 0) {
+          handleFileSelection(files)
+        }
+      })
     }
 
     // User management and settings
@@ -804,11 +1062,8 @@
 
     // Upload functionality
     async function uploadAndShare() {
-      const fileInput = document.getElementById('image-input')
-      const files = fileInput.files
-      
-      if (files.length === 0) {
-        showStatus('You need to select one image boo!!', 'error')
+      if (selectedFiles.length === 0) {
+        showStatus('You need to select at least one image boo!!', 'error')
         return
       }
       
@@ -821,19 +1076,19 @@
       setButtonLoading('upload-btn', true, 'Uploading...')
       
       try {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i]
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const fileData = selectedFiles[i]
           const caption = document.getElementById('image-caption').value.trim()
           
-          showStatus(`Uploading image ${i + 1} of ${files.length}: ${file.name}`, 'info', true)
+          showStatus(`Uploading image ${i + 1} of ${selectedFiles.length}: ${fileData.name}`, 'info', true)
           
-          await uploadSingleImage(file, emailsToShare, caption)
+          await uploadSingleImage(fileData.file, emailsToShare, caption)
           
-          showStatus(`✅ Image uploaded: ${file.name}`, 'success')
+          showStatus(`✅ Image uploaded: ${fileData.name}`, 'success')
           await new Promise(resolve => setTimeout(resolve, 1000)) // Brief pause to show success
         }
         
-        showStatus(`🎉 Successfully uploaded and shared ${files.length} image(s)!`, 'success')
+        showStatus(`🎉 Successfully uploaded and shared ${selectedFiles.length} image(s)!`, 'success')
         resetUploadForm()
         loadImages()
         
@@ -880,7 +1135,7 @@
     }
 
     function resetUploadForm() {
-      document.getElementById('image-input').value = ''
+      clearAllSelectedImages()
       document.getElementById('image-caption').value = ''
       clearSelectedEmails()
       
@@ -911,9 +1166,6 @@
         // Refresh user mappings before displaying to ensure we have latest data
         await fetchUsers()
         
-        console.log('Email to Username mapping:', emailToUsername)
-        console.log('All Users:', allUsers)
-        
         displayImages(images || [])
       } catch (error) {
         console.error('Error loading images:', error)
@@ -941,7 +1193,7 @@
         return `
           <div class="image-card">
             <img src="${image.file_url}" alt="${image.filename}" onclick="openModal('${image.file_url}')">
-            <div class="image-info">
+            <div class="image-card-info">
               <div class="image-title">${image.filename}</div>
               ${image.caption ? `<div class="image-caption">"${image.caption}"</div>` : ''}
               <div class="image-meta">By: ${ownerDisplay}</div>
