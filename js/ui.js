@@ -164,19 +164,19 @@ export async function setupApp() {
       
       const fileNameEl = document.getElementById('file-name');
       if (fileNameEl) {
-        fileNameEl.textContent = `🎉 File ready: ${file.name}`;
+        fileNameEl.textContent = `File ready: ${file.name}`;
       }
       
       try {
         const { uploadFile } = await import('./database.js');
         await uploadFile(file);
         if (fileNameEl) {
-          fileNameEl.textContent = `✅ ${file.name} uploaded successfully!`;
+          fileNameEl.textContent = `${file.name} uploaded successfully!`;
         }
       } catch (error) {
         console.error('Upload error:', error);
         if (fileNameEl) {
-          fileNameEl.textContent = `❌ Upload failed: ${error.message}`;
+          fileNameEl.textContent = `Upload failed: ${error.message}`;
         }
       }
     });
@@ -306,12 +306,12 @@ export function updatePWAStatus() {
   
   if ('serviceWorker' in navigator) {
     if (navigator.serviceWorker.controller) {
-      statusEl.textContent = '📱 App Mode';
+      statusEl.textContent = 'App Mode';
     } else {
-      statusEl.textContent = '🌐 Web Mode';
+      statusEl.textContent = 'Web Mode';
     }
   } else {
-    statusEl.textContent = '🌐 Browser Mode';
+    statusEl.textContent = 'Browser Mode';
   }
 }
 
@@ -328,13 +328,13 @@ export function updatePWAStatusIndicator() {
   if (!statusEl) return;
   
   if (isStandalone()) {
-    statusEl.textContent = '📱 App Mode';
+    statusEl.textContent = 'App Mode';
     statusEl.style.color = 'rgba(255, 255, 255, 0.9)';
   } else if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    statusEl.textContent = '🔄 PWA Ready';
+    statusEl.textContent = 'PWA Ready';
     statusEl.style.color = 'rgba(255, 255, 255, 0.7)';
   } else {
-    statusEl.textContent = '🌐 Web Mode';
+    statusEl.textContent = 'Web Mode';
     statusEl.style.color = 'rgba(255, 255, 255, 0.5)';
   }
 }
@@ -354,7 +354,7 @@ export async function showPhotoPreview() {
     }
     
     if (images.length === 0) {
-      content.innerHTML = '<div style="text-align: center; color: white; padding: 20px;">No shared photos yet! 📸</div>';
+      content.innerHTML = '<div style="text-align: center; color: white; padding: 20px;">No shared photos yet!</div>';
     } else {
       content.innerHTML = images.map(img => `
         <div class="photo-item">

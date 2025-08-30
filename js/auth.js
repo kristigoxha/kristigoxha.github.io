@@ -1,5 +1,5 @@
 // js/auth.js
-// Authentication functionality with proper loading states
+// Authentication functionality with simple, warm styling
 
 import { supabase, updateCurrentUser } from './config.js';
 
@@ -25,14 +25,14 @@ function showLoadingState() {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #a18cd1 0%, #a18cd1 100%);
+    background: linear-gradient(135deg, #a18cd1 0%, #c4a4d8 50%, #e6d3f2 100%);
     color: white;
     z-index: 9999;
   `;
   
   loadingDiv.innerHTML = `
     <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">🎎</div>
-    <div style="font-size: 1rem;">loading...</div>
+    <div style="font-size: 1rem; color: #8b7ca3;">loading...</div>
   `;
   
   // Add pulse animation if not already present
@@ -57,6 +57,40 @@ function hideLoadingState() {
   const loadingScreen = document.getElementById('loading-screen');
   if (loadingScreen) {
     loadingScreen.remove();
+  }
+}
+
+// Enhanced message display function
+function showMessage(elementId, text, type = 'info') {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  
+  element.textContent = text;
+  element.className = `message ${type}`;
+  element.style.display = 'block';
+  
+  // Auto-hide success messages
+  if (type === 'success') {
+    setTimeout(() => {
+      element.style.display = 'none';
+    }, 4000);
+  }
+}
+
+// Enhanced button loading states
+function setButtonLoading(button, isLoading, loadingText = '') {
+  if (isLoading) {
+    button.disabled = true;
+    button.classList.add('btn-loading');
+    button.setAttribute('data-original-text', button.textContent);
+    button.textContent = loadingText;
+  } else {
+    button.disabled = false;
+    button.classList.remove('btn-loading');
+    const originalText = button.getAttribute('data-original-text');
+    if (originalText) {
+      button.textContent = originalText;
+    }
   }
 }
 
@@ -102,18 +136,16 @@ function showLoginForm() {
   if (appSection) appSection.style.display = 'none';
 }
 
-// User registration with loading states
+// User registration with enhanced loading states
 export async function register() {
   const registerBtn = document.querySelector('button[onclick="register()"]');
-  const originalText = registerBtn.textContent;
   const messageEl = document.getElementById('login-message');
   
   // Clear previous messages
-  messageEl.textContent = '';
+  messageEl.style.display = 'none';
   
   try {
-    registerBtn.disabled = true;
-    registerBtn.textContent = 'Registering...';
+    setButtonLoading(registerBtn, true, 'Creating account...');
     
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -130,43 +162,37 @@ export async function register() {
     
     if (error) {
       console.error('Registration error:', error);
-      messageEl.textContent = '❌ ' + error.message;
-      messageEl.style.color = 'red';
+      showMessage('login-message', error.message, 'error');
       return;
     }
     
     const message = data.user && !data.session 
-      ? '✅ Check your email to verify your account!'
-      : '✅ Registration successful! You can now login.';
+      ? 'Account created! Please check your email to verify.'
+      : 'Registration successful! You can now sign in.';
     
-    messageEl.textContent = message;
-    messageEl.style.color = 'green';
+    showMessage('login-message', message, 'success');
     
     // Clear form on success
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
     
   } catch (error) {
-    messageEl.textContent = '❌ ' + error.message;
-    messageEl.style.color = 'red';
+    showMessage('login-message', error.message, 'error');
   } finally {
-    registerBtn.disabled = false;
-    registerBtn.textContent = originalText;
+    setButtonLoading(registerBtn, false);
   }
 }
 
-// User login with loading states
+// User login with enhanced loading states
 export async function login() {
   const loginBtn = document.querySelector('button[onclick="login()"]');
-  const originalText = loginBtn.textContent;
   const messageEl = document.getElementById('login-message');
   
   // Clear previous messages
-  messageEl.textContent = '';
+  messageEl.style.display = 'none';
   
   try {
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Logging in...';
+    setButtonLoading(loginBtn, true, 'Signing in...');
     
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -181,19 +207,21 @@ export async function login() {
     console.log('✅ Login successful');
     updateCurrentUser(data.user);
     
-    // Show brief loading before transitioning
-    showLoadingState();
+    // Show success message briefly
+    showMessage('login-message', 'Welcome back! Loading your app...', 'success');
     
-    const { showApp } = await import('./ui.js');
-    await showApp();
+    // Show loading before transitioning
+    setTimeout(async () => {
+      showLoadingState();
+      const { showApp } = await import('./ui.js');
+      await showApp();
+    }, 800);
     
   } catch (error) {
     console.error('Login error:', error);
-    messageEl.textContent = '❌ ' + error.message;
-    messageEl.style.color = 'red';
+    showMessage('login-message', error.message, 'error');
   } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = originalText;
+    setButtonLoading(loginBtn, false);
   }
 }
 
@@ -218,25 +246,22 @@ export async function logout() {
   }
 }
 
-// Password reset with loading states
+// Password reset with enhanced loading states
 export async function resetPassword() {
   const email = document.getElementById('reset-email').value;
   const msgEl = document.getElementById('reset-message');
   const resetBtn = document.querySelector('button[onclick="resetPassword()"]');
-  const originalText = resetBtn.textContent;
   
   // Clear previous messages
-  msgEl.textContent = '';
+  msgEl.style.display = 'none';
   
   if (!email || !email.includes('@')) {
-    msgEl.textContent = '❌ Please enter a valid email address.';
-    msgEl.style.color = 'red';
+    showMessage('reset-message', 'Please enter a valid email address.', 'error');
     return;
   }
   
   try {
-    resetBtn.disabled = true;
-    resetBtn.textContent = 'Sending...';
+    setButtonLoading(resetBtn, true, 'Sending reset link...');
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin
@@ -244,20 +269,17 @@ export async function resetPassword() {
     
     if (error) throw error;
     
-    msgEl.style.color = 'green';
-    msgEl.textContent = '✅ Password reset email sent! Check your inbox.';
+    showMessage('reset-message', 'Reset link sent! Check your inbox.', 'success');
     document.getElementById('reset-email').value = '';
     
   } catch (error) {
-    msgEl.style.color = 'red';
-    msgEl.textContent = '❌ ' + error.message;
+    showMessage('reset-message', error.message, 'error');
   } finally {
-    resetBtn.disabled = false;
-    resetBtn.textContent = originalText;
+    setButtonLoading(resetBtn, false);
   }
 }
 
-// Change password with loading states
+// Change password with enhanced loading states
 export async function changePassword() {
   const { getCurrentUser } = await import('./config.js');
   const currentUser = getCurrentUser();
@@ -277,13 +299,13 @@ export async function changePassword() {
   msgEl.textContent = '';
   
   if (!currentPassword || !newPassword) {
-    msgEl.textContent = '❌ Please fill in all fields';
+    msgEl.textContent = 'Please fill in all fields';
     msgEl.style.color = 'red';
     return;
   }
   
   if (newPassword.length < 6) {
-    msgEl.textContent = '❌ New password must be at least 6 characters';
+    msgEl.textContent = 'New password must be at least 6 characters';
     msgEl.style.color = 'red';
     return;
   }
@@ -306,7 +328,7 @@ export async function changePassword() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
     
-    msgEl.textContent = '✅ Password changed successfully!';
+    msgEl.textContent = 'Password changed successfully!';
     msgEl.style.color = 'green';
     
     // Clear form
@@ -317,7 +339,7 @@ export async function changePassword() {
     setTimeout(closePasswordModal, 1500);
     
   } catch (error) {
-    msgEl.textContent = '❌ ' + error.message;
+    msgEl.textContent = error.message;
     msgEl.style.color = 'red';
   } finally {
     changeBtn.disabled = false;

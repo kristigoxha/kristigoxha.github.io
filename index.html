@@ -196,18 +196,45 @@
     </div>
 
     <!-- LOGIN SECTION -->
-    <div id="login-section">
-      <input type="email" id="email" placeholder="you@example.com" />
-      <input type="password" id="password" placeholder="Password" />
-      <div>
-        <button onclick="register()">Register</button>
-        <button onclick="login()">Login</button>
-      </div>
-      <p id="login-message"></p>
-      <input type="email" id="reset-email" placeholder="Forgot password? Enter your email" />
-      <button onclick="resetPassword()">Send Reset Link</button>
-      <p id="reset-message"></p>
-    </div>
+	<div id="login-section">
+		<div class="login-container">
+			<div class="login-header">
+				<span class="emoji">🎎</span>
+				<h1>Welcome back pookie!</h1>
+				<p>Sign in to your home</p>
+			</div>
+
+			<div class="login-form-group">
+				<input type="email" id="email" placeholder="Enter your email" />
+			</div>
+
+			<div class="login-form-group">
+				<input type="password" id="password" placeholder="Enter your password" />
+			</div>
+
+			<div class="login-btn-group">
+				<button class="login-btn btn-secondary" onclick="register()">
+					Create Account
+				</button>
+				<button class="login-btn btn-primary" onclick="login()">
+					Sign In
+				</button>
+			</div>
+
+			<div id="login-message" class="message"></div>
+
+			<div class="reset-section">
+				<h3>Forgot your password?</h3>
+				<div class="login-form-group">
+					<input type="email" id="reset-email" placeholder="Enter your email" />
+				</div>
+				<button class="reset-btn" onclick="resetPassword()">
+					Send Reset Link
+				</button>
+				<div id="reset-message" class="message"></div>
+			</div>
+		</div>
+	</div>
 
     <!-- APP SECTION -->
     <div id="app-section">
