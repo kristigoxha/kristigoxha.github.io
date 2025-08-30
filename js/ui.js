@@ -342,10 +342,10 @@ export function setupUIEventListeners() {
   updatePWAStatus();
   updatePWAStatusIndicator();
   
-  // Update PWA status every 30 seconds
-  setInterval(updatePWAStatusIndicator, 30000);
+  // 🔧 SMART UPDATE: Only update when user interacts or returns to tab
+  setupSmartPWAUpdates();
   
-  // Make functions globally available
+  // Make functions available globally
   window.showPasswordModal = showPasswordModal;
   window.closePasswordModal = closePasswordModal;
   window.toggleMenu = toggleMenu;
@@ -358,4 +358,41 @@ export function setupUIEventListeners() {
   window.closePhotoPreview = closePhotoPreview;
   
   console.log('✅ UI event listeners setup complete');
+}
+
+function setupSmartPWAUpdates() {
+  let lastUpdate = Date.now();
+  
+  // Update only when user returns to tab (if it's been a while)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      const now = Date.now();
+      if (now - lastUpdate > 30000) { // Only if more than 30 seconds passed
+        updatePWAStatusIndicator();
+        lastUpdate = now;
+        console.log('🔄 PWA status updated after tab return');
+      }
+    }
+  });
+  
+  // Update on focus (when user clicks back to tab)
+  window.addEventListener('focus', () => {
+    const now = Date.now();
+    if (now - lastUpdate > 10000) { // Only if more than 10 seconds passed
+      updatePWAStatusIndicator();
+      lastUpdate = now;
+      console.log('🔄 PWA status updated on focus');
+    }
+  });
+  
+  // Update on user interaction (clicks, etc.)
+  document.addEventListener('click', () => {
+    const now = Date.now();
+    if (now - lastUpdate > 60000) { // Only if more than 1 minute passed
+      updatePWAStatusIndicator();
+      lastUpdate = now;
+    }
+  });
+  
+  console.log('✅ Smart PWA updates enabled');
 }

@@ -143,9 +143,6 @@ export async function registerServiceWorker() {
       });
     });
 
-    // Periodically check for updates
-    setInterval(() => reg.update(), 60 * 60 * 1000); // hourly
-
     // When the new SW takes control, reload once
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (refreshing) return;
@@ -231,7 +228,26 @@ export async function initializePWA() {
   updatePWAStatusIndicator();
   updateInstallButton();
   setupPWAEventListeners();
+  
+  // 🔧 SMART UPDATES: Only check for updates when user is active
+  setupSmartServiceWorkerUpdates();
+}
 
-  // Periodic status refresh
-  setInterval(updatePWAStatusIndicator, 30_000);
+function setupSmartServiceWorkerUpdates() {
+  let lastUpdateCheck = Date.now();
+  
+  // Check for service worker updates only when user returns to tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && swRegistration) {
+      const now = Date.now();
+      // Only check once per hour
+      if (now - lastUpdateCheck > 60 * 60 * 1000) {
+        console.log('🔄 Checking for service worker updates...');
+        swRegistration.update().catch(console.warn);
+        lastUpdateCheck = now;
+      }
+    }
+  });
+  
+  console.log('✅ Smart service worker updates enabled');
 }

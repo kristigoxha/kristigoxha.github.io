@@ -29,7 +29,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Setup authentication state handler
     setupAuthStateHandler();
-    
+
+    setupSmartTabHandling();
+
     // Initialize PWA functionality (don't wait)
     initializePWA().catch(error => {
       console.warn('PWA initialization failed:', error);
@@ -281,25 +283,28 @@ if ('serviceWorker' in navigator) {
 }
 
 // Visibility change handler - useful for refreshing data when user returns to tab
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    // User returned to the tab, could refresh data here
-    console.log('User returned to tab');
-    
-    // Update PWA status indicator
-    const { updatePWAStatusIndicator } = window;
-    if (updatePWAStatusIndicator) {
-      setTimeout(updatePWAStatusIndicator, 100);
+function setupSmartTabHandling() {
+  let lastTabReturn = Date.now();
+  
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      const now = Date.now();
+      
+      // Only do expensive operations if user was away for more than 5 minutes
+      if (now - lastTabReturn > 5 * 60 * 1000) {
+        console.log('User returned after long absence, checking auth...');
+        
+        // Only check auth if we don't have a current user
+        const { getCurrentUser } = window;
+        if (getCurrentUser && !getCurrentUser()) {
+          checkAuth().catch(console.error);
+        }
+      }
+      
+      lastTabReturn = now;
     }
-    
-    // Re-check auth status if user has been away for a while
-    const { getCurrentUser } = window;
-    if (!getCurrentUser || !getCurrentUser()) {
-      console.log('No current user, rechecking auth...');
-      checkAuth().catch(console.error);
-    }
-  }
-});
+  });
+}
 
 // Performance monitoring (if cookies accepted)
 if (window.performance && window.performance.mark) {
