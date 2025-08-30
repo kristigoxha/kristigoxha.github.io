@@ -1,5 +1,5 @@
 // js/auth.js
-// Authentication functionality with simple, warm styling
+// Authentication functionality with AuthSessionMissingError fix and fast loading
 
 import { supabase, updateCurrentUser } from './config.js';
 
@@ -94,15 +94,67 @@ function setButtonLoading(button, isLoading, loadingText = '') {
   }
 }
 
-// Check authentication status on page load with loading state
+// 🔧 NEW: Clear corrupted auth session
+async function clearAuthSession() {
+  try {
+    // Sign out to clear any corrupted session
+    await supabase.auth.signOut();
+    
+    // Clear any stored auth data
+    updateCurrentUser(null);
+    
+    // Clear localStorage auth data that might be corrupted
+    const authKeys = Object.keys(localStorage).filter(key => 
+      key.includes('supabase') || 
+      key.includes('auth') || 
+      key.includes('session')
+    );
+    
+    authKeys.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        console.log('🧹 Cleared:', key);
+      } catch (e) {
+        console.warn('Could not clear:', key);
+      }
+    });
+    
+    console.log('✅ Auth session cleared');
+  } catch (error) {
+    console.warn('Error clearing auth session:', error);
+  }
+}
+
+// 🔧 FIXED: Robust authentication check with proper error handling
 export async function checkAuth() {
   console.log('🔐 Checking authentication status...');
   
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    // Add timeout to prevent hanging
+    const authPromise = supabase.auth.getUser();
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Auth check timeout')), 5000); // 5 second timeout
+    });
     
+    const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]);
+    
+    // Handle the AuthSessionMissingError specifically
     if (error) {
-      console.error('Auth check error:', error);
+      console.warn('Auth check error:', error.message);
+      
+      // If it's a session error, clear any stored auth data and show login
+      if (error.message.includes('Auth session missing') || 
+          error.message.includes('session') || 
+          error.message.includes('timeout')) {
+        console.log('🧹 Clearing corrupted auth session...');
+        await clearAuthSession();
+        hideLoadingState();
+        showLoginForm();
+        return;
+      }
+      
+      // For other errors, also show login
+      console.error('Other auth error:', error);
       hideLoadingState();
       showLoginForm();
       return;
@@ -112,6 +164,8 @@ export async function checkAuth() {
       console.log('✅ User authenticated:', user.email);
       updateCurrentUser(user);
       hideLoadingState();
+      
+      // Import and show app
       const { showApp } = await import('./ui.js');
       await showApp();
     } else {
@@ -119,8 +173,12 @@ export async function checkAuth() {
       hideLoadingState();
       showLoginForm();
     }
+    
   } catch (error) {
     console.error('Unexpected auth error:', error);
+    
+    // Always clear session on errors to prevent future issues
+    await clearAuthSession();
     hideLoadingState();
     showLoginForm();
   }
@@ -136,7 +194,7 @@ function showLoginForm() {
   if (appSection) appSection.style.display = 'none';
 }
 
-// User registration with enhanced loading states
+// 🔧 IMPROVED: Registration with session cleanup
 export async function register() {
   const registerBtn = document.querySelector('button[onclick="register()"]');
   const messageEl = document.getElementById('login-message');
@@ -157,6 +215,9 @@ export async function register() {
     if (password.length < 6) {
       throw new Error('Password must be at least 6 characters');
     }
+    
+    // Clear any existing session first
+    await clearAuthSession();
     
     const { data, error } = await supabase.auth.signUp({ email, password });
     
@@ -183,7 +244,7 @@ export async function register() {
   }
 }
 
-// User login with enhanced loading states
+// 🔧 IMPROVED: Login with better error handling
 export async function login() {
   const loginBtn = document.querySelector('button[onclick="login()"]');
   const messageEl = document.getElementById('login-message');
@@ -201,16 +262,37 @@ export async function login() {
       throw new Error('Please fill in all fields');
     }
     
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    console.log('🔐 Attempting login with session cleanup...');
+    
+    // Clear any existing corrupted session first
+    await clearAuthSession();
+    
+    // Add timeout to login attempt
+    const loginPromise = supabase.auth.signInWithPassword({ email, password });
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Login timeout - server may be slow')), 15000);
+    });
+    
+    const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
+    
+    if (error) {
+      // Handle specific auth errors
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password');
+      } else if (error.message.includes('timeout')) {
+        throw new Error('Login timed out - please check your connection and try again');
+      } else {
+        throw error;
+      }
+    }
     
     console.log('✅ Login successful');
     updateCurrentUser(data.user);
     
     // Show success message briefly
-    showMessage('login-message', 'Welcome back! Loading your app...', 'success');
+    showMessage('login-message', 'Welcome back! Loading app...', 'success');
     
-    // Show loading before transitioning
+    // Show loading and transition to app
     setTimeout(async () => {
       showLoadingState();
       const { showApp } = await import('./ui.js');
@@ -225,7 +307,7 @@ export async function login() {
   }
 }
 
-// User logout
+// 🔧 IMPROVED: Better logout
 export async function logout() {
   console.log('🚪 Logging out...');
   
@@ -233,20 +315,19 @@ export async function logout() {
   showLoadingState();
   
   try {
-    await supabase.auth.signOut();
+    // Clear session properly
+    await clearAuthSession();
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
-    // Always clear user state and reload, even if logout fails
-    updateCurrentUser(null);
-    // Small delay to show loading animation
+    // Always reload to ensure clean state
     setTimeout(() => {
       location.reload();
     }, 500);
   }
 }
 
-// Password reset with enhanced loading states
+// 🔧 IMPROVED: Password reset with timeout
 export async function resetPassword() {
   const email = document.getElementById('reset-email').value;
   const msgEl = document.getElementById('reset-message');
@@ -263,9 +344,15 @@ export async function resetPassword() {
   try {
     setButtonLoading(resetBtn, true, 'Sending reset link...');
     
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    // Add timeout to reset request
+    const resetPromise = supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin
     });
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout - please try again')), 10000);
+    });
+    
+    const { error } = await Promise.race([resetPromise, timeoutPromise]);
     
     if (error) throw error;
     
@@ -273,6 +360,7 @@ export async function resetPassword() {
     document.getElementById('reset-email').value = '';
     
   } catch (error) {
+    console.error('Reset password error:', error);
     showMessage('reset-message', error.message, 'error');
   } finally {
     setButtonLoading(resetBtn, false);
@@ -359,3 +447,23 @@ export function setupAuthStateHandler() {
     }
   });
 }
+
+// 🔧 NEW: Debug function to check auth state
+window.debugAuth = function() {
+  console.log('🔍 AUTH DEBUG:');
+  console.log('Current user:', getCurrentUser());
+  console.log('Supabase client:', supabase);
+  
+  // Check localStorage for auth data
+  const authKeys = Object.keys(localStorage).filter(key => 
+    key.includes('supabase') || key.includes('auth')
+  );
+  console.log('Auth localStorage keys:', authKeys);
+  
+  // Test connectivity
+  supabase.auth.getSession().then(({ data, error }) => {
+    console.log('Session check:', { data: data.session ? 'Has session' : 'No session', error });
+  });
+};
+
+console.log('✅ Auth.js loaded with AuthSessionMissingError fixes!');
