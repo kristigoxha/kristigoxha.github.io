@@ -1,45 +1,102 @@
-// js/ui.js - OPTIMIZED VERSION
-// UI interactions with performance improvements for fast loading
+// js/ui.js
+// UI interactions, modals, and menu management - PERFORMANCE OPTIMIZED
 
 import { getTodaysBoings, getYesterdaysBoings, recordBoing, getLastLoginDate, updateLastLoginDate } from './database.js';
 import { APP_CONFIG } from './config.js';
 
-// ✨ NEW: Fast showApp - show UI immediately, load data later
-export async function showApp() {
-  console.log('🚀 Showing app with fast loading...');
-  
-  try {
-    // 1. IMMEDIATELY show the app UI (no waiting!)
-    const loginSection = document.getElementById('login-section');
-    const appSection = document.getElementById('app-section');
-    
-    if (loginSection) loginSection.style.display = 'none';
-    if (appSection) {
-      appSection.style.display = 'flex';
-      appSection.classList.remove('hidden');
-    }
-    
-    // 2. QUICK setup of essential functionality only
-    await setupAppEssentials();
-    
-    console.log('✅ App shown instantly!');
-    
-    // 3. BACKGROUND loading of non-essential features (don't await!)
-    loadBackgroundFeatures().catch(error => {
-      console.warn('Background features failed to load:', error);
+// MENU FUNCTIONALITY
+export function setupMenuHandlers() {
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("menu");
+
+  if (toggle && menu) {
+    // Multiple event listeners for better Safari compatibility
+    toggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
     });
-    
-  } catch (error) {
-    console.error('Error showing app:', error);
-    // Fallback: basic app display
-    const appSection = document.getElementById('app-section');
-    if (appSection) appSection.style.display = 'flex';
+
+    // Touch events for iOS Safari
+    toggle.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", function (e) {
+      if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    // Close menu on escape key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeMenu();
+      }
+    });
   }
 }
 
-// ✨ NEW: Essential setup only - loads instantly
-async function setupAppEssentials() {
-  console.log('⚡ Setting up essential app features...');
+export function toggleMenu() {
+  const menu = document.getElementById("menu");
+  if (menu.classList.contains("open")) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+}
+
+export function openMenu() {
+  const menu = document.getElementById("menu");
+  menu.classList.add("open");
+  // Force reflow for Safari
+  menu.offsetHeight;
+}
+
+export function closeMenu() {
+  const menu = document.getElementById("menu");
+  menu.classList.remove("open");
+}
+
+// MODAL FUNCTIONS
+export function showPasswordModal() {
+  // Close menu first
+  closeMenu();
+  document.getElementById('password-modal').style.display = 'flex';
+  
+  // Focus on first input
+  setTimeout(() => {
+    const firstInput = document.getElementById('current-password');
+    if (firstInput) firstInput.focus();
+  }, 100);
+}
+
+export function closePasswordModal() {
+  document.getElementById('password-modal').style.display = 'none';
+  document.getElementById('password-change-message').textContent = '';
+  
+  // Clear form
+  const currentPass = document.getElementById('current-password');
+  const newPass = document.getElementById('new-password');
+  if (currentPass) currentPass.value = '';
+  if (newPass) newPass.value = '';
+}
+
+export function openImageModal(imageUrl) {
+  document.getElementById('modal-image').src = imageUrl;
+  document.getElementById('image-modal').classList.add('show');
+}
+
+export function closeImageModal() {
+  document.getElementById('image-modal').classList.remove('show');
+}
+
+// APP SETUP AND MAIN FUNCTIONALITY
+export async function setupApp() {
+  console.log('🎮 Setting up app functionality...');
   
   const emoji = document.getElementById("emoji");
   const boing = document.getElementById("boing");
@@ -50,79 +107,131 @@ async function setupAppEssentials() {
     return;
   }
 
-  // Start with 0, load real count in background
-  let todayCount = 0;
-  counterSpan.textContent = todayCount;
+  // Load today's count from database
+  let todayCount = await getTodaysBoings();
+  
+  function updateCounter() {
+    counterSpan.textContent = todayCount;
+  }
 
-  // Essential emoji click handler (works immediately)
+  // Enhanced emoji interaction with better feedback
   emoji.addEventListener("pointerdown", async () => {
-    // Visual feedback (instant)
+    // Visual feedback
     emoji.style.transform = 'scale(0.95)';
     
+    // Play audio
     try {
-      // Play audio
       boing.currentTime = 0;
       await boing.play();
-    } catch (error) {
-      console.warn('Audio play failed:', error);
+    } catch (e) {
+      console.log('Audio play failed (browser policy):', e);
     }
-
-    // Update counter and save to database
-    todayCount++;
-    counterSpan.textContent = todayCount;
     
-    // Save to database (don't wait for this)
-    recordBoing().catch(error => {
-      console.error('Failed to record boing:', error);
-      // Rollback counter on failure
-      todayCount--;
-      counterSpan.textContent = todayCount;
+    // Reset visual state
+    setTimeout(() => {
+      emoji.style.transform = '';
+    }, 150);
+    
+    // Record boing in database
+    try {
+      const success = await recordBoing();
+      if (success) {
+        todayCount++;
+        updateCounter();
+        
+        // Small celebration animation
+        emoji.style.animation = 'spring 0.4s ease';
+        setTimeout(() => {
+          emoji.style.animation = '';
+        }, 400);
+      } else {
+        console.warn('Failed to record boing');
+      }
+    } catch (error) {
+      console.error('Error recording boing:', error);
+    }
+  });
+
+  // Initial counter update
+  updateCounter();
+
+  // File input handler (if exists on main page)
+  const input = document.getElementById("imageInput");
+  if (input) {
+    input.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const fileNameEl = document.getElementById('file-name');
+      if (fileNameEl) {
+        fileNameEl.textContent = `File ready: ${file.name}`;
+      }
+      
+      try {
+        const { uploadFile } = await import('./database.js');
+        await uploadFile(file);
+        if (fileNameEl) {
+          fileNameEl.textContent = `${file.name} uploaded successfully!`;
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        if (fileNameEl) {
+          fileNameEl.textContent = `Upload failed: ${error.message}`;
+        }
+      }
     });
-  });
-
-  emoji.addEventListener("pointerup", () => {
-    emoji.style.transform = '';
-  });
-
-  console.log('✅ Essential features ready!');
+  }
+  
+  console.log('✅ App setup complete');
 }
 
-// ✨ NEW: Background loading of non-essential features
-async function loadBackgroundFeatures() {
-  console.log('🔄 Loading background features...');
+// OPTIMIZED SHOW APP WITH FAST LOADING
+export async function showApp() {
+  console.log('🎎 Showing main app...');
   
   try {
-    // Load today's count from database
-    const actualCount = await getTodaysBoings();
-    const counterSpan = document.getElementById("todayCount");
-    if (counterSpan) {
-      counterSpan.textContent = actualCount;
-    }
-    console.log('✅ Today\'s count loaded');
+    // 1. Show UI immediately - NO WAITING!
+    const loginSection = document.getElementById('login-section');
+    const appSection = document.getElementById('app-section');
     
-    // Check for yesterday's modal (non-blocking)
+    if (loginSection) loginSection.style.display = 'none';
+    if (appSection) {
+      appSection.style.display = 'flex';
+      appSection.classList.remove('hidden');
+    }
+
+    // 2. Setup essential functionality immediately
+    await setupApp();
+    
+    // 3. Do database checks in background (non-blocking)
     setTimeout(async () => {
       try {
         const today = new Date().toLocaleDateString('en-CA');
         const lastLogin = await getLastLoginDate();
-        
+
         if (lastLogin !== today) {
           await showYesterdayBoingModal();
           await updateLastLoginDate();
         }
       } catch (error) {
-        console.warn('Yesterday modal check failed:', error);
+        console.warn('Background database operations failed:', error);
       }
-    }, 2000); // Show modal after 2 seconds
+    }, 2000); // Show modal after 2 seconds, not immediately
     
-    console.log('✅ All background features loaded');
+    console.log('✅ App displayed successfully');
     
   } catch (error) {
-    console.error('Background loading failed:', error);
+    console.error('Error showing app:', error);
+    // Fallback: just show the app section and setup
+    const appSection = document.getElementById('app-section');
+    if (appSection) {
+      appSection.style.display = 'flex';
+    }
+    await setupApp();
   }
 }
 
-// ✨ IMPROVED: Faster yesterday modal (only if needed)
+// Show yesterday's boing modal with better animations
 async function showYesterdayBoingModal() {
   try {
     const yCount = await getYesterdaysBoings();
@@ -145,23 +254,29 @@ async function showYesterdayBoingModal() {
 
     message.textContent = `Yesterday (${yesterday}) you boinged ${yCount} time${yCount === 1 ? '' : 's'}.`;
 
-    // Quick show animation
+    // Show modal with smooth animation
     modal.style.display = 'flex';
     modal.style.opacity = '0';
     
+    // Animate in
     requestAnimationFrame(() => {
       modal.style.transition = 'opacity 0.3s ease';
       modal.style.opacity = '1';
       modalContent.style.transform = 'scale(1)';
+      modalContent.style.opacity = '1';
     });
 
     // Setup OK button
     const okButton = document.getElementById('boing-ok');
     if (okButton) {
       okButton.onclick = () => {
+        modalContent.style.transform = 'scale(0.9)';
+        modalContent.style.opacity = '0';
         modal.style.opacity = '0';
         setTimeout(() => {
           modal.style.display = 'none';
+          modal.style.transition = '';
+          modal.style.opacity = '';
         }, 300);
       };
     }
@@ -170,89 +285,7 @@ async function showYesterdayBoingModal() {
   }
 }
 
-// MENU FUNCTIONALITY (unchanged for reliability)
-export function setupMenuHandlers() {
-  const toggle = document.getElementById("menu-toggle");
-  const menu = document.getElementById("menu");
-
-  if (toggle && menu) {
-    toggle.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleMenu();
-    });
-
-    toggle.addEventListener("touchend", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleMenu();
-    });
-
-    document.addEventListener("click", function (e) {
-      if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-        closeMenu();
-      }
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        closeMenu();
-      }
-    });
-  }
-}
-
-export function toggleMenu() {
-  const menu = document.getElementById("menu");
-  if (menu.classList.contains("open")) {
-    closeMenu();
-  } else {
-    openMenu();
-  }
-}
-
-export function openMenu() {
-  const menu = document.getElementById("menu");
-  menu.classList.add("open");
-  menu.offsetHeight; // Force reflow
-}
-
-export function closeMenu() {
-  const menu = document.getElementById("menu");
-  menu.classList.remove("open");
-}
-
-// MODAL FUNCTIONS (unchanged)
-export function showPasswordModal() {
-  closeMenu();
-  document.getElementById('password-modal').style.display = 'flex';
-  
-  setTimeout(() => {
-    const firstInput = document.getElementById('current-password');
-    if (firstInput) firstInput.focus();
-  }, 100);
-}
-
-export function closePasswordModal() {
-  document.getElementById('password-modal').style.display = 'none';
-  document.getElementById('password-change-message').textContent = '';
-  
-  const currentPass = document.getElementById('current-password');
-  const newPass = document.getElementById('new-password');
-  if (currentPass) currentPass.value = '';
-  if (newPass) newPass.value = '';
-}
-
-export function openImageModal(imageUrl) {
-  document.getElementById('modal-image').src = imageUrl;
-  document.getElementById('image-modal').classList.add('show');
-}
-
-export function closeImageModal() {
-  document.getElementById('image-modal').classList.remove('show');
-}
-
-// BOING HISTORY (unchanged)
+// BOING HISTORY
 export async function viewBoingHistory() {
   try {
     const { getBoingHistory } = await import('./database.js');
@@ -263,6 +296,7 @@ export async function viewBoingHistory() {
       return;
     }
     
+    // Display history
     const historyText = history
       .map(([date, count]) => `${date}: ${count} boing${count === 1 ? '' : 's'}`)
       .join('\n');
@@ -274,7 +308,7 @@ export async function viewBoingHistory() {
   }
 }
 
-// PWA STATUS FUNCTIONS (unchanged)
+// PWA STATUS FUNCTIONS
 export function updatePWAStatus() {
   const installPrompt = document.getElementById('pwa-install-prompt');
   if (installPrompt) {
@@ -303,7 +337,7 @@ export function updatePWAStatusIndicator() {
   }
 }
 
-// PHOTO PREVIEW FUNCTIONS (unchanged)
+// PHOTO PREVIEW FUNCTIONS
 export async function showPhotoPreview(filename) {
   try {
     const { getSignedPhotoUrl } = await import('./photos.js');
@@ -334,33 +368,12 @@ export function closePhotoPreview() {
   }
 }
 
-// SETUP ALL UI EVENT LISTENERS
-export function setupUIEventListeners() {
-  console.log('🔗 Setting up UI event listeners...');
-  
-  setupMenuHandlers();
-  updatePWAStatus();
-  updatePWAStatusIndicator();
-  
-  // 🔧 SMART UPDATE: Only update when user interacts or returns to tab
-  setupSmartPWAUpdates();
-  
-  // Make functions available globally
-  window.showPasswordModal = showPasswordModal;
-  window.closePasswordModal = closePasswordModal;
-  window.toggleMenu = toggleMenu;
-  window.closeMenu = closeMenu;
-  window.openImageModal = openImageModal;
-  window.closeImageModal = closeImageModal;
-  window.viewBoingHistory = viewBoingHistory;
-  window.updatePWAStatusIndicator = updatePWAStatusIndicator;
-  window.showPhotoPreview = showPhotoPreview;
-  window.closePhotoPreview = closePhotoPreview;
-  
-  console.log('✅ UI event listeners setup complete');
-}
-
+// OPTIMIZED SMART PWA UPDATES - NO CONTINUOUS OPERATIONS!
 function setupSmartPWAUpdates() {
+  // Prevent duplicate event listeners
+  if (window.smartPWAUpdatesSetup) return;
+  window.smartPWAUpdatesSetup = true;
+  
   let lastUpdate = Date.now();
   
   // Update only when user returns to tab (if it's been a while)
@@ -373,7 +386,7 @@ function setupSmartPWAUpdates() {
         console.log('🔄 PWA status updated after tab return');
       }
     }
-  });
+  }, { passive: true });
   
   // Update on focus (when user clicks back to tab)
   window.addEventListener('focus', () => {
@@ -383,16 +396,42 @@ function setupSmartPWAUpdates() {
       lastUpdate = now;
       console.log('🔄 PWA status updated on focus');
     }
-  });
+  }, { passive: true });
   
-  // Update on user interaction (clicks, etc.)
+  // Update on user interaction (clicks, etc.) - Less frequent
   document.addEventListener('click', () => {
     const now = Date.now();
-    if (now - lastUpdate > 60000) { // Only if more than 1 minute passed
+    if (now - lastUpdate > 120000) { // Only every 2 minutes
       updatePWAStatusIndicator();
       lastUpdate = now;
     }
-  });
+  }, { passive: true });
   
-  console.log('✅ Smart PWA updates enabled');
+  console.log('✅ Smart PWA updates enabled (one-time setup)');
+}
+
+// SETUP ALL UI EVENT LISTENERS
+export function setupUIEventListeners() {
+  console.log('🔗 Setting up UI event listeners...');
+  
+  setupMenuHandlers();
+  updatePWAStatus();
+  updatePWAStatusIndicator();
+  
+  // Setup smart updates (no continuous intervals!)
+  setupSmartPWAUpdates();
+  
+  // Make functions available globally for onclick handlers
+  window.showPasswordModal = showPasswordModal;
+  window.closePasswordModal = closePasswordModal;
+  window.toggleMenu = toggleMenu;
+  window.closeMenu = closeMenu;
+  window.openImageModal = openImageModal;
+  window.closeImageModal = closeImageModal;
+  window.viewBoingHistory = viewBoingHistory;
+  window.updatePWAStatusIndicator = updatePWAStatusIndicator;
+  window.showPhotoPreview = showPhotoPreview;
+  window.closePhotoPreview = closePhotoPreview;
+  
+  console.log('✅ UI event listeners setup complete');
 }
