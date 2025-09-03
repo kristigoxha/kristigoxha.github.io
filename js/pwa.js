@@ -1,84 +1,63 @@
 // js/pwa.js
-// PWA installation, update handling, and service worker management (merged)
+// Progressive Web App functionality - PERFORMANCE OPTIMIZED
 
-let deferredPrompt = null;
 let swRegistration = null;
+let deferredPrompt = null;
 let refreshing = false;
 
-/* ---------------- Device & display helpers (yours) ---------------- */
+/* ---------------- Device & Browser Detection ---------------- */
 
-export function isIOSDevice() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
 }
 
-export function isAndroidDevice() {
-  return /Android/.test(navigator.userAgent);
+function isRunningStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         window.navigator.standalone === true ||
+         document.referrer.includes('android-app://');
 }
 
-export function isRunningStandalone() {
-  return window.navigator.standalone === true ||
-         window.matchMedia('(display-mode: standalone)').matches;
-}
-
-/* ---------------- Install UX (yours) ---------------- */
+/* ---------------- Installation Handlers ---------------- */
 
 export function handlePWAInstall() {
-  const { closeMenu } = window;
-  if (closeMenu) closeMenu();
-
-  if (isRunningStandalone()) {
-    showAlreadyInstalledMessage();
-    return;
-  }
-
   if (isIOSDevice()) {
     showIOSInstallModal();
-  } else {
-    if (deferredPrompt) {
-      installPWA();
-    } else {
-      showManualInstallInstructions();
-    }
-  }
-}
-
-export async function installPWA() {
-  if (!deferredPrompt) {
-    showManualInstallInstructions();
     return;
   }
-  try {
+
+  if (deferredPrompt) {
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('PWA install accepted');
-      showInstallSuccessMessage();
-    } else {
-      console.log('PWA install dismissed');
-    }
-  } catch (err) {
-    console.error('PWA install error:', err);
+    deferredPrompt.userChoice.then((choiceResult) => {
+      console.log('PWA install choice:', choiceResult.outcome);
+      if (choiceResult.outcome === 'accepted') {
+        showInstallSuccessMessage();
+      }
+      deferredPrompt = null;
+      updateInstallButton();
+    });
+  } else {
     showManualInstallInstructions();
-  } finally {
-    deferredPrompt = null;
-    updateInstallButton();
   }
 }
 
-export function showIOSInstallModal() {
-  document.getElementById('ios-install-modal')?.classList.add('show');
-}
-export function closeIOSInstallModal(event) {
-  if (event && event.target !== event.currentTarget) return;
-  document.getElementById('ios-install-modal')?.classList.remove('show');
+export function closeIOSInstallModal() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
 }
 
-function showAlreadyInstalledMessage() {
-  alert("✅ Pookie's app is already installed on your device!");
+function showIOSInstallModal() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) {
+    modal.classList.add('show');
+  }
 }
+
 function showInstallSuccessMessage() {
   alert("🎉 Great! Pookie's app has been installed successfully!");
 }
+
 function showManualInstallInstructions() {
   const instructions = isIOSDevice()
     ? "Tap the Share button (⬆️) at the bottom of Safari, then 'Add to Home Screen'."
@@ -106,7 +85,7 @@ function updateInstallButton() {
   }
 }
 
-/* ---------------- Update banner controls (yours, wired) ---------------- */
+/* ---------------- Update banner controls ---------------- */
 
 export function hidePWAUpdateBanner() {
   document.getElementById('pwa-update-banner')?.classList.remove('show');
@@ -119,7 +98,7 @@ function showPWAUpdateBanner() {
   document.getElementById('pwa-update-dismiss')?.addEventListener('click', () => hidePWAUpdateBanner());
 }
 
-/* ---------------- Service Worker registration & updates (merged) ---------------- */
+/* ---------------- Service Worker registration & updates ---------------- */
 
 export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return null;
@@ -170,7 +149,7 @@ export function updatePWA() {
   }
 }
 
-/* ---------------- Status indicator (yours) ---------------- */
+/* ---------------- Status indicator ---------------- */
 
 export function updatePWAStatusIndicator() {
   const el = document.getElementById('pwa-status');
@@ -185,7 +164,7 @@ export function updatePWAStatusIndicator() {
   }
 }
 
-/* ---------------- Event wiring (merged) ---------------- */
+/* ---------------- Event wiring ---------------- */
 
 export function setupPWAEventListeners() {
   // Install prompt capture
@@ -221,19 +200,13 @@ export function setupPWAEventListeners() {
   window.hidePWAUpdateBanner = hidePWAUpdateBanner;
 }
 
-/* ---------------- Init (yours, with small upgrades) ---------------- */
-
-export async function initializePWA() {
-  await registerServiceWorker();
-  updatePWAStatusIndicator();
-  updateInstallButton();
-  setupPWAEventListeners();
-  
-  // 🔧 SMART UPDATES: Only check for updates when user is active
-  setupSmartServiceWorkerUpdates();
-}
+/* ---------------- OPTIMIZED Smart Service Worker Updates ---------------- */
 
 function setupSmartServiceWorkerUpdates() {
+  // Prevent duplicate event listeners
+  if (window.smartSWUpdatesSetup) return;
+  window.smartSWUpdatesSetup = true;
+  
   let lastUpdateCheck = Date.now();
   
   // Check for service worker updates only when user returns to tab
@@ -247,7 +220,19 @@ function setupSmartServiceWorkerUpdates() {
         lastUpdateCheck = now;
       }
     }
-  });
+  }, { passive: true });
   
-  console.log('✅ Smart service worker updates enabled');
+  console.log('✅ Smart service worker updates enabled (one-time setup)');
+}
+
+/* ---------------- Init (optimized) ---------------- */
+
+export async function initializePWA() {
+  await registerServiceWorker();
+  updatePWAStatusIndicator();
+  updateInstallButton();
+  setupPWAEventListeners();
+  
+  // Setup smart updates (no continuous intervals!)
+  setupSmartServiceWorkerUpdates();
 }
