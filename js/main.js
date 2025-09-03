@@ -1,5 +1,5 @@
 // js/main.js
-// Main application orchestrator - imports and initializes all modules
+// Main application orchestrator - PERFORMANCE OPTIMIZED
 
 // Import all modules
 import { checkAuth, setupAuthStateHandler } from './auth.js';
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Setup authentication state handler
     setupAuthStateHandler();
 
+    // Setup smart tab handling
     setupSmartTabHandling();
 
     // Initialize PWA functionality (don't wait)
@@ -240,6 +241,30 @@ function showInitializationError(error) {
   }
 }
 
+// OPTIMIZED Smart Tab Handling - No expensive operations unless needed
+function setupSmartTabHandling() {
+  let lastTabReturn = Date.now();
+  
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      const now = Date.now();
+      
+      // Only do expensive operations if user was away for more than 5 minutes
+      if (now - lastTabReturn > 5 * 60 * 1000) {
+        console.log('User returned after long absence, checking auth...');
+        
+        // Only check auth if we don't have a current user
+        const { getCurrentUser } = window;
+        if (getCurrentUser && !getCurrentUser()) {
+          checkAuth().catch(console.error);
+        }
+      }
+      
+      lastTabReturn = now;
+    }
+  });
+}
+
 // Global error handler for unhandled promises
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
@@ -282,30 +307,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Visibility change handler - useful for refreshing data when user returns to tab
-function setupSmartTabHandling() {
-  let lastTabReturn = Date.now();
-  
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      const now = Date.now();
-      
-      // Only do expensive operations if user was away for more than 5 minutes
-      if (now - lastTabReturn > 5 * 60 * 1000) {
-        console.log('User returned after long absence, checking auth...');
-        
-        // Only check auth if we don't have a current user
-        const { getCurrentUser } = window;
-        if (getCurrentUser && !getCurrentUser()) {
-          checkAuth().catch(console.error);
-        }
-      }
-      
-      lastTabReturn = now;
-    }
-  });
-}
-
 // Performance monitoring (if cookies accepted)
 if (window.performance && window.performance.mark) {
   window.performance.mark('app-initialization-complete');
@@ -336,27 +337,102 @@ function showStatus(message, type) {
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: ${type === 'error' ? 'rgba(255, 107, 107, 0.9)' : 'rgba(81, 207, 102, 0.9)'};
+      background: ${type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc'};
       color: white;
-      padding: 10px 20px;
-      border-radius: 25px;
+      padding: 12px 20px;
+      border-radius: 6px;
       z-index: 10000;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     `;
     tempStatus.textContent = message;
     document.body.appendChild(tempStatus);
     
-    // Auto-remove after 4 seconds
+    // Auto-remove after 5 seconds
     setTimeout(() => {
-      if (document.body.contains(tempStatus)) {
-        tempStatus.remove();
-      }
-    }, 4000);
+      tempStatus.remove();
+    }, 5000);
   }
 }
 
-// Make showStatus globally available
-window.showStatus = showStatus;
+// Performance monitoring functions
+function addPerformanceMonitoring() {
+  // Track page load time
+  window.addEventListener('load', () => {
+    if (performance.timing) {
+      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+      console.log(`📊 Page loaded in ${loadTime}ms`);
+      
+      if (loadTime > 5000) {
+        console.warn('🐌 Slow page load detected!');
+      }
+    }
+  });
+  
+  // Track auth check time
+  const originalCheckAuth = window.checkAuth;
+  if (originalCheckAuth) {
+    window.checkAuth = async function() {
+      const start = performance.now();
+      try {
+        const result = await originalCheckAuth();
+        const duration = performance.now() - start;
+        console.log(`📊 Auth check took ${Math.round(duration)}ms`);
+        
+        if (duration > 3000) {
+          console.warn('🐌 Slow auth check detected!');
+        }
+        
+        return result;
+      } catch (error) {
+        const duration = performance.now() - start;
+        console.log(`📊 Auth check failed after ${Math.round(duration)}ms`);
+        throw error;
+      }
+    };
+  }
+}
 
-console.log('🎎 Main.js loaded successfully');
+// Performance testing commands for console
+window.testPerformance = function() {
+  console.log('🔍 PERFORMANCE TEST:');
+  console.log('Smart PWA setup:', !!window.smartPWAUpdatesSetup);
+  console.log('Smart SW setup:', !!window.smartSWUpdatesSetup);
+  console.log('Current user:', window.getCurrentUser ? !!window.getCurrentUser() : 'Not available');
+  
+  // Test auth speed
+  const start = performance.now();
+  if (window.getCurrentUser) {
+    const user = window.getCurrentUser();
+    const duration = performance.now() - start;
+    console.log(`Auth check: ${duration}ms, User: ${user ? 'Found' : 'None'}`);
+  }
+  
+  // Memory info
+  if (performance.memory) {
+    const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+    console.log(`Memory usage: ${used}MB`);
+  }
+  
+  // Page load timing
+  if (performance.timing) {
+    const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+    console.log(`Page load time: ${loadTime}ms`);
+  }
+};
+
+// Debug command to clear all performance optimizations (for testing)
+window.clearPerformanceOptimizations = function() {
+  window.smartPWAUpdatesSetup = false;
+  window.smartSWUpdatesSetup = false;
+  console.log('🧹 Performance optimizations cleared - refresh to test');
+};
+
+// Initialize performance monitoring in development
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  addPerformanceMonitoring();
+  console.log('🔍 Development mode: Performance monitoring enabled');
+  console.log('Available commands: testPerformance(), clearPerformanceOptimizations()');
+}
+
+console.log('✅ Main.js loaded with all performance optimizations!');
