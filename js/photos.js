@@ -1,10 +1,9 @@
-// js/photos.js
-// Photo preview, gallery, and image handling functionality
+// Fixed js/photos.js - Photo preview without duplicate buttons
 
 import { getCurrentUser } from './config.js';
 import { getLatestSharedPhoto } from './database.js';
 
-// PHOTO PREVIEW FUNCTIONALITY
+// PHOTO PREVIEW FUNCTIONALITY - FIXED VERSION
 export async function showPhotoPreview() {
   const currentUser = getCurrentUser();
   if (!currentUser) {
@@ -23,15 +22,11 @@ export async function showPhotoPreview() {
     const latestPhoto = await getLatestSharedPhoto();
     
     if (!latestPhoto) {
+      // NO BUTTONS HERE - Use existing HTML buttons
       content.innerHTML = `
         <div class="no-photos">
           <h3>📷 No shared photos yet</h3>
           <p>Wait for someone to share photos with you!</p>
-          <div class="popup-buttons">
-            <button class="popup-btn popup-btn-secondary" onclick="window.closePhotoPreview()">
-              Close
-            </button>
-          </div>
         </div>
       `;
       return;
@@ -44,6 +39,7 @@ export async function showPhotoPreview() {
     // Get the display name (username or email)
     const ownerDisplay = latestPhoto.owner_username || latestPhoto.owner_email;
     
+    // NO BUTTONS IN CONTENT - Only the photo and info
     content.innerHTML = `
       <img src="${latestPhoto.file_url}" 
            alt="${latestPhoto.filename}" 
@@ -55,15 +51,10 @@ export async function showPhotoPreview() {
         <div>Shared by: ${ownerDisplay}</div>
         <div>Date: ${new Date(latestPhoto.created_at).toLocaleDateString()}</div>
       </div>
-      <div class="popup-buttons">
-        <a href="/pages/gallery.html?filter=shared-with-me" target="_blank" class="popup-btn popup-btn-primary">
-          🌟 Go to Gallery
-        </a>
-        <button class="popup-btn popup-btn-secondary" onclick="window.closePhotoPreview()">
-          Close
-        </button>
-      </div>
     `;
+    
+    // Update the existing HTML buttons to have proper links
+    updatePhotoPreviewButtons();
     
   } catch (error) {
     console.error('Error loading latest photo:', error);
@@ -71,14 +62,20 @@ export async function showPhotoPreview() {
       <div class="no-photos">
         <h3>😢 Error loading photos</h3>
         <p>Something went wrong. Please try again later.</p>
-        <div class="popup-buttons">
-          <button class="popup-btn popup-btn-secondary" onclick="window.closePhotoPreview()">
-            Close
-          </button>
-        </div>
       </div>
     `;
   }
+}
+
+// Helper function to update the existing HTML buttons
+function updatePhotoPreviewButtons() {
+  // Find the primary button (Open Full Gallery) and update its behavior
+  const primaryBtn = document.querySelector('#photo-preview-popup .popup-btn-primary');
+  if (primaryBtn) {
+    primaryBtn.onclick = () => window.open('/pages/gallery.html?filter=shared-with-me', '_blank');
+  }
+  
+  // The secondary button (Close) already works with the existing closePhotoPreview function
 }
 
 export function closePhotoPreview(event) {
