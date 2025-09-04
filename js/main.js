@@ -1,16 +1,17 @@
 // js/main.js
-// Main application orchestrator - PERFORMANCE OPTIMIZED with proper UI flow
+// Main application orchestrator - ACTUALLY FIXED VERSION
 
-// Import all required modules
-import { checkAuth, setupAuthStateHandler } from './auth.js';
+// Import all required modules - CORRECTED IMPORTS
+import { checkInitialAuth, setupAuthStateHandler } from './auth.js';
 import { initializeApp, setupUIEventListeners } from './ui.js';
 import { setupSettingsEventListeners } from './settings.js';
 import { setupPhotoEventListeners } from './photos.js';
 import { initializePWA } from './pwa.js';
 import { initializeCookieConsent } from './cookies.js';
 
-// Import functions that need to be made globally available
+// Import functions that need to be made globally available - CORRECTED IMPORTS
 import { register, login, logout, resetPassword, changePassword } from './auth.js';
+import { getCurrentUser } from './config.js';
 import { showApp, showLogin } from './ui.js';
 
 // 🚀 MAIN APP INITIALIZATION
@@ -87,14 +88,14 @@ function setupGlobalAuthFunctions() {
   window.logout = logout;
   window.resetPassword = resetPassword;
   window.changePassword = changePassword;
+  window.getCurrentUser = getCurrentUser;
   window.showApp = showApp;
   window.showLogin = showLogin;
   
   // Debug function for troubleshooting
   window.debugAuth = function() {
     console.log('🔍 AUTH DEBUG INFO:');
-    const { getCurrentUser } = window;
-    console.log('Current user:', getCurrentUser ? getCurrentUser() : 'Function not available');
+    console.log('Current user:', getCurrentUser());
     
     // Check localStorage for auth data
     const authKeys = Object.keys(localStorage).filter(key => 
@@ -183,9 +184,9 @@ function setupSmartTabHandling() {
         console.log('👀 User returned after long absence, checking auth status...');
         
         // Only check auth if we don't have a current user
-        const { getCurrentUser } = window;
         if (getCurrentUser && !getCurrentUser()) {
-          checkAuth().catch(error => {
+          // FIXED: Use checkInitialAuth instead of checkAuth
+          checkInitialAuth().catch(error => {
             console.error('❌ Auth check on tab return failed:', error);
           });
         }
@@ -394,7 +395,7 @@ window.getAppState = function() {
   console.log('🔍 Current app state:', {
     loginVisible,
     appVisible,
-    currentUser: window.getCurrentUser ? window.getCurrentUser() : null,
+    currentUser: getCurrentUser(),
     timestamp: new Date().toISOString()
   });
   
