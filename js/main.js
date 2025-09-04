@@ -404,11 +404,13 @@ window.getAppState = function() {
 // Function to force refresh current section
 window.refreshUI = function() {
   console.log('🔄 Force refreshing UI...');
-  const { refreshCurrentSection } = require('./ui.js');
+  const { refreshCurrentSection } = window;
   if (refreshCurrentSection) {
     refreshCurrentSection();
   } else {
     console.warn('⚠️ refreshCurrentSection function not available');
+    // Fallback: reload the page
+    window.location.reload();
   }
 };
 
