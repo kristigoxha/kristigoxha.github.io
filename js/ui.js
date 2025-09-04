@@ -233,9 +233,9 @@ async function loadAppData() {
   console.log('📊 Loading application data...');
   
   try {
-    // Load today's boing count
-    const { getTodayBoingCount } = await import('./database.js');
-    const todayCount = await getTodayBoingCount();
+    // Load today's boing count using the correct function name
+    const { getTodaysBoings } = await import('./database.js');
+    const todayCount = await getTodaysBoings();
     
     const countElement = document.getElementById('todayCount');
     if (countElement) {
@@ -244,7 +244,7 @@ async function loadAppData() {
     }
     
     // Load user profile data
-    const { getCurrentUser } = await import('./auth.js');
+    const { getCurrentUser } = await import('./config.js');
     const currentUser = getCurrentUser();
     if (currentUser) {
       console.log(`👤 Current user: ${currentUser.email}`);
