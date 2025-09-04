@@ -1,7 +1,7 @@
-// js/ui.js
-// User Interface management and interactions
+// js/ui.js - Complete UI Controller
+// This file manages what the user sees and handles all UI state changes
 
-// 🔊 AUDIO SYSTEM
+// 🔊 AUDIO SYSTEM - NEW ADDITION
 let boingSound = null;
 
 // Initialize audio when the app starts
@@ -60,29 +60,146 @@ async function playBoingSound() {
   }
 }
 
-// 🎨 UI INITIALIZATION
-export function initializeUI() {
-  console.log('🎨 Initializing UI...');
+// 🎯 MAIN APP INITIALIZATION
+export async function initializeApp() {
+  console.log('🎨 Starting app initialization...');
   
-  // Show loading overlay
-  const overlay = createLoadingOverlay();
-  document.body.appendChild(overlay);
+  // Step 1: Hide everything to prevent flash of unstyled content
+  hideAllSections();
   
-  // Initialize all UI components
-  initializeAppUI();
+  // Step 2: Show loading state for better UX
+  showLoadingState();
   
-  // Load app data
-  loadAppData().finally(() => {
-    // Hide loading overlay after data loads
-    setTimeout(() => {
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), 300);
-    }, 500);
+  // Step 3: Check authentication status
+  try {
+    const { getCurrentUser, checkInitialAuth } = await import('./auth.js');
+    const user = await checkInitialAuth();
+    
+    if (user) {
+      console.log('✅ User authenticated:', user.email);
+      await showApp();
+    } else {
+      console.log('❌ No authenticated user, showing login');
+      showLogin();
+    }
+  } catch (error) {
+    console.error('❌ Authentication check failed:', error);
+    showLogin(); // Safe fallback
+  } finally {
+    hideLoadingState();
+  }
+}
+
+// 🔧 CORE SECTION MANAGEMENT FUNCTIONS
+
+function hideAllSections() {
+  console.log('👻 Hiding all application sections...');
+  
+  const sections = [
+    'login-section',
+    'app-section',
+    'settings-modal',
+    'password-modal'
+  ];
+  
+  sections.forEach(sectionId => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.style.display = 'none';
+      console.log(`📱 Hidden section: ${sectionId}`);
+    }
   });
+}
+
+export function showLogin() {
+  console.log('🔐 Displaying login page...');
+  
+  // Hide all other sections first
+  hideAllSections();
+  
+  // Show login section
+  const loginSection = document.getElementById('login-section');
+  if (loginSection) {
+    loginSection.style.display = 'flex';
+    console.log('✅ Login page now visible');
+    
+    // Auto-focus email input for better UX
+    setTimeout(() => {
+      const emailInput = document.getElementById('email');
+      if (emailInput) {
+        emailInput.focus();
+        console.log('📧 Email input focused');
+      }
+    }, 100);
+  } else {
+    console.error('❌ Login section not found in DOM');
+  }
+  
+  // Update browser tab title
+  document.title = 'Login - Pookie\'s App';
+  
+  // Clear any existing error messages
+  clearLoginMessages();
+}
+
+export async function showApp() {
+  console.log('🏠 Displaying main application...');
+  
+  // Hide all other sections first
+  hideAllSections();
+  
+  // Show main app section
+  const appSection = document.getElementById('app-section');
+  if (appSection) {
+    appSection.style.display = 'flex';
+    console.log('✅ Main app now visible');
+  } else {
+    console.error('❌ App section not found in DOM');
+    return;
+  }
+  
+  // Update browser tab title
+  document.title = 'Pookie\'s App';
+  
+  // Load app-specific data
+  await loadAppData();
+  
+  // Initialize app-specific UI elements - NOW WITH AUDIO!
+  initializeAppUI();
+}
+
+// 🔄 LOADING STATE MANAGEMENT
+
+function showLoadingState() {
+  console.log('⏳ Showing loading state...');
+  
+  // Check if loading overlay already exists
+  let loadingOverlay = document.getElementById('loading-overlay');
+  if (!loadingOverlay) {
+    loadingOverlay = createLoadingOverlay();
+    document.body.appendChild(loadingOverlay);
+  }
+  
+  loadingOverlay.style.display = 'flex';
+}
+
+function hideLoadingState() {
+  console.log('✅ Hiding loading state...');
+  
+  const loadingOverlay = document.getElementById('loading-overlay');
+  if (loadingOverlay) {
+    loadingOverlay.style.opacity = '0';
+    setTimeout(() => {
+      if (loadingOverlay.parentNode) {
+        loadingOverlay.parentNode.removeChild(loadingOverlay);
+      }
+    }, 300);
+  }
 }
 
 function createLoadingOverlay() {
   const overlay = document.createElement('div');
+  overlay.id = 'loading-overlay';
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -107,23 +224,11 @@ function createLoadingOverlay() {
     </div>
   `;
   
-  // Add loading animation styles
-  if (!document.getElementById('loading-styles')) {
-    const style = document.createElement('style');
-    style.id = 'loading-styles';
-    style.textContent = `
-      @keyframes loading {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-  
   return overlay;
 }
 
 // 📊 APP DATA LOADING
+
 async function loadAppData() {
   console.log('📊 Loading application data...');
   
@@ -154,7 +259,7 @@ async function loadAppData() {
 function initializeAppUI() {
   console.log('🎨 Initializing app UI components...');
   
-  // Initialize audio system
+  // NEW: Initialize audio system
   initializeAudio();
   
   // Initialize emoji click counter if present
@@ -172,14 +277,14 @@ function initializeAppUI() {
 }
 
 // 🎭 EMOJI INTERACTION - FIXED WITH SOUND
+
 async function handleEmojiClick() {
   console.log('🎎 Emoji clicked!');
   
   try {
-    // FIRST: Play the sound immediately when clicked
+    // NEW: Play the sound immediately when clicked
     await playBoingSound();
     
-    // THEN: Handle database update
     const { addBoing } = await import('./database.js');
     const result = await addBoing();
     
@@ -211,6 +316,7 @@ function addClickAnimation() {
 }
 
 // 🎯 MODAL MANAGEMENT
+
 export function showSettingsModal() {
   console.log('⚙️ Opening settings modal...');
   
@@ -266,6 +372,7 @@ export function closePasswordModal() {
 }
 
 // 📱 MENU FUNCTIONALITY
+
 function setupMenuToggle() {
   const menuToggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('menu');
@@ -303,75 +410,174 @@ function closeMenu() {
   if (menu && menuToggle) {
     menu.classList.remove('show');
     menuToggle.classList.remove('active');
-    console.log('📱 Menu closed');
   }
 }
 
 // ⌨️ KEYBOARD SHORTCUTS
+
 function setupKeyboardShortcuts() {
-  document.addEventListener('keydown', (e) => {
-    // Spacebar to click emoji
-    if (e.code === 'Space' && !e.target.matches('input, textarea')) {
-      e.preventDefault();
-      handleEmojiClick();
+  document.addEventListener('keydown', handleKeyboardShortcut);
+}
+
+function handleKeyboardShortcut(e) {
+  // Escape key - close any open modals or menus
+  if (e.key === 'Escape') {
+    closeSettingsModal();
+    closePasswordModal();
+    closeMenu();
+    return;
+  }
+  
+  // Spacebar to click emoji (NEW!)
+  if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+    e.preventDefault();
+    handleEmojiClick();
+    return;
+  }
+  
+  // Ctrl/Cmd + K - focus search/email input
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const emailInput = document.getElementById('email');
+    if (emailInput && isOnLoginPage()) {
+      emailInput.focus();
     }
-    
-    // Escape to close modals
-    if (e.code === 'Escape') {
-      closeSettingsModal();
-      closePasswordModal();
-      closeMenu();
-    }
-    
-    // Ctrl/Cmd + , for settings
-    if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+    return;
+  }
+  
+  // Ctrl/Cmd + Enter - quick login
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (isOnLoginPage()) {
       e.preventDefault();
-      showSettingsModal();
+      const { login } = window;
+      if (login) login();
+    }
+    return;
+  }
+}
+
+// 🔧 UTILITY FUNCTIONS
+
+export function isOnLoginPage() {
+  const loginSection = document.getElementById('login-section');
+  return loginSection && loginSection.style.display !== 'none';
+}
+
+export function isOnMainApp() {
+  const appSection = document.getElementById('app-section');
+  return appSection && appSection.style.display !== 'none';
+}
+
+export function refreshCurrentSection() {
+  console.log('🔄 Refreshing current section...');
+  
+  if (isOnMainApp()) {
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+function clearLoginMessages() {
+  const messageElements = [
+    'login-message',
+    'reset-message'
+  ];
+  
+  messageElements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = '';
+      element.className = 'message'; // Reset class
     }
   });
 }
 
-// 🖼️ PHOTO PREVIEW FUNCTIONALITY
-export function showPhotoPreview() {
-  console.log('📸 Showing photo preview...');
-  // This function would be implemented to show recent photos
-  // For now, just log that it was called
-  alert('Photo preview feature coming soon!');
+function createStatusMessage(message, type = 'info') {
+  const element = document.createElement('div');
+  element.className = `message ${type}`;
+  element.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #333;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInDown 0.3s ease-out;
+  `;
+  
+  element.textContent = message;
+  
+  // Add slide animation if not present
+  if (!document.getElementById('status-animations')) {
+    const style = document.createElement('style');
+    style.id = 'status-animations';
+    style.textContent = `
+      @keyframes slideInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes loading {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  return element;
 }
 
-// 🔄 PWA UPDATE FUNCTIONALITY
-export function updatePWA() {
-  console.log('🔄 Updating PWA...');
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistration().then(registration => {
-      if (registration && registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        window.location.reload();
+// 🎧 EVENT LISTENER SETUP
+
+export function setupUIEventListeners() {
+  console.log('🎧 Setting up UI event listeners...');
+  
+  // Setup menu toggle
+  setupMenuToggle();
+  
+  // Setup keyboard shortcuts
+  setupKeyboardShortcuts();
+  
+  // Setup modal close on background click
+  setupModalBackdropClose();
+  
+  console.log('✅ UI event listeners configured');
+}
+
+function setupModalBackdropClose() {
+  // Close modals when clicking backdrop
+  document.addEventListener('click', (e) => {
+    const modals = ['settings-modal', 'password-modal'];
+    
+    modals.forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      if (modal && e.target === modal) {
+        if (modalId === 'settings-modal') {
+          closeSettingsModal();
+        } else if (modalId === 'password-modal') {
+          closePasswordModal();
+        }
       }
     });
-  }
+  });
 }
 
-export function hidePWAUpdateBanner() {
-  const banner = document.getElementById('pwa-update-banner');
-  if (banner) {
-    banner.style.display = 'none';
-  }
-}
+// 🌐 MAKE FUNCTIONS GLOBALLY AVAILABLE
 
-// 🐛 DEBUG FUNCTIONALITY
-export function showDebugInfo() {
-  const debugInfo = document.getElementById('debug-info');
-  if (debugInfo) {
-    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-  }
-}
-
-// Export all the functions that might be called from HTML
-export { 
-  handleEmojiClick, 
-  playBoingSound, 
-  initializeAppUI,
-  toggleMenu,
-  closeMenu
-};
+// These functions need to be available for onclick handlers in HTML
+window.showSettingsModal = showSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+window.showPasswordModal = showPasswordModal;
+window.closePasswordModal = closePasswordModal;
+window.showApp = showApp;
+window.showLogin = showLogin;
