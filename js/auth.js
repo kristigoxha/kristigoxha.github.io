@@ -280,7 +280,7 @@ export async function resetPassword() {
     
     // Add timeout to reset request
     const resetPromise = supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/pages/reset-password.html` // 🔧 FIXED: Correct redirect URL
+      redirectTo: `${window.location.origin}/reset-password.html` // 🔧 FIXED: Correct redirect URL
     });
     
     const timeoutPromise = new Promise((_, reject) => {
