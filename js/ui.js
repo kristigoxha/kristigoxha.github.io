@@ -285,8 +285,8 @@ async function handleEmojiClick() {
     // NEW: Play the sound immediately when clicked
     await playBoingSound();
     
-    const { addBoing } = await import('./database.js');
-    const result = await addBoing();
+const { recordBoing, getTodaysBoings } = await import('./database.js');
+    const success = await recordBoing();
     
     if (result.success) {
       // Update counter
