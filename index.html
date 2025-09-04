@@ -322,131 +322,142 @@
     <!-- JavaScript Modules -->
     <script type="module" src="js/main.js"></script>
 
-    <!-- 🔧 PASSWORD RESET FIX - Add this script -->
+    <!-- Password Reset Fix Script -->
     <script>
-      // Simple password reset fix
+      // Check for password reset in URL
       document.addEventListener('DOMContentLoaded', function() {
-        // Check if someone clicked a password reset link
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
-        const isReset = urlParams.get('reset') === 'true' || hashParams.get('type') === 'recovery';
-        const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
+        const isReset = hashParams.get('type') === 'recovery';
+        const accessToken = hashParams.get('access_token');
         
         if (isReset && accessToken) {
-          // Hide the normal login and app
-          document.getElementById('login-section').style.display = 'none';
-          document.getElementById('app-section').style.display = 'none';
+          // Hide existing sections
+          const loginSection = document.getElementById('login-section');
+          const appSection = document.getElementById('app-section');
           
-          // Show password reset form instead
-          document.body.innerHTML = `
+          if (loginSection) loginSection.style.display = 'none';
+          if (appSection) appSection.style.display = 'none';
+          
+          // Create reset form
+          const resetContainer = document.createElement('div');
+          resetContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+          `;
+          
+          resetContainer.innerHTML = `
             <div style="
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              min-height: 100vh;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-family: 'Inter', sans-serif;
+              background: white;
+              padding: 40px;
+              border-radius: 20px;
+              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+              width: 100%;
+              max-width: 400px;
+              text-align: center;
             ">
-              <div style="
-                background: white;
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                width: 100%;
-                max-width: 400px;
-                text-align: center;
-              ">
-                <div style="font-size: 4rem; margin-bottom: 16px;">🔑</div>
-                <h1 style="font-size: 2rem; margin-bottom: 8px; color: #4a5568;">Reset Your Password</h1>
-                <p style="color: #718096; margin-bottom: 30px;">Enter your new password below</p>
-                
-                <form id="reset-form">
-                  <input 
-                    type="password" 
-                    id="new-password" 
-                    placeholder="Enter new password" 
-                    style="width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box;"
-                    required
-                  />
-                  <input 
-                    type="password" 
-                    id="confirm-password" 
-                    placeholder="Confirm new password" 
-                    style="width: 100%; padding: 16px; margin-bottom: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box;"
-                    required
-                  />
-                  <button 
-                    type="submit" 
-                    id="reset-btn"
-                    style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;"
-                  >
-                    Update Password
-                  </button>
-                </form>
-                
-                <div id="reset-message" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
-                
-                <a href="/" style="display: inline-block; margin-top: 20px; color: #667eea; text-decoration: none; font-weight: 500;">← Back to Login</a>
-              </div>
+              <div style="font-size: 4rem; margin-bottom: 16px;">🔑</div>
+              <h1 style="font-size: 2rem; margin-bottom: 8px; color: #4a5568;">Reset Your Password</h1>
+              <p style="color: #718096; margin-bottom: 30px;">Enter your new password below</p>
+              
+              <form id="reset-form">
+                <input 
+                  type="password" 
+                  id="new-password" 
+                  placeholder="Enter new password" 
+                  style="width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box;"
+                  required
+                />
+                <input 
+                  type="password" 
+                  id="confirm-password" 
+                  placeholder="Confirm new password" 
+                  style="width: 100%; padding: 16px; margin-bottom: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box;"
+                  required
+                />
+                <button 
+                  type="submit" 
+                  id="reset-btn"
+                  style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;"
+                >
+                  Update Password
+                </button>
+              </form>
+              
+              <div id="reset-message" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none;"></div>
+              
+              <a href="/" style="display: inline-block; margin-top: 20px; color: #667eea; text-decoration: none; font-weight: 500;">← Back to Login</a>
             </div>
+          `;
+          
+          document.body.appendChild(resetContainer);
+          
+          // Handle form submission
+          document.getElementById('reset-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-            <script>
+            const resetBtn = document.getElementById('reset-btn');
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const messageEl = document.getElementById('reset-message');
+            
+            function showMessage(message, isError) {
+              messageEl.textContent = message;
+              messageEl.style.display = 'block';
+              messageEl.style.background = isError ? '#ffebee' : '#e8f5e8';
+              messageEl.style.color = isError ? '#c62828' : '#2e7d32';
+            }
+            
+            if (newPassword !== confirmPassword) {
+              showMessage('Passwords do not match', true);
+              return;
+            }
+            
+            if (newPassword.length < 6) {
+              showMessage('Password must be at least 6 characters', true);
+              return;
+            }
+            
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'Updating...';
+            
+            try {
               const supabase = window.supabase.createClient(
                 'https://bcjmlhxuakqqqdjrtntj.supabase.co',
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
               );
               
-              document.getElementById('reset-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const resetBtn = document.getElementById('reset-btn');
-                const newPassword = document.getElementById('new-password').value;
-                const confirmPassword = document.getElementById('confirm-password').value;
-                const messageEl = document.getElementById('reset-message');
-                
-                function showMessage(message, isError) {
-                  messageEl.textContent = message;
-                  messageEl.style.display = 'block';
-                  messageEl.style.background = isError ? '#ffebee' : '#e8f5e8';
-                  messageEl.style.color = isError ? '#c62828' : '#2e7d32';
-                }
-                
-                if (newPassword !== confirmPassword) {
-                  showMessage('Passwords do not match', true);
-                  return;
-                }
-                
-                if (newPassword.length < 6) {
-                  showMessage('Password must be at least 6 characters', true);
-                  return;
-                }
-                
-                resetBtn.disabled = true;
-                resetBtn.textContent = 'Updating...';
-                
-                try {
-                  const urlParams = new URLSearchParams(window.location.search);
-                  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                  
-                  const access_token = urlParams.get('access_token') || hashParams.get('access_token');
-                  const refresh_token = urlParams.get('refresh_token') || hashParams.get('refresh_token');
-                  
-                  await supabase.auth.setSession({ access_token, refresh_token });
-                  await supabase.auth.updateUser({ password: newPassword });
-                  
-                  showMessage('Password updated successfully! Redirecting...', false);
-                  setTimeout(() => window.location.href = '/', 2000);
-                  
-                } catch (error) {
-                  showMessage('Error: ' + error.message, true);
-                  resetBtn.disabled = false;
-                  resetBtn.textContent = 'Update Password';
-                }
+              const access_token = hashParams.get('access_token');
+              const refresh_token = hashParams.get('refresh_token');
+              
+              await supabase.auth.setSession({
+                access_token,
+                refresh_token
               });
-            </script>
-          `;
+              
+              await supabase.auth.updateUser({
+                password: newPassword
+              });
+              
+              showMessage('Password updated successfully! Redirecting...', false);
+              setTimeout(() => window.location.href = '/', 2000);
+              
+            } catch (error) {
+              showMessage('Error: ' + error.message, true);
+              resetBtn.disabled = false;
+              resetBtn.textContent = 'Update Password';
+            }
+          });
         }
       });
     </script>
