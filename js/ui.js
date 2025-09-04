@@ -282,23 +282,35 @@ async function handleEmojiClick() {
   console.log('🎎 Emoji clicked!');
   
   try {
-    // NEW: Play the sound immediately when clicked
+    // Play the sound immediately when clicked
     await playBoingSound();
     
-    const { addBoing } = await import('./database.js');
-    const result = await addBoing();
+    // Use the correct function names from your database.js
+    const { recordBoing, getTodaysBoings } = await import('./database.js');
+    const success = await recordBoing();
     
-    if (result.success) {
-      // Update counter
+    if (success) {
+      // Get the fresh count from database immediately
+      const newCount = await getTodaysBoings();
+      
+      // Update counter display with visual effect
       const countElement = document.getElementById('todayCount');
       if (countElement) {
-        countElement.textContent = result.newCount;
+        countElement.style.transition = 'all 0.3s ease';
+        countElement.style.transform = 'scale(1.2)';
+        countElement.style.color = '#4CAF50';
+        countElement.textContent = newCount;
+        
+        setTimeout(() => {
+          countElement.style.transform = 'scale(1)';
+          countElement.style.color = '';
+        }, 300);
       }
       
       // Add visual feedback
       addClickAnimation();
       
-      console.log(`✅ Boing added! New count: ${result.newCount}`);
+      console.log(`✅ Boing added! New count: ${newCount}`);
     }
   } catch (error) {
     console.error('❌ Failed to add boing:', error);
