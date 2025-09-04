@@ -373,6 +373,5 @@ export {
   playBoingSound, 
   initializeAppUI,
   toggleMenu,
-  closeMenu,
-  initializeApp  // ← Added this back!
+  closeMenu
 };
