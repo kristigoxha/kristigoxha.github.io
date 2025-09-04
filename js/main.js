@@ -1,9 +1,9 @@
 // js/main.js
-// Main application orchestrator - PERFORMANCE OPTIMIZED
+// Main application orchestrator - PERFORMANCE OPTIMIZED with proper UI flow
 
-// Import all modules
+// Import all required modules
 import { checkAuth, setupAuthStateHandler } from './auth.js';
-import { setupUIEventListeners } from './ui.js';
+import { initializeApp, setupUIEventListeners } from './ui.js';
 import { setupSettingsEventListeners } from './settings.js';
 import { setupPhotoEventListeners } from './photos.js';
 import { initializePWA } from './pwa.js';
@@ -11,76 +11,105 @@ import { initializeCookieConsent } from './cookies.js';
 
 // Import functions that need to be made globally available
 import { register, login, logout, resetPassword, changePassword } from './auth.js';
-import { showApp } from './ui.js';
+import { showApp, showLogin } from './ui.js';
 
-// App initialization with proper loading states
+// 🚀 MAIN APP INITIALIZATION
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🎎 Initializing Pookie\'s App...');
   
   try {
-    // Initialize cookie consent first (but don't wait)
+    // Step 1: Initialize cookie consent (non-blocking)
     initializeCookieConsent();
     
-    // Setup all event listeners
-    setupEventListeners();
+    // Step 2: Setup authentication state handler first
+    setupAuthStateHandler();
     
-    // Make auth functions globally available for form handlers
+    // Step 3: Initialize UI with proper show/hide logic
+    await initializeApp();
+    
+    // Step 4: Setup all event listeners after UI is ready
+    setupAllEventListeners();
+    
+    // Step 5: Make auth functions globally available for HTML onclick handlers
     setupGlobalAuthFunctions();
     
-    // Setup authentication state handler
-    setupAuthStateHandler();
-
-    // Setup smart tab handling
-    setupSmartTabHandling();
-
-    // Initialize PWA functionality (don't wait)
+    // Step 6: Setup performance monitoring and error handling
+    setupPerformanceMonitoring();
+    setupErrorHandling();
+    
+    // Step 7: Initialize PWA functionality (non-blocking)
     initializePWA().catch(error => {
-      console.warn('PWA initialization failed:', error);
+      console.warn('⚠️ PWA initialization failed:', error);
     });
     
-    // Check if user is already authenticated (this will handle loading states)
-    await checkAuth();
-    
-    console.log('✅ App initialized successfully');
+    console.log('✅ App initialization complete!');
     
   } catch (error) {
-    console.error('❌ Error initializing app:', error);
-    // Show a user-friendly error message
+    console.error('❌ Critical error during app initialization:', error);
     showInitializationError(error);
   }
 });
 
-// Setup all event listeners
-function setupEventListeners() {
-  // UI event listeners (menu, modals, etc.)
-  setupUIEventListeners();
+// 🎧 SETUP ALL EVENT LISTENERS
+function setupAllEventListeners() {
+  console.log('🎧 Setting up all event listeners...');
   
-  // Settings modal event listeners
-  setupSettingsEventListeners();
-  
-  // Photo and gallery event listeners
-  setupPhotoEventListeners();
-  
-  // Form submission handlers
-  setupFormHandlers();
-  
-  // Keyboard shortcuts
-  setupKeyboardShortcuts();
+  try {
+    // UI event listeners (menu, modals, keyboard shortcuts)
+    setupUIEventListeners();
+    
+    // Settings modal event listeners
+    setupSettingsEventListeners();
+    
+    // Photo and gallery event listeners
+    setupPhotoEventListeners();
+    
+    // Form submission handlers with Enter key support
+    setupFormHandlers();
+    
+    // Smart tab handling for better performance
+    setupSmartTabHandling();
+    
+    console.log('✅ All event listeners configured');
+    
+  } catch (error) {
+    console.error('❌ Error setting up event listeners:', error);
+  }
 }
 
-// Make authentication functions globally available
+// 🌐 MAKE AUTHENTICATION FUNCTIONS GLOBALLY AVAILABLE
 function setupGlobalAuthFunctions() {
-  // Make auth functions available globally for onclick handlers
+  console.log('🌐 Making auth functions globally available...');
+  
+  // Make auth functions available for onclick handlers in HTML
   window.register = register;
   window.login = login;
   window.logout = logout;
   window.resetPassword = resetPassword;
   window.changePassword = changePassword;
   window.showApp = showApp;
+  window.showLogin = showLogin;
+  
+  // Debug function for troubleshooting
+  window.debugAuth = function() {
+    console.log('🔍 AUTH DEBUG INFO:');
+    const { getCurrentUser } = window;
+    console.log('Current user:', getCurrentUser ? getCurrentUser() : 'Function not available');
+    
+    // Check localStorage for auth data
+    const authKeys = Object.keys(localStorage).filter(key => 
+      key.includes('supabase') || key.includes('auth')
+    );
+    console.log('Auth localStorage keys:', authKeys);
+  };
+  
+  console.log('✅ Global functions configured');
 }
 
-// Setup form handlers with Enter key support
+// 📝 FORM HANDLERS WITH ENTER KEY SUPPORT
 function setupFormHandlers() {
+  console.log('📝 Setting up form handlers...');
+  
   // Login form Enter key handler
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
@@ -94,6 +123,7 @@ function setupFormHandlers() {
         }
       });
     });
+    console.log('✅ Login form handlers configured');
   }
   
   // Reset password form Enter key handler
@@ -105,6 +135,7 @@ function setupFormHandlers() {
         resetPassword();
       }
     });
+    console.log('✅ Reset password handler configured');
   }
   
   // Settings form handlers
@@ -119,111 +150,146 @@ function setupFormHandlers() {
     });
   });
   
-  // Disable form submission on Enter to prevent page reload
+  if (settingsInputs.length > 0) {
+    console.log(`✅ ${settingsInputs.length} settings input handlers configured`);
+  }
+  
+  // Prevent form submission from causing page reload
   const forms = document.querySelectorAll('form');
   forms.forEach(form => {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      console.log('📝 Form submission prevented (SPA behavior)');
     });
   });
+  
+  if (forms.length > 0) {
+    console.log(`✅ ${forms.length} form submission handlers configured`);
+  }
 }
 
-// Setup keyboard shortcuts
-function setupKeyboardShortcuts() {
-  document.addEventListener('keydown', (e) => {
-    // Escape key - close any open modals
-    if (e.key === 'Escape') {
-      closeAllModals();
-    }
-    
-    // Ctrl/Cmd + K - focus on search/email input
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      const emailInput = document.getElementById('email');
-      if (emailInput && emailInput.offsetParent !== null) {
-        emailInput.focus();
+// 🔄 SMART TAB HANDLING FOR PERFORMANCE
+function setupSmartTabHandling() {
+  console.log('🔄 Setting up smart tab handling...');
+  
+  let lastTabReturn = Date.now();
+  
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      const now = Date.now();
+      
+      // Only do expensive operations if user was away for more than 5 minutes
+      if (now - lastTabReturn > 5 * 60 * 1000) {
+        console.log('👀 User returned after long absence, checking auth status...');
+        
+        // Only check auth if we don't have a current user
+        const { getCurrentUser } = window;
+        if (getCurrentUser && !getCurrentUser()) {
+          checkAuth().catch(error => {
+            console.error('❌ Auth check on tab return failed:', error);
+          });
+        }
       }
+      
+      lastTabReturn = now;
     }
-    
-    // Ctrl/Cmd + Enter - quick login if on login page
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      const loginSection = document.getElementById('login-section');
-      if (loginSection && loginSection.offsetParent !== null) {
-        e.preventDefault();
-        login();
+  });
+  
+  console.log('✅ Smart tab handling configured');
+}
+
+// 📊 PERFORMANCE MONITORING
+function setupPerformanceMonitoring() {
+  console.log('📊 Setting up performance monitoring...');
+  
+  // Track page load time
+  window.addEventListener('load', () => {
+    if (performance.timing) {
+      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+      console.log(`📈 Page loaded in ${loadTime}ms`);
+      
+      if (loadTime > 5000) {
+        console.warn('🐌 Slow page load detected! Consider optimization.');
       }
     }
   });
+  
+  // Mark app initialization complete
+  if (window.performance && window.performance.mark) {
+    window.performance.mark('app-initialization-complete');
+    console.log('🏁 Performance mark: app-initialization-complete');
+  }
+  
+  // Memory usage monitoring (if available)
+  if (performance.memory) {
+    console.log('💾 Memory usage:', {
+      used: Math.round(performance.memory.usedJSHeapSize / 1048576) + 'MB',
+      total: Math.round(performance.memory.totalJSHeapSize / 1048576) + 'MB',
+      limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + 'MB'
+    });
+  }
 }
 
-// Close all open modals
-function closeAllModals() {
-  // Close settings modal
-  const settingsModal = document.getElementById('settings-modal');
-  if (settingsModal && settingsModal.classList.contains('show')) {
-    const { closeSettingsModal } = window;
-    if (closeSettingsModal) closeSettingsModal();
-  }
+// 🚨 ERROR HANDLING SETUP
+function setupErrorHandling() {
+  console.log('🚨 Setting up error handling...');
   
-  // Close password modal
-  const passwordModal = document.getElementById('password-modal');
-  if (passwordModal && passwordModal.style.display === 'flex') {
-    const { closePasswordModal } = window;
-    if (closePasswordModal) closePasswordModal();
-  }
+  // Global JavaScript error handler
+  window.addEventListener('error', (event) => {
+    console.error('💥 Global JavaScript error:', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      error: event.error
+    });
+    
+    // Show user-friendly message for Supabase errors
+    if (event.message && event.message.includes('supabase')) {
+      console.warn('⚠️ Supabase error detected');
+      showStatus('Connection issue detected. Please refresh the page.', 'warning');
+    }
+  });
   
-  // Close photo preview
-  const photoPreview = document.getElementById('photo-preview-popup');
-  if (photoPreview && photoPreview.classList.contains('show')) {
-    const { closePhotoPreview } = window;
-    if (closePhotoPreview) closePhotoPreview();
-  }
+  // Unhandled promise rejection handler
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('🔥 Unhandled promise rejection:', event.reason);
+    
+    // Prevent default browser error handling
+    event.preventDefault();
+    
+    // Show user-friendly message for auth errors
+    if (event.reason && event.reason.message && event.reason.message.includes('auth')) {
+      showStatus('Authentication error occurred. Please try logging in again.', 'error');
+    }
+  });
   
-  // Close image modal
-  const imageModal = document.getElementById('image-modal');
-  if (imageModal && imageModal.classList.contains('show')) {
-    const { closeImageModal } = window;
-    if (closeImageModal) closeImageModal();
-  }
-  
-  // Close iOS install modal
-  const iosModal = document.getElementById('ios-install-modal');
-  if (iosModal && iosModal.classList.contains('show')) {
-    const { closeIOSInstallModal } = window;
-    if (closeIOSInstallModal) closeIOSInstallModal();
-  }
-  
-  // Close menu
-  const { closeMenu } = window;
-  if (closeMenu) closeMenu();
+  console.log('✅ Error handling configured');
 }
 
-// Show initialization error
+// 🆘 INITIALIZATION ERROR HANDLER
 function showInitializationError(error) {
-  // Remove any loading screens first
-  const existingLoading = document.getElementById('loading-screen');
-  if (existingLoading) {
-    existingLoading.remove();
-  }
+  console.error('💀 Critical initialization error:', error);
   
+  // Try to show login section as fallback
   const loginSection = document.getElementById('login-section');
   if (loginSection) {
-    loginSection.style.display = 'flex'; // Show login section
+    loginSection.style.display = 'flex';
     
+    // Add error message to login section
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
-      background: rgba(255, 0, 0, 0.1);
-      border: 2px solid rgba(255, 0, 0, 0.3);
-      border-radius: 8px;
-      padding: 15px;
-      margin: 10px 0;
+      background: #ff6b6b;
       color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
       text-align: center;
-      backdrop-filter: blur(5px);
+      font-weight: 500;
     `;
     errorDiv.innerHTML = `
-      <h3>⚠️ Initialization Error</h3>
-      <p>Something went wrong while starting the app. Please refresh the page.</p>
+      <h3 style="margin: 0 0 10px 0;">⚠️ Initialization Error</h3>
+      <p style="margin: 0 0 10px 0;">The app failed to start properly. Please refresh the page.</p>
       <button onclick="location.reload()" style="
         margin-top: 10px; 
         padding: 8px 16px; 
@@ -237,202 +303,136 @@ function showInitializationError(error) {
         🔄 Refresh Page
       </button>
     `;
+    
     loginSection.appendChild(errorDiv);
+  } else {
+    // Last resort: show alert
+    alert('App failed to initialize. Please refresh the page.');
   }
 }
 
-// OPTIMIZED Smart Tab Handling - No expensive operations unless needed
-function setupSmartTabHandling() {
-  let lastTabReturn = Date.now();
+// 💬 STATUS MESSAGE UTILITY
+function showStatus(message, type = 'info', duration = 5000) {
+  console.log(`💬 Status (${type}): ${message}`);
   
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      const now = Date.now();
-      
-      // Only do expensive operations if user was away for more than 5 minutes
-      if (now - lastTabReturn > 5 * 60 * 1000) {
-        console.log('User returned after long absence, checking auth...');
-        
-        // Only check auth if we don't have a current user
-        const { getCurrentUser } = window;
-        if (getCurrentUser && !getCurrentUser()) {
-          checkAuth().catch(console.error);
-        }
-      }
-      
-      lastTabReturn = now;
-    }
-  });
-}
-
-// Global error handler for unhandled promises
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-  
-  // Prevent default browser error handling
-  event.preventDefault();
-  
-  // Show user-friendly message for auth errors
-  if (event.reason && event.reason.message && event.reason.message.includes('auth')) {
-    showStatus('Authentication error occurred. Please try logging in again.', 'error');
-  }
-});
-
-// Global error handler for JavaScript errors
-window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error);
-  
-  // Log error details for debugging
-  console.error('Error details:', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error
-  });
-  
-  // Don't show error to user unless it's critical
-  if (event.message && event.message.includes('supabase')) {
-    console.warn('Supabase error detected, might need to refresh');
-  }
-});
-
-// Service worker update handler
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (window.refreshing) return;
-    window.refreshing = true;
-    console.log('Service worker updated, reloading...');
-    window.location.reload();
-  });
-}
-
-// Performance monitoring (if cookies accepted)
-if (window.performance && window.performance.mark) {
-  window.performance.mark('app-initialization-complete');
-}
-
-// Utility function to show status messages (used by error handlers)
-function showStatus(message, type) {
-  // Try to find a status container
+  // Try to find existing status containers
   let statusContainer = document.getElementById('login-message') || 
                        document.getElementById('upload-status') ||
                        document.getElementById('settings-message');
   
   if (statusContainer) {
     statusContainer.textContent = message;
-    statusContainer.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc';
+    statusContainer.style.color = getStatusColor(type);
     
-    // Clear after 5 seconds unless it's an error
+    // Clear after duration unless it's an error
     if (type !== 'error') {
       setTimeout(() => {
         statusContainer.textContent = '';
-      }, 5000);
+      }, duration);
     }
   } else {
-    // Fallback: create a temporary status message
-    const tempStatus = document.createElement('div');
-    tempStatus.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: ${type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc'};
-      color: white;
-      padding: 12px 20px;
-      border-radius: 6px;
-      z-index: 10000;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    `;
-    tempStatus.textContent = message;
-    document.body.appendChild(tempStatus);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      tempStatus.remove();
-    }, 5000);
+    // Create floating status message
+    createFloatingStatus(message, type, duration);
   }
 }
 
-// Performance monitoring functions
-function addPerformanceMonitoring() {
-  // Track page load time
-  window.addEventListener('load', () => {
-    if (performance.timing) {
-      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-      console.log(`📊 Page loaded in ${loadTime}ms`);
-      
-      if (loadTime > 5000) {
-        console.warn('🐌 Slow page load detected!');
-      }
-    }
+function getStatusColor(type) {
+  const colors = {
+    error: '#ff6b6b',
+    success: '#51cf66',
+    warning: '#ffd43b',
+    info: '#74c0fc'
+  };
+  return colors[type] || colors.info;
+}
+
+function createFloatingStatus(message, type, duration) {
+  const statusElement = document.createElement('div');
+  statusElement.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${getStatusColor(type)};
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInDown 0.3s ease-out;
+  `;
+  statusElement.textContent = message;
+  
+  document.body.appendChild(statusElement);
+  
+  // Auto-remove after duration
+  setTimeout(() => {
+    statusElement.style.animation = 'slideOutUp 0.3s ease-in';
+    setTimeout(() => statusElement.remove(), 300);
+  }, duration);
+}
+
+// 🔧 SERVICE WORKER UPDATE HANDLER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (window.refreshing) return;
+    window.refreshing = true;
+    console.log('🔄 Service worker updated, reloading page...');
+    window.location.reload();
+  });
+}
+
+// 🎯 UTILITY FUNCTIONS FOR DEBUGGING
+
+// Function to check current app state
+window.getAppState = function() {
+  const loginVisible = document.getElementById('login-section')?.style.display !== 'none';
+  const appVisible = document.getElementById('app-section')?.style.display !== 'none';
+  
+  console.log('🔍 Current app state:', {
+    loginVisible,
+    appVisible,
+    currentUser: window.getCurrentUser ? window.getCurrentUser() : null,
+    timestamp: new Date().toISOString()
   });
   
-  // Track auth check time
-  const originalCheckAuth = window.checkAuth;
-  if (originalCheckAuth) {
-    window.checkAuth = async function() {
-      const start = performance.now();
-      try {
-        const result = await originalCheckAuth();
-        const duration = performance.now() - start;
-        console.log(`📊 Auth check took ${Math.round(duration)}ms`);
-        
-        if (duration > 3000) {
-          console.warn('🐌 Slow auth check detected!');
-        }
-        
-        return result;
-      } catch (error) {
-        const duration = performance.now() - start;
-        console.log(`📊 Auth check failed after ${Math.round(duration)}ms`);
-        throw error;
-      }
-    };
-  }
-}
+  return { loginVisible, appVisible };
+};
 
-// Performance testing commands for console
-window.testPerformance = function() {
-  console.log('🔍 PERFORMANCE TEST:');
-  console.log('Smart PWA setup:', !!window.smartPWAUpdatesSetup);
-  console.log('Smart SW setup:', !!window.smartSWUpdatesSetup);
-  console.log('Current user:', window.getCurrentUser ? !!window.getCurrentUser() : 'Not available');
-  
-  // Test auth speed
-  const start = performance.now();
-  if (window.getCurrentUser) {
-    const user = window.getCurrentUser();
-    const duration = performance.now() - start;
-    console.log(`Auth check: ${duration}ms, User: ${user ? 'Found' : 'None'}`);
-  }
-  
-  // Memory info
-  if (performance.memory) {
-    const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
-    console.log(`Memory usage: ${used}MB`);
-  }
-  
-  // Page load timing
-  if (performance.timing) {
-    const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-    console.log(`Page load time: ${loadTime}ms`);
+// Function to force refresh current section
+window.refreshUI = function() {
+  console.log('🔄 Force refreshing UI...');
+  const { refreshCurrentSection } = require('./ui.js');
+  if (refreshCurrentSection) {
+    refreshCurrentSection();
+  } else {
+    console.warn('⚠️ refreshCurrentSection function not available');
   }
 };
 
-// Debug command to clear all performance optimizations (for testing)
-window.clearPerformanceOptimizations = function() {
-  window.smartPWAUpdatesSetup = false;
-  window.smartSWUpdatesSetup = false;
-  console.log('🧹 Performance optimizations cleared - refresh to test');
+// Function to clear all localStorage (useful for debugging)
+window.clearAppData = function() {
+  console.log('🧹 Clearing all app data...');
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('✅ App data cleared. Refresh page to restart.');
 };
 
-// Initialize performance monitoring in development
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-  addPerformanceMonitoring();
-  console.log('🔍 Development mode: Performance monitoring enabled');
-  console.log('Available commands: testPerformance(), clearPerformanceOptimizations()');
-}
+// 📈 FINAL STARTUP LOG
+console.log(`
+🎎 Pookie's App Main Controller Loaded
+📅 Build Date: ${new Date().toISOString()}
+🌐 User Agent: ${navigator.userAgent}
+📱 Mobile: ${/Mobile|Android|iPhone|iPad/.test(navigator.userAgent)}
+🔧 Debug functions: getAppState(), refreshUI(), clearAppData(), debugAuth()
+`);
 
-console.log('✅ Main.js loaded with all performance optimizations!');
+// Export main functions for external use if needed
+export { 
+  setupAllEventListeners,
+  setupGlobalAuthFunctions,
+  showStatus,
+  showInitializationError
+};
