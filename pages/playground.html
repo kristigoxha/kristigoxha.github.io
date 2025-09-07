@@ -201,12 +201,19 @@
         @media (max-width: 768px) {
             .playground-container {
                 padding: 1rem;
+                margin-top: 4rem; /* Add top margin to avoid back button overlap */
             }
             
             .back-button {
                 top: 1rem;
                 left: 1rem;
                 padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+                z-index: 20; /* Higher z-index for mobile */
+            }
+            
+            .playground-header h1 {
+                font-size: 2rem; /* Smaller title on mobile */
             }
             
             .modal-content {
@@ -219,6 +226,11 @@
                 flex-direction: column;
                 align-items: center;
             }
+            
+            .lang-btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -228,19 +240,19 @@
     <div class="playground-container">
         <div class="playground-header">
             <h1>🎮 Pookie's Playground</h1>
-            <p>Fun activities for us to enjoy together babyyyyy!</p>
+            <p>Fun games and learning activities for us to enjoy together!</p>
         </div>
         
         <div class="game-grid">
             <button class="game-card" onclick="openWordOfTheDay()">
                 <h3>📚 Word of the Day</h3>
-                <p>Learn a new word every day</p>
+                <p>Learn a new word every day in Albanian or English</p>
             </button>
         </div>
         
         <div class="coming-soon">
             <h3>🚧 Working on adding more stuff, stay tuned baby...</h3>
-            <p>More things coming soon!</p>
+            <p>More exciting games and activities coming soon!</p>
         </div>
     </div>
     
