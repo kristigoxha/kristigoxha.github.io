@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pookie's Playground</title>
+    <link rel="icon" href="/assets/icons/favicon.ico">
+    
+    <!-- Import your existing CSS files -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Additional styles for the playground -->
+    <style>
+        .playground-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .playground-header {
+            margin-bottom: 2rem;
+        }
+        
+        .playground-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .playground-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        
+        .game-card p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .coming-soon {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Word of the Day Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            color: white;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close {
+            color: white;
+            float: right;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            opacity: 0.7;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
+        }
+        
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .word-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .word-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+            text-align: center;
+        }
+        
+        .word-definition {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .playground-container {
+                padding: 1rem;
+            }
+            
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.6rem 1.2rem;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 1.5rem;
+            }
+            
+            .language-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-button">← Back to Home</a>
+    
+    <div class="playground-container">
+        <div class="playground-header">
+            <h1>🎮 Pookie's Playground</h1>
+            <p>Fun activities for us to enjoy together babyyyyy!</p>
+        </div>
+        
+        <div class="game-grid">
+            <button class="game-card" onclick="openWordOfTheDay()">
+                <h3>📚 Word of the Day</h3>
+                <p>Learn a new word every day</p>
+            </button>
+        </div>
+        
+        <div class="coming-soon">
+            <h3>🚧 Working on adding more stuff, stay tuned baby...</h3>
+            <p>More things coming soon!</p>
+        </div>
+    </div>
+    
+    <!-- Word of the Day Modal -->
+    <div id="wordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWordOfTheDay()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 1rem;">📚 Word of the Day</h2>
+            
+            <div class="language-selector">
+                <button class="lang-btn" id="albanianBtn" onclick="selectLanguage('albanian')">
+                    🇦🇱 Albanian
+                </button>
+                <button class="lang-btn" id="englishBtn" onclick="selectLanguage('english')">
+                    🇺🇸 English
+                </button>
+            </div>
+            
+            <div id="wordContent" class="word-content" style="display: none;">
+                <div id="wordDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLanguage = null;
+        
+        function openWordOfTheDay() {
+            document.getElementById('wordModal').style.display = 'block';
+            // Reset state
+            currentLanguage = null;
+            document.getElementById('wordContent').style.display = 'none';
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+        }
+        
+        function closeWordOfTheDay() {
+            document.getElementById('wordModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('wordModal');
+            if (event.target === modal) {
+                closeWordOfTheDay();
+            }
+        }
+        
+        async function selectLanguage(language) {
+            currentLanguage = language;
+            
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(language + 'Btn').classList.add('active');
+            
+            // Show content area with loading
+            const contentDiv = document.getElementById('wordContent');
+            const displayDiv = document.getElementById('wordDisplay');
+            
+            contentDiv.style.display = 'block';
+            displayDiv.innerHTML = '<div class="loading">Loading word of the day...</div>';
+            
+            try {
+                if (language === 'albanian') {
+                    await loadAlbanianWord();
+                } else {
+                    await loadEnglishWord();
+                }
+            } catch (error) {
+                console.error('Error loading word:', error);
+                displayDiv.innerHTML = '<div class="error">Sorry, could not load the word of the day. Please try again later.</div>';
+            }
+        }
+        
+        async function loadAlbanianWord() {
+            try {
+                const response = await fetch('https://marxfnwnc2.execute-api.eu-central-1.amazonaws.com/prod/wordoftheday');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Albanian word');
+                }
+                
+                const data = await response.json();
+                const displayDiv = document.getElementById('wordDisplay');
+                
+                displayDiv.innerHTML = `
+                    <div class="word-title">${data.word}</div>
+                    <div class="word-definition">${data.definition}</div>
+                `;
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        async function loadEnglishWord() {
+            try {
+                const response = await fetch('https://www.merriam-webster.com/wotd/feed/rss2');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch English word');
+                }
+                
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                
+                // Get the first item (today's word)
+                const firstItem = xmlDoc.querySelector('item');
+                if (!firstItem) {
+                    throw new Error('No word found in RSS feed');
+                }
+                
+                const title = firstItem.querySelector('title').textContent.trim();
+                const description = firstItem.querySelector('description').textContent;
+                
+                // Parse the HTML content in description to extract the clean definition
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = description;
+                
+                // Find the definition paragraph (usually after the word and pronunciation)
+                let definition = 'Definition not available';
+                const paragraphs = tempDiv.querySelectorAll('p');
+                
+                for (let p of paragraphs) {
+                    const text = p.textContent.trim();
+                    // Look for the paragraph that contains the definition (usually has "//" examples)
+                    if (text.includes('//') || (text.length > 50 && !text.includes('Merriam-Webster'))) {
+                        definition = text;
+                        break;
+                    }
+                }
+                
+                const displayDiv = document.getElementById('wordDisplay');
+                displayDiv.innerHTML = `
+                    <div class="word-title">${title}</div>
+                    <div class="word-definition">${definition}</div>
+                `;
+            } catch (error) {
+                throw error;
+            }
+        }
+    </script>
+</body>
+</html>
