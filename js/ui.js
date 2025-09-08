@@ -1,245 +1,103 @@
-// js/ui.js - Complete UI Controller
-// This file manages what the user sees and handles all UI state changes
+// js/ui.js
+// User Interface Management Module
+// Handles all UI interactions, modals, menus, and visual feedback
 
-// 🔊 AUDIO SYSTEM - NEW ADDITION
-let boingSound = null;
+import { supabase, getCurrentUser } from './config.js';
 
-// Initialize audio when the app starts
+// 🔊 AUDIO SYSTEM - NEW!
+let audioContext;
+let boingBuffer;
+
 function initializeAudio() {
+  console.log('🔊 Initializing audio system...');
+  
+  // Create audio context on first user interaction
+  const initAudioContext = () => {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      loadBoingSound();
+      // Remove the listener after first interaction
+      document.removeEventListener('click', initAudioContext);
+      document.removeEventListener('touchstart', initAudioContext);
+    }
+  };
+  
+  // Wait for user interaction to create audio context (browser requirement)
+  document.addEventListener('click', initAudioContext);
+  document.addEventListener('touchstart', initAudioContext);
+}
+
+async function loadBoingSound() {
   try {
-    // Create the audio object with the correct path
-    boingSound = new Audio('/assets/sounds/boing.mp3');
-    
-    // Preload the audio file
-    boingSound.preload = 'auto';
-    
-    // Set volume (0.0 to 1.0)
-    boingSound.volume = 0.7;
-    
-    // Handle loading errors
-    boingSound.addEventListener('error', (e) => {
-      console.error('❌ Could not load boing sound:', e);
-      console.log('🔍 Checking if sound file exists at: /assets/sounds/boing.mp3');
-    });
-    
-    // Log when audio is ready
-    boingSound.addEventListener('canplaythrough', () => {
-      console.log('🔊 Boing sound loaded and ready!');
-    });
-    
-    console.log('🎵 Audio initialized');
+    const response = await fetch('/assets/boing.mp3');
+    const arrayBuffer = await response.arrayBuffer();
+    boingBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    console.log('✅ Boing sound loaded!');
   } catch (error) {
-    console.error('❌ Failed to initialize audio:', error);
+    console.log('🔇 Could not load boing sound (it\'s okay!):', error);
   }
 }
 
-// Function to play the boing sound
 async function playBoingSound() {
-  if (!boingSound) {
-    console.warn('⚠️ Boing sound not initialized');
-    return;
-  }
-  
-  try {
-    // Reset the audio to beginning in case it was already playing
-    boingSound.currentTime = 0;
-    
-    // Play the sound (returns a Promise)
-    await boingSound.play();
-    
-    console.log('🔊 Boing sound played!');
-  } catch (error) {
-    console.error('❌ Failed to play boing sound:', error);
-    
-    // Common issues and solutions:
-    if (error.name === 'NotAllowedError') {
-      console.log('💡 Tip: User needs to interact with page first (autoplay policy)');
-    } else if (error.name === 'NotSupportedError') {
-      console.log('💡 Tip: Audio format may not be supported');
+  if (audioContext && boingBuffer) {
+    try {
+      const source = audioContext.createBufferSource();
+      source.buffer = boingBuffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+      console.log('🔊 Boing!');
+    } catch (error) {
+      console.log('🔇 Could not play sound:', error);
     }
   }
 }
 
-// 🎯 MAIN APP INITIALIZATION
-export async function initializeApp() {
-  console.log('🎨 Starting app initialization...');
+// 📱 MAIN SECTION SWITCHING
+
+export function showApp() {
+  console.log('🚀 Showing main app...');
   
-  // Step 1: Hide everything to prevent flash of unstyled content
-  hideAllSections();
+  const loginSection = document.getElementById('login-section');
+  const appSection = document.getElementById('app-section');
   
-  // Step 2: Show loading state for better UX
-  showLoadingState();
-  
-  // Step 3: Check authentication status
-  try {
-    const { getCurrentUser, checkInitialAuth } = await import('./auth.js');
-    const user = await checkInitialAuth();
+  if (loginSection) loginSection.style.display = 'none';
+  if (appSection) {
+    appSection.style.display = 'flex';
     
-    if (user) {
-      console.log('✅ User authenticated:', user.email);
-      await showApp();
-    } else {
-      console.log('❌ No authenticated user, showing login');
-      showLogin();
-    }
-  } catch (error) {
-    console.error('❌ Authentication check failed:', error);
-    showLogin(); // Safe fallback
-  } finally {
-    hideLoadingState();
+    // Load app data when showing
+    loadAppData();
+    
+    // Initialize UI components
+    initializeAppUI();
   }
-}
-
-// 🔧 CORE SECTION MANAGEMENT FUNCTIONS
-
-function hideAllSections() {
-  console.log('👻 Hiding all application sections...');
-  
-  const sections = [
-    'login-section',
-    'app-section',
-    'settings-modal',
-    'password-modal'
-  ];
-  
-  sections.forEach(sectionId => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.style.display = 'none';
-      console.log(`📱 Hidden section: ${sectionId}`);
-    }
-  });
 }
 
 export function showLogin() {
-  console.log('🔐 Displaying login page...');
+  console.log('🔒 Showing login page...');
   
-  // Hide all other sections first
-  hideAllSections();
-  
-  // Show login section
   const loginSection = document.getElementById('login-section');
-  if (loginSection) {
-    loginSection.style.display = 'flex';
-    console.log('✅ Login page now visible');
-    
-    // Auto-focus email input for better UX
-    setTimeout(() => {
-      const emailInput = document.getElementById('email');
-      if (emailInput) {
-        emailInput.focus();
-        console.log('📧 Email input focused');
-      }
-    }, 100);
-  } else {
-    console.error('❌ Login section not found in DOM');
-  }
+  const appSection = document.getElementById('app-section');
   
-  // Update browser tab title
-  document.title = 'Login - Pookie\'s App';
+  if (loginSection) loginSection.style.display = 'flex';
+  if (appSection) appSection.style.display = 'none';
   
-  // Clear any existing error messages
+  // Clear any existing messages
   clearLoginMessages();
 }
 
-export async function showApp() {
-  console.log('🏠 Displaying main application...');
-  
-  // Hide all other sections first
-  hideAllSections();
-  
-  // Show main app section
-  const appSection = document.getElementById('app-section');
-  if (appSection) {
-    appSection.style.display = 'flex';
-    console.log('✅ Main app now visible');
-  } else {
-    console.error('❌ App section not found in DOM');
-    return;
-  }
-  
-  // Update browser tab title
-  document.title = 'Pookie\'s App';
-  
-  // Load app-specific data
-  await loadAppData();
-  
-  // Initialize app-specific UI elements - NOW WITH AUDIO!
-  initializeAppUI();
-}
-
-// 🔄 LOADING STATE MANAGEMENT
-
-function showLoadingState() {
-  console.log('⏳ Showing loading state...');
-  
-  // Check if loading overlay already exists
-  let loadingOverlay = document.getElementById('loading-overlay');
-  if (!loadingOverlay) {
-    loadingOverlay = createLoadingOverlay();
-    document.body.appendChild(loadingOverlay);
-  }
-  
-  loadingOverlay.style.display = 'flex';
-}
-
-function hideLoadingState() {
-  console.log('✅ Hiding loading state...');
-  
-  const loadingOverlay = document.getElementById('loading-overlay');
-  if (loadingOverlay) {
-    loadingOverlay.style.opacity = '0';
-    setTimeout(() => {
-      if (loadingOverlay.parentNode) {
-        loadingOverlay.parentNode.removeChild(loadingOverlay);
-      }
-    }, 300);
-  }
-}
-
-function createLoadingOverlay() {
-  const overlay = document.createElement('div');
-  overlay.id = 'loading-overlay';
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    transition: opacity 0.3s ease;
-  `;
-  
-  overlay.innerHTML = `
-    <div style="text-align: center; color: white;">
-      <div style="font-size: 3rem; margin-bottom: 1rem;">🎎</div>
-      <div style="font-size: 1.2rem; margin-bottom: 1rem;">Loading Pookie's App...</div>
-      <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;">
-        <div style="width: 100%; height: 100%; background: white; animation: loading 2s ease-in-out infinite;"></div>
-      </div>
-    </div>
-  `;
-  
-  return overlay;
-}
-
-// 📊 APP DATA LOADING
+// 📊 DATA LOADING
 
 async function loadAppData() {
-  console.log('📊 Loading application data...');
+  console.log('📊 Loading app data...');
   
   try {
-    // Load today's boing count using the correct function name
+    // Load today's count
     const { getTodaysBoings } = await import('./database.js');
     const todayCount = await getTodaysBoings();
     
     const countElement = document.getElementById('todayCount');
     if (countElement) {
-      countElement.textContent = todayCount;
+      countElement.textContent = todayCount || 0;
       console.log(`📈 Today's boing count: ${todayCount}`);
     }
     
@@ -269,7 +127,7 @@ function initializeAppUI() {
     emoji.addEventListener('click', handleEmojiClick);
   }
   
-  // Initialize menu functionality
+  // Initialize menu functionality - FIX: This was the missing piece!
   setupMenuToggle();
   
   // Initialize keyboard shortcuts
@@ -383,23 +241,45 @@ export function closePasswordModal() {
   }
 }
 
-// 📱 MENU FUNCTIONALITY
+// 📱 MENU FUNCTIONALITY - FIXED!
 
 function setupMenuToggle() {
+  console.log('📱 Setting up menu toggle...');
+  
   const menuToggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('menu');
   
   if (menuToggle && menu) {
-    menuToggle.addEventListener('click', toggleMenu);
+    // Remove any existing listeners to prevent duplicates
+    menuToggle.replaceWith(menuToggle.cloneNode(true));
+    const newMenuToggle = document.getElementById('menu-toggle');
+    
+    // Add click listener to hamburger button
+    newMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
+      toggleMenu();
+    });
     
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (menu.classList.contains('show') && 
+      if (menu.classList.contains('open') && 
           !menu.contains(e.target) && 
-          !menuToggle.contains(e.target)) {
+          !newMenuToggle.contains(e.target)) {
         closeMenu();
       }
     });
+    
+    // Close menu when clicking a menu item
+    const menuButtons = menu.querySelectorAll('button, a');
+    menuButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        setTimeout(closeMenu, 100); // Small delay for the action to complete
+      });
+    });
+    
+    console.log('✅ Menu toggle configured');
+  } else {
+    console.log('⚠️ Menu elements not found');
   }
 }
 
@@ -407,11 +287,22 @@ function toggleMenu() {
   const menu = document.getElementById('menu');
   const menuToggle = document.getElementById('menu-toggle');
   
-  if (menu && menuToggle) {
-    menu.classList.toggle('show');
-    menuToggle.classList.toggle('active');
-    
-    console.log(`📱 Menu ${menu.classList.contains('show') ? 'opened' : 'closed'}`);
+  if (menu) {
+    if (menu.classList.contains('open')) {
+      // Menu is open, close it
+      menu.classList.remove('open');
+      menu.style.display = 'none';
+      if (menuToggle) menuToggle.classList.remove('active');
+      console.log('📱 Menu closed');
+    } else {
+      // Menu is closed, open it
+      menu.style.display = 'flex';
+      // Force a reflow to ensure the display change is applied before adding the class
+      menu.offsetHeight;
+      menu.classList.add('open');
+      if (menuToggle) menuToggle.classList.add('active');
+      console.log('📱 Menu opened');
+    }
   }
 }
 
@@ -419,9 +310,18 @@ function closeMenu() {
   const menu = document.getElementById('menu');
   const menuToggle = document.getElementById('menu-toggle');
   
-  if (menu && menuToggle) {
-    menu.classList.remove('show');
-    menuToggle.classList.remove('active');
+  if (menu) {
+    menu.classList.remove('open');
+    // Wait for animation to complete before hiding
+    setTimeout(() => {
+      if (!menu.classList.contains('open')) {
+        menu.style.display = 'none';
+      }
+    }, 300);
+    
+    if (menuToggle) {
+      menuToggle.classList.remove('active');
+    }
   }
 }
 
