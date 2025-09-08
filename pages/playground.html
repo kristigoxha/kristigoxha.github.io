@@ -843,7 +843,7 @@
                 .single();
             
             if (profile) {
-                currentUsername = profile.username || currentUser.email.split('@')[0];
+                currentUsername = profile.username;
                 autoreceiverEmail = profile.autoreceiver_email;
                 
                 // Get autoreceiver's username if they exist
@@ -855,7 +855,7 @@
                         .single();
                     
                     if (autoProfile) {
-                        autoreceiverUsername = autoProfile.username || autoreceiverEmail.split('@')[0];
+                        autoreceiverUsername = autoProfile.username;
                     }
                 }
             }
