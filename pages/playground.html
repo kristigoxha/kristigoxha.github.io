@@ -843,7 +843,7 @@
                 .single();
             
             if (profile) {
-                currentUsername = profile.username;
+                currentUsername = profile.username || currentUser.email.split('@')[0];
                 autoreceiverEmail = profile.autoreceiver_email;
                 
                 // Get autoreceiver's username if they exist
@@ -855,7 +855,7 @@
                         .single();
                     
                     if (autoProfile) {
-                        autoreceiverUsername = autoProfile.username;
+                        autoreceiverUsername = autoProfile.username || autoreceiverEmail.split('@')[0];
                     }
                 }
             }
@@ -1351,7 +1351,7 @@
                 
                 // Display autoreceiver's sentence if found
                 if (autoreceiverSentence) {
-                    const displayName = autoreceiverUsername || autoreceiverEmail.split('@')[0];
+                    const displayName = autoreceiverDisplayName || autoreceiverUsername || autoreceiverEmail.split('@')[0];
                     displayHTML += `
                         <div class="sentence-item">
                             <div class="sentence-author">${escapeHtml(displayName)} said:</div>
@@ -1359,7 +1359,7 @@
                         </div>
                     `;
                 } else if (autoreceiverEmail) {
-                    const displayName = autoreceiverUsername || autoreceiverEmail.split('@')[0];
+                    const displayName = autoreceiverDisplayName || autoreceiverUsername || autoreceiverEmail.split('@')[0];
                     displayHTML += `
                         <div class="sentence-item" style="opacity: 0.6;">
                             <div class="sentence-author">${escapeHtml(displayName)}:</div>
