@@ -91,10 +91,11 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
             text-decoration: none;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         
         .back-button:hover {
@@ -102,64 +103,90 @@
             transform: translateY(-2px);
         }
         
-        /* User Info Styles */
-        .user-info {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: left;
+        /* Word of the Day Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
             color: white;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
-        .user-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .user-email {
-            font-weight: 600;
-            color: #FFD700;
-        }
-        
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        .close {
             color: white;
-            padding: 5px 15px;
-            border-radius: 15px;
+            float: right;
+            font-size: 2rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
+            line-height: 1;
         }
         
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .close:hover {
+            opacity: 0.7;
         }
         
-        .streak-info {
+        /* Streak Counter Styles */
+        .streak-container {
+            background: rgba(255, 215, 0, 0.15);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid rgba(255, 215, 0, 0.3);
             display: flex;
-            gap: 2rem;
-            margin-top: 15px;
+            justify-content: space-around;
+            align-items: center;
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .streak-item {
             text-align: center;
         }
         
-        .streak-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #FFD700;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
         .streak-label {
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
-            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .streak-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .streak-emoji {
+            font-size: 1.5rem;
+            margin-left: 5px;
         }
         
         /* Tab Navigation */
@@ -267,60 +294,96 @@
             justify-content: center;
         }
         
-        .language-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 12px 25px;
+            padding: 1rem 2rem;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 1rem;
-            min-width: 120px;
         }
         
-        .language-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
         
-        .language-btn.active {
-            background: rgba(255, 215, 0, 0.3);
-            border-color: #FFD700;
-            color: #FFD700;
-            font-weight: bold;
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.6);
         }
         
-        /* Word Display */
-        .word-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin: 2rem 0;
+        .word-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: left;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .word-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #FFD700;
             text-align: center;
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+            position: relative;
+            padding-bottom: 1rem;
         }
         
-        .word-display {
-            font-size: 3.5rem;
-            color: #FFD700;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            line-height: 1.2;
+        .word-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+            border-radius: 2px;
         }
         
         .word-pronunciation {
+            text-align: center;
             font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
             font-style: italic;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .word-type {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 215, 0, 0.3);
         }
         
         .word-definition {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.6;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.95);
             background: rgba(255, 255, 255, 0.05);
             padding: 1.5rem;
             border-radius: 12px;
@@ -424,7 +487,7 @@
         }
         
         .sentence-btn-save:hover {
-            background: #FFE55C;
+            background: #FFC700;
             transform: translateY(-2px);
         }
         
@@ -435,279 +498,310 @@
         
         .sentence-btn-cancel:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
         }
         
         .sentence-btn-edit {
-            background: rgba(255, 165, 0, 0.8);
+            background: rgba(255, 215, 0, 0.3);
             color: white;
-            padding: 5px 15px;
-            font-size: 0.8rem;
-            margin-top: 8px;
+            padding: 6px 15px;
+            font-size: 0.85rem;
         }
         
         .sentence-btn-edit:hover {
-            background: rgba(255, 165, 0, 1);
+            background: rgba(255, 215, 0, 0.4);
         }
         
-        /* Sentences Display */
         .sentences-display {
             margin-top: 1rem;
         }
         
         .sentence-item {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 3px solid rgba(255, 215, 0, 0.6);
-            text-align: left;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid rgba(255, 215, 0, 0.5);
         }
         
         .sentence-author {
             font-size: 0.85rem;
             color: #FFD700;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
         }
         
         .sentence-text {
-            font-size: 1.05rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
             line-height: 1.5;
-            font-style: italic;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .sentence-empty {
             text-align: center;
-            padding: 2rem;
+            padding: 20px;
             color: rgba(255, 255, 255, 0.6);
             font-style: italic;
         }
         
-        /* Status Messages */
         .sentence-status {
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-top: 1rem;
-            font-weight: 500;
             text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
         }
         
         .sentence-status.success {
             background: rgba(40, 167, 69, 0.2);
-            color: #40E070;
-            border: 1px solid rgba(40, 167, 69, 0.4);
+            color: #90EE90;
         }
         
         .sentence-status.error {
             background: rgba(220, 53, 69, 0.2);
-            color: #FF6B7A;
-            border: 1px solid rgba(220, 53, 69, 0.4);
+            color: #FF6B6B;
         }
         
-        /* Loading States */
-        .loading {
-            text-align: center;
-            padding: 2rem;
+        .word-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
         }
         
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #FFD700;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Error States */
-        .error {
-            background: rgba(220, 53, 69, 0.1);
-            color: #FF6B7A;
-            padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            margin: 1rem 0;
-            text-align: center;
-        }
-
-        /* Real-time Updates Styles - ADDED FOR THE FEATURE */
-        .new-sentence {
-            animation: highlightNew 3s ease-in-out;
-            border-left-color: #28a745 !important;
-        }
-
-        .new-indicator {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 0.9em;
-            margin-top: 5px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes highlightNew {
-            0% { background-color: rgba(40, 167, 69, 0.3); }
-            50% { background-color: rgba(40, 167, 69, 0.2); }
-            100% { background-color: rgba(255, 255, 255, 0.05); }
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 1000;
-            max-width: 300px;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .real-time-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(102, 126, 234, 0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            display: none;
+        .word-date {
+            display: flex;
             align-items: center;
             gap: 5px;
         }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background: #4CAF50;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        
+        .word-source {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        /* Responsive Adjustments */
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
         @media (max-width: 768px) {
             .playground-container {
                 padding: 1rem;
+                margin-top: 4rem;
+            }
+            
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+                z-index: 20;
             }
             
             .playground-header h1 {
                 font-size: 2rem;
             }
             
-            .word-display {
-                font-size: 2.5rem;
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 1.5rem;
             }
             
             .language-selector {
                 flex-direction: column;
-                gap: 0.5rem;
+                align-items: center;
             }
             
-            .language-btn {
-                min-width: auto;
+            .lang-btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .word-content {
+                padding: 1.5rem;
+            }
+            
+            .word-title {
+                font-size: 1.8rem;
+            }
+            
+            .word-definition {
+                font-size: 1rem;
+                padding: 1rem;
+            }
+            
+            .word-example {
+                font-size: 0.95rem;
+                padding: 0.8rem 1rem;
+                padding-left: 2.5rem;
+            }
+            
+            .word-example::before {
+                left: 0.8rem;
+                font-size: 1.2rem;
+            }
+            
+            .word-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+                font-size: 0.8rem;
+            }
+            
+            .sentence-section {
+                padding: 1rem;
+            }
+            
+            .sentence-buttons {
+                flex-direction: column;
+            }
+            
+            .sentence-btn {
+                width: 100%;
+            }
+            
+            .streak-container {
+                flex-direction: column;
+                gap: 1rem;
             }
             
             .tab-navigation {
-                flex-wrap: wrap;
+                flex-direction: column;
             }
             
-            .streak-info {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
+            .tab-btn {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
+    <a href="/" class="back-button">← Back to Home</a>
+    
     <div class="playground-container">
-        <a href="/" class="back-button">← Back to Home</a>
-        
         <div class="playground-header">
-            <h1>📚 Word of the Day Playground</h1>
-            <p>Learn, practice, and share words together</p>
+            <h1>🎮 Pookie's Playground</h1>
+            <p>Fun games and learning activities for us to enjoy together!</p>
         </div>
         
-        <!-- User Info Section -->
-        <div class="user-info" id="userInfo" style="display: none;">
-            <div class="user-row">
-                <span class="user-email" id="userEmail">Loading...</span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            <div class="streak-info" id="streakContainer" style="display: none;">
-                <div class="streak-item">
-                    <div class="streak-number" id="currentStreak">0</div>
-                    <div class="streak-label">Current Streak</div>
-                </div>
-                <div class="streak-item">
-                    <div class="streak-number" id="longestStreak">0</div>
-                    <div class="streak-label">Longest Streak</div>
-                </div>
-            </div>
+        <div class="game-grid">
+            <button class="game-card" onclick="openWordOfTheDay()">
+                <h3>📚 Word of the Day</h3>
+                <p>Learn a new word every day in Albanian or English</p>
+            </button>
         </div>
         
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-btn active" onclick="showTab('today')">📅 Today's Word</button>
-            <button class="tab-btn" onclick="showTab('history')">📖 History</button>
-        </div>
-        
-        <!-- Today's Word Tab -->
-        <div id="todayContent" class="tab-content active">
-            <div class="language-selector">
-                <button class="language-btn" onclick="setLanguage('english')">🇺🇸 English</button>
-                <button class="language-btn" onclick="setLanguage('albanian')">🇦🇱 Albanian</button>
-            </div>
-            
-            <div id="wordContent" style="display: none;">
-                <!-- Word Display will be populated here -->
-            </div>
-        </div>
-        
-        <!-- History Tab -->
-        <div id="historyContent" class="tab-content">
-            <div class="history-container" id="historyContainer">
-                <div class="loading">Loading history...</div>
-            </div>
+        <div class="coming-soon">
+            <h3>🚧 Working on adding more stuff, stay tuned baby...</h3>
+            <p>More exciting games and activities coming soon!</p>
         </div>
     </div>
-
-    <!-- Real-time indicator - ADDED FOR THE FEATURE -->
-    <div id="realTimeIndicator" class="real-time-indicator">
-        <div class="pulse-dot"></div>
-        <span>Live updates active</span>
+    
+    <!-- Word of the Day Modal -->
+    <div id="wordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWordOfTheDay()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 1rem;">📚 Word of the Day</h2>
+            
+            <!-- Streak Counter -->
+            <div id="streakContainer" class="streak-container" style="display: none;">
+                <div class="streak-item">
+                    <div class="streak-label">Current Streak</div>
+                    <div class="streak-number">
+                        <span id="currentStreak">0</span>
+                        <span class="streak-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-label">Longest Streak</div>
+                    <div class="streak-number">
+                        <span id="longestStreak">0</span>
+                        <span class="streak-emoji">🏆</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" id="todayTab" onclick="switchTab('today')">
+                    Today's Word
+                </button>
+                <button class="tab-btn" id="historyTab" onclick="switchTab('history')">
+                    Word History
+                </button>
+            </div>
+            
+            <!-- Today's Word Tab -->
+            <div id="todayContent" class="tab-content active">
+                <div class="language-selector">
+                    <button class="lang-btn" id="albanianBtn" onclick="selectLanguage('albanian')">
+                        🇦🇱 Albanian
+                    </button>
+                    <button class="lang-btn" id="englishBtn" onclick="selectLanguage('english')">
+                        🇺🇸 English
+                    </button>
+                </div>
+                
+                <div id="wordContent" class="word-content" style="display: none;">
+                    <div id="wordDisplay"></div>
+                    
+                    <!-- Sentence Section -->
+                    <div class="sentence-section" id="sentenceSection" style="display: none;">
+                        <div class="sentence-header">
+                            ✍️ Use it in a Sentence
+                        </div>
+                        
+                        <div id="sentenceForm" style="display: none;">
+                            <div class="sentence-prompt">
+                                Try using this word in your own sentence:
+                            </div>
+                            <div class="sentence-input-group">
+                                <textarea 
+                                    id="sentenceInput" 
+                                    class="sentence-textarea" 
+                                    placeholder="Type your sentence here..."
+                                    maxlength="500"
+                                ></textarea>
+                            </div>
+                            <div class="sentence-buttons">
+                                <button class="sentence-btn sentence-btn-cancel" onclick="cancelSentence()">
+                                    Cancel
+                                </button>
+                                <button class="sentence-btn sentence-btn-save" onclick="saveSentence()">
+                                    💾 Save Sentence
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="sentencesDisplay" class="sentences-display">
+                            <!-- Sentences will be displayed here -->
+                        </div>
+                        
+                        <div id="sentenceStatus" class="sentence-status" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="historyContent" class="tab-content">
+                <div class="history-container" id="historyContainer">
+                    <div class="loading">Loading history...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -727,22 +821,13 @@
         let editingSentenceId = null;
         let currentTab = 'today';
         
-        // Real-time updates - ADDED FOR THE FEATURE
-        let realTimeInterval = null;
-        let lastAutoreceiverSentence = null;
-        
         // Check authentication and load user data
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userInfo').style.display = 'block';
                 await loadUserProfile();
                 await loadStreak();
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = '/';
             }
             return user;
         }
@@ -751,44 +836,26 @@
         async function loadUserProfile() {
             if (!currentUser) return;
             
-            console.log('📝 Loading user profile for:', currentUser.email);
-            
-            const { data: profile, error: profileError } = await supabase
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('username, autoreceiver_email')
                 .eq('id', currentUser.id)
                 .single();
             
-            if (profileError) {
-                console.error('❌ Error loading profile:', profileError);
-                return;
-            }
-            
             if (profile) {
                 currentUsername = profile.username || currentUser.email.split('@')[0];
                 autoreceiverEmail = profile.autoreceiver_email;
                 
-                console.log('✅ Profile loaded:', {
-                    username: currentUsername,
-                    autoreceiverEmail: autoreceiverEmail
-                });
-                
                 // Get autoreceiver's username if they exist
                 if (autoreceiverEmail) {
-                    console.log('🔍 Looking up autoreceiver profile for:', autoreceiverEmail);
-                    
-                    const { data: autoProfile, error: autoProfileError } = await supabase
+                    const { data: autoProfile } = await supabase
                         .from('profiles')
                         .select('username')
                         .eq('email', autoreceiverEmail)
                         .single();
                     
-                    if (autoProfileError) {
-                        console.warn('⚠️ Could not find autoreceiver profile:', autoProfileError);
-                        autoreceiverUsername = autoreceiverEmail.split('@')[0]; // fallback
-                    } else if (autoProfile) {
+                    if (autoProfile) {
                         autoreceiverUsername = autoProfile.username || autoreceiverEmail.split('@')[0];
-                        console.log('✅ Autoreceiver profile found:', autoreceiverUsername);
                     }
                 }
             }
@@ -820,164 +887,410 @@
             if (!currentUser) return;
             
             try {
-                const today = new Date().toISOString().split('T')[0];
+                // Call the database function to update streak
+                const { data, error } = await supabase
+                    .rpc('update_word_streak', { p_user_id: currentUser.id });
                 
-                const { error } = await supabase.rpc('update_streak', {
-                    user_id: currentUser.id,
-                    word_date: today
-                });
-                
-                if (error) throw error;
-                
-                // Reload streak display
-                await loadStreak();
+                if (!error && data && data[0]) {
+                    const result = data[0];
+                    document.getElementById('currentStreak').textContent = result.current_streak;
+                    document.getElementById('longestStreak').textContent = result.longest_streak;
+                    
+                    if (result.streak_updated) {
+                        // Animate streak update
+                        const streakContainer = document.getElementById('streakContainer');
+                        streakContainer.style.animation = 'none';
+                        setTimeout(() => {
+                            streakContainer.style.animation = 'slideDown 0.5s ease-out';
+                        }, 10);
+                    }
+                }
             } catch (error) {
                 console.error('Error updating streak:', error);
             }
         }
         
-        function showTab(tabName) {
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            
             // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
             
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Content').classList.add('active');
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tab + 'Content').classList.add('active');
             
-            currentTab = tabName;
-            
-            if (tabName === 'history') {
-                stopRealTimeUpdates(); // Stop when viewing history - ADDED FOR THE FEATURE
-                loadHistory();
-            } else if (tabName === 'today') {
-                // Restart real-time updates when back to today - ADDED FOR THE FEATURE
-                if (currentWord && autoreceiverEmail) {
-                    startRealTimeUpdates();
-                }
+            // Load history if switching to history tab
+            if (tab === 'history' && currentUser) {
+                loadWordHistory();
             }
         }
         
-        async function setLanguage(language) {
-            currentLanguage = language;
+        // Load word history
+        async function loadWordHistory() {
+            if (!currentUser) return;
             
-            // Update button states
-            document.querySelectorAll('.language-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Load today's word
-            await loadTodaysWord();
-        }
-        
-        async function loadTodaysWord() {
-            if (!currentLanguage) return;
+            const historyContainer = document.getElementById('historyContainer');
+            historyContainer.innerHTML = '<div class="loading">Loading history...</div>';
             
             try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                const { data: wordData, error } = await supabase
-                    .from('word_of_the_day')
+                const { data: history } = await supabase
+                    .from('word_history')
                     .select('*')
-                    .eq('word_date', today)
-                    .eq('language', currentLanguage)
-                    .single();
+                    .eq('user_id', currentUser.id)
+                    .order('word_date', { ascending: false })
+                    .limit(30);
                 
-                if (error) {
-                    throw error;
+                if (!history || history.length === 0) {
+                    historyContainer.innerHTML = '<div class="history-empty">No word history yet. Start learning words to build your history!</div>';
+                    return;
                 }
                 
-                if (wordData) {
-                    currentWord = wordData.word;
-                    displayWord(wordData);
-                    await loadSentences();
-                    await saveToHistory(wordData.word, currentLanguage, wordData.definition);
-                } else {
-                    throw new Error('No word found for today');
-                }
+                let historyHTML = '';
+                history.forEach(item => {
+                    const date = new Date(item.word_date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    
+                    historyHTML += `
+                        <div class="history-item" onclick="viewHistoryWord('${escapeHtml(item.word)}', '${item.word_language}', '${escapeHtml(item.definition || '')}')">
+                            <div class="history-date">${date}</div>
+                            <div class="history-word">
+                                ${escapeHtml(item.word)}
+                                <span class="history-badge">${item.word_language === 'albanian' ? '🇦🇱' : '🇺🇸'}</span>
+                                ${item.has_sentence ? '<span class="history-badge">✍️</span>' : ''}
+                            </div>
+                            ${item.definition ? `<div class="history-definition">${escapeHtml(item.definition.substring(0, 100))}${item.definition.length > 100 ? '...' : ''}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                historyContainer.innerHTML = historyHTML;
                 
             } catch (error) {
-                console.error('Error loading word:', error);
-                document.getElementById('wordContent').innerHTML = `
-                    <div class="error">
-                        Failed to load today's word. Please try again later.
-                    </div>
-                `;
+                console.error('Error loading history:', error);
+                historyContainer.innerHTML = '<div class="error">Error loading history</div>';
             }
         }
         
-        function displayWord(wordData) {
-            const wordContent = document.getElementById('wordContent');
-            wordContent.innerHTML = `
-                <div class="word-card">
-                    <div class="word-display">${escapeHtml(wordData.word)}</div>
-                    ${wordData.pronunciation ? `<div class="word-pronunciation">${escapeHtml(wordData.pronunciation)}</div>` : ''}
-                    <div class="word-definition">${escapeHtml(wordData.definition)}</div>
-                    ${wordData.example ? `<div class="word-example">${escapeHtml(wordData.example)}</div>` : ''}
+        // View a word from history
+        function viewHistoryWord(word, language, definition) {
+            // Switch to today tab
+            switchTab('today');
+            
+            // Set the language and load the word
+            currentLanguage = language;
+            currentWord = word;
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(language + 'Btn').classList.add('active');
+            
+            // Display the word
+            const displayDiv = document.getElementById('wordDisplay');
+            const today = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            displayDiv.innerHTML = `
+                <div class="word-title">${word}</div>
+                <div class="word-definition">
+                    ${definition || 'Definition not available'}
                 </div>
-                
-                <div class="sentence-section" id="sentenceSection">
-                    <div class="sentence-header">
-                        ✍️ Use it in a Sentence
-                    </div>
-                    
-                    <div id="sentenceForm" style="display: none;">
-                        <div class="sentence-prompt">
-                            Try using "${escapeHtml(wordData.word)}" in your own sentence:
-                        </div>
-                        <div class="sentence-input-group">
-                            <textarea 
-                                id="sentenceInput" 
-                                class="sentence-textarea" 
-                                placeholder="Type your sentence here..."
-                                maxlength="500"
-                            ></textarea>
-                        </div>
-                        <div class="sentence-buttons">
-                            <button class="sentence-btn sentence-btn-cancel" onclick="cancelSentence()">
-                                Cancel
-                            </button>
-                            <button class="sentence-btn sentence-btn-save" onclick="saveSentence()">
-                                💾 Save Sentence
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="sentencesDisplay" class="sentences-display">
-                        <!-- Sentences will be displayed here -->
-                    </div>
-                    
-                    <div id="sentenceStatus" class="sentence-status" style="display: none;"></div>
+                <div class="word-meta">
+                    <div class="word-date">📅 From History</div>
+                    <div class="word-source">${language === 'albanian' ? '🇦🇱 Albanian' : '🇺🇸 English'}</div>
                 </div>
             `;
             
             document.getElementById('wordContent').style.display = 'block';
+            
+            // Note: Don't show sentence section for historical words
+            document.getElementById('sentenceSection').style.display = 'none';
         }
         
+        // Save word to history
+        async function saveToHistory(word, language, definition) {
+            if (!currentUser || !word) return;
+            
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Check if already exists
+                const { data: existing } = await supabase
+                    .from('word_history')
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .eq('word', word.toLowerCase())
+                    .eq('word_language', language)
+                    .eq('word_date', today)
+                    .single();
+                
+                if (!existing) {
+                    // Insert new history entry
+                    await supabase
+                        .from('word_history')
+                        .insert({
+                            user_id: currentUser.id,
+                            word: word.toLowerCase(),
+                            word_language: language,
+                            definition: definition,
+                            word_date: today,
+                            has_sentence: false
+                        });
+                }
+            } catch (error) {
+                console.error('Error saving to history:', error);
+            }
+        }
+        
+        // Update history when sentence is saved
+        async function updateHistoryHasSentence(word, language) {
+            if (!currentUser || !word) return;
+            
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                await supabase
+                    .from('word_history')
+                    .update({ has_sentence: true })
+                    .eq('user_id', currentUser.id)
+                    .eq('word', word.toLowerCase())
+                    .eq('word_language', language)
+                    .eq('word_date', today);
+            } catch (error) {
+                console.error('Error updating history:', error);
+            }
+        }
+        
+        function openWordOfTheDay() {
+            document.getElementById('wordModal').style.display = 'block';
+            // Reset state
+            currentLanguage = null;
+            currentWord = null;
+            document.getElementById('wordContent').style.display = 'none';
+            document.getElementById('sentenceSection').style.display = 'none';
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Check authentication when opening modal
+            checkAuth();
+            
+            // Start on today tab
+            switchTab('today');
+        }
+        
+        function closeWordOfTheDay() {
+            document.getElementById('wordModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('wordModal');
+            if (event.target === modal) {
+                closeWordOfTheDay();
+            }
+        }
+        
+        async function selectLanguage(language) {
+            currentLanguage = language;
+            
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(language + 'Btn').classList.add('active');
+            
+            // Show content area with loading
+            const contentDiv = document.getElementById('wordContent');
+            const displayDiv = document.getElementById('wordDisplay');
+            
+            contentDiv.style.display = 'block';
+            displayDiv.innerHTML = '<div class="loading">Loading word of the day...</div>';
+            
+            try {
+                if (language === 'albanian') {
+                    await loadAlbanianWord();
+                } else {
+                    await loadEnglishWord();
+                }
+                
+                // Show sentence section after word loads
+                if (currentUser && currentWord) {
+                    document.getElementById('sentenceSection').style.display = 'block';
+                    await loadSentences();
+                }
+            } catch (error) {
+                console.error('Error loading word:', error);
+                displayDiv.innerHTML = '<div class="error">Sorry, could not load the word of the day. Please try again later.</div>';
+            }
+        }
+        
+        async function loadAlbanianWord() {
+            try {
+                const response = await fetch('https://marxfnwnc2.execute-api.eu-central-1.amazonaws.com/prod/wordoftheday');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Albanian word');
+                }
+                
+                const data = await response.json();
+                currentWord = data.word;
+                
+                const displayDiv = document.getElementById('wordDisplay');
+                const today = new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                const definition = data.definition;
+                
+                displayDiv.innerHTML = `
+                    <div class="word-title">${data.word}</div>
+                    ${data.pronunciation ? `<div class="word-pronunciation">[${data.pronunciation}]</div>` : ''}
+                    ${data.type ? `<span class="word-type">${data.type}</span>` : ''}
+                    <div class="word-definition">
+                        <strong>Definition:</strong> ${definition}
+                    </div>
+                    ${data.example ? `
+                        <div class="word-example">
+                            ${data.example}
+                        </div>
+                    ` : ''}
+                    <div class="word-meta">
+                        <div class="word-date">📅 ${today}</div>
+                        <div class="word-source">🇦🇱 Albanian</div>
+                    </div>
+                `;
+                
+                // Save to history
+                await saveToHistory(data.word, 'albanian', definition);
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        async function loadEnglishWord() {
+            try {
+                // Using a CORS proxy to fetch the RSS feed
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.merriam-webster.com/wotd/feed/rss2');
+                
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch English word');
+                }
+                
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                
+                // Get the first item (today's word)
+                const firstItem = xmlDoc.querySelector('item');
+                if (!firstItem) {
+                    throw new Error('No word found in RSS feed');
+                }
+                
+                const title = firstItem.querySelector('title').textContent.trim();
+                currentWord = title;
+                
+                const description = firstItem.querySelector('description').textContent;
+                
+                // Parse the HTML content in description to extract the clean definition
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = description;
+                
+                // Extract different parts of the definition
+                let definition = '';
+                let example = '';
+                let wordType = '';
+                
+                const paragraphs = tempDiv.querySelectorAll('p');
+                
+                for (let p of paragraphs) {
+                    const text = p.textContent.trim();
+                    
+                    // Skip empty paragraphs and metadata
+                    if (!text || text.includes('Merriam-Webster')) continue;
+                    
+                    // Look for word type (noun, verb, etc.)
+                    if (text.match(/^(noun|verb|adjective|adverb|pronoun|preposition|conjunction|interjection)/i)) {
+                        wordType = text.split(':')[0].trim();
+                        definition = text.split(':')[1]?.trim() || text;
+                    }
+                    // Look for examples (usually contain //)
+                    else if (text.includes('//')) {
+                        example = text;
+                    }
+                    // Regular definition
+                    else if (text.length > 50 && !definition) {
+                        definition = text;
+                    }
+                }
+                
+                // If no definition found, use the first substantial paragraph
+                if (!definition) {
+                    for (let p of paragraphs) {
+                        const text = p.textContent.trim();
+                        if (text.length > 50 && !text.includes('Merriam-Webster')) {
+                            definition = text;
+                            break;
+                        }
+                    }
+                }
+                
+                const today = new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                const displayDiv = document.getElementById('wordDisplay');
+                displayDiv.innerHTML = `
+                    <div class="word-title">${title}</div>
+                    ${wordType ? `<span class="word-type">${wordType}</span>` : ''}
+                    <div class="word-definition">
+                        ${definition || 'Definition not available'}
+                    </div>
+                    ${example ? `
+                        <div class="word-example">
+                            ${example}
+                        </div>
+                    ` : ''}
+                    <div class="word-meta">
+                        <div class="word-date">📅 ${today}</div>
+                        <div class="word-source">🇺🇸 Merriam-Webster</div>
+                    </div>
+                `;
+                
+                // Save to history
+                await saveToHistory(title, 'english', definition);
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // Sentence Management Functions
         async function loadSentences() {
             if (!currentUser || !currentWord || !currentLanguage) return;
-            
-            console.log('🔍 Loading sentences for:', {
-                word: currentWord,
-                language: currentLanguage,
-                user: currentUser.email,
-                autoreceiver: autoreceiverEmail
-            });
             
             const sentencesDisplay = document.getElementById('sentencesDisplay');
             const sentenceForm = document.getElementById('sentenceForm');
             
             try {
+                // Get today's sentences for this word
                 const today = new Date().toISOString().split('T')[0];
                 
                 // Get user's sentence
-                console.log('📝 Looking for user sentence...');
-                const { data: userSentence, error: userError } = await supabase
+                const { data: userSentence } = await supabase
                     .from('word_sentences')
                     .select('*')
                     .eq('user_id', currentUser.id)
@@ -986,33 +1299,17 @@
                     .eq('word_date', today)
                     .single();
                 
-                if (userError && userError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-                    console.warn('⚠️ Error fetching user sentence:', userError);
-                }
-                
                 // Get autoreceiver's sentence if applicable
                 let autoreceiverSentence = null;
-                let autoreceiverUserId = null;
-                
                 if (autoreceiverEmail) {
-                    console.log('🔍 Looking for autoreceiver user ID...');
-                    
-                    // First, get the autoreceiver's user ID
-                    const { data: autoUser, error: autoUserError } = await supabase
+                    const { data: autoUser } = await supabase
                         .from('profiles')
-                        .select('id, username')
+                        .select('id')
                         .eq('email', autoreceiverEmail)
                         .single();
                     
-                    if (autoUserError) {
-                        console.warn('⚠️ Could not find autoreceiver user:', autoUserError);
-                    } else if (autoUser) {
-                        autoreceiverUserId = autoUser.id;
-                        console.log('✅ Found autoreceiver user ID:', autoUser.id);
-                        
-                        // Now get their sentence
-                        console.log('📝 Looking for autoreceiver sentence...');
-                        const { data: autoSentence, error: autoSentenceError } = await supabase
+                    if (autoUser) {
+                        const { data: autoSentence } = await supabase
                             .from('word_sentences')
                             .select('*')
                             .eq('user_id', autoUser.id)
@@ -1021,14 +1318,7 @@
                             .eq('word_date', today)
                             .single();
                         
-                        if (autoSentenceError && autoSentenceError.code !== 'PGRST116') {
-                            console.warn('⚠️ Error fetching autoreceiver sentence:', autoSentenceError);
-                        } else if (autoSentence) {
-                            autoreceiverSentence = autoSentence;
-                            console.log('✅ Found autoreceiver sentence:', autoSentence.sentence);
-                        } else {
-                            console.log('ℹ️ Autoreceiver has not created a sentence yet');
-                        }
+                        autoreceiverSentence = autoSentence;
                     }
                 }
                 
@@ -1050,6 +1340,7 @@
                     displayHTML += `
                         <div class="sentence-empty">
                             You haven't used this word in a sentence yet.
+                            <br>
                             <button class="sentence-btn sentence-btn-save" style="margin-top: 10px;" onclick="showSentenceForm()">
                                 ✍️ Create Sentence
                             </button>
@@ -1057,56 +1348,30 @@
                     `;
                     sentenceForm.style.display = 'none';
                 }
-
-                function getAutoDisplayName() {
-                    if (autoreceiverUsername && autoreceiverUsername.trim()) return autoreceiverUsername;
-                    if (autoreceiverEmail) return autoreceiverEmail.split('@')[0];
-                    return 'Friend';
-                }
                 
-                // Display autoreceiver's sentence if found - ENHANCED FOR REAL-TIME UPDATES
+                // Display autoreceiver's sentence if found
                 if (autoreceiverSentence) {
-                    const displayName = getAutoDisplayName();
-                    
-                    // Check if this is a new sentence (for real-time updates)
-                    const isNewSentence = lastAutoreceiverSentence !== autoreceiverSentence.sentence;
-                    const newClass = isNewSentence && lastAutoreceiverSentence !== null ? ' new-sentence' : '';
-                    
+                    const displayName = autoreceiverDisplayName || autoreceiverUsername || autoreceiverEmail.split('@')[0];
                     displayHTML += `
-                        <div class="sentence-item${newClass}">
+                        <div class="sentence-item">
                             <div class="sentence-author">${escapeHtml(displayName)} said:</div>
                             <div class="sentence-text">${escapeHtml(autoreceiverSentence.sentence)}</div>
-                            ${isNewSentence && lastAutoreceiverSentence !== null ? '<div class="new-indicator">🆕 New!</div>' : ''}
                         </div>
                     `;
-                    
-                    // Update last known sentence
-                    lastAutoreceiverSentence = autoreceiverSentence.sentence;
-                    
-                    // Show notification for new sentences
-                    if (isNewSentence && lastAutoreceiverSentence !== null) {
-                        showNotification(`${displayName} just used "${currentWord}" in a sentence!`);
-                    }
-                    
-                    console.log('✅ Displaying autoreceiver sentence from:', displayName);
                 } else if (autoreceiverEmail) {
-                    const displayName = getAutoDisplayName();
+                    const displayName = autoreceiverDisplayName || autoreceiverUsername || autoreceiverEmail.split('@')[0];
                     displayHTML += `
                         <div class="sentence-item" style="opacity: 0.6;">
                             <div class="sentence-author">${escapeHtml(displayName)}:</div>
                             <div class="sentence-text">Hasn't used this word yet</div>
                         </div>
                     `;
-                    console.log('ℹ️ Autoreceiver has not created a sentence yet');
                 }
                 
                 sentencesDisplay.innerHTML = displayHTML;
                 
-                // Start real-time updates if we have an autoreceiver and are on today's word - ADDED FOR THE FEATURE
-                startRealTimeUpdates();
-                
             } catch (error) {
-                console.error('❌ Error loading sentences:', error);
+                console.error('Error loading sentences:', error);
                 sentencesDisplay.innerHTML = '<div class="sentence-empty">Error loading sentences</div>';
             }
         }
@@ -1231,156 +1496,6 @@
             }
         }
         
-        async function updateHistoryHasSentence(word, language) {
-            if (!currentUser) return;
-            
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                const { error } = await supabase
-                    .from('word_history')
-                    .update({ has_sentence: true })
-                    .eq('user_id', currentUser.id)
-                    .eq('word', word.toLowerCase())
-                    .eq('word_language', language)
-                    .eq('word_date', today);
-                
-                if (error) throw error;
-            } catch (error) {
-                console.error('Error updating history:', error);
-            }
-        }
-        
-        async function loadHistory() {
-            if (!currentUser) return;
-            
-            const historyContainer = document.getElementById('historyContainer');
-            historyContainer.innerHTML = '<div class="loading">Loading history...</div>';
-            
-            try {
-                const { data: history, error } = await supabase
-                    .from('word_history')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('word_date', { ascending: false })
-                    .limit(50);
-                
-                if (error) throw error;
-                
-                if (history && history.length > 0) {
-                    let historyHTML = '';
-                    
-                    for (const item of history) {
-                        // Get sentence if exists
-                        let sentenceText = '';
-                        if (item.has_sentence) {
-                            const { data: sentence } = await supabase
-                                .from('word_sentences')
-                                .select('sentence')
-                                .eq('user_id', currentUser.id)
-                                .eq('word', item.word)
-                                .eq('word_language', item.word_language)
-                                .eq('word_date', item.word_date)
-                                .single();
-                            
-                            if (sentence) {
-                                sentenceText = `<div class="history-sentence">"${escapeHtml(sentence.sentence)}"</div>`;
-                            }
-                        }
-                        
-                        historyHTML += `
-                            <div class="history-item" onclick="loadHistoricalWord('${item.word_date}', '${item.word_language}')">
-                                <div class="history-date">${formatDate(item.word_date)} • ${item.word_language}${item.has_sentence ? '<span class="history-badge">✍️ Has Sentence</span>' : ''}</div>
-                                <div class="history-word">${escapeHtml(item.word)}</div>
-                                <div class="history-definition">${escapeHtml(item.definition)}</div>
-                                ${sentenceText}
-                            </div>
-                        `;
-                    }
-                    
-                    historyContainer.innerHTML = historyHTML;
-                } else {
-                    historyContainer.innerHTML = '<div class="history-empty">No word history yet. Start learning words to build your history!</div>';
-                }
-                
-            } catch (error) {
-                console.error('Error loading history:', error);
-                historyContainer.innerHTML = '<div class="error">Error loading history</div>';
-            }
-        }
-        
-        // Load historical word by date and language
-        async function loadHistoricalWord(date, language) {
-            // Switch to today tab
-            showTab('today');
-            currentLanguage = language;
-            
-            // Update language button
-            document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.language-btn[onclick="setLanguage('${language}')"]`).classList.add('active');
-            
-            try {
-                const { data: wordData, error } = await supabase
-                    .from('word_of_the_day')
-                    .select('*')
-                    .eq('word_date', date)
-                    .eq('language', language)
-                    .single();
-                
-                if (error) throw error;
-                
-                if (wordData) {
-                    currentWord = wordData.word;
-                    displayWord(wordData);
-                    
-                    // Note: Don't load sentences for historical words - they're view-only
-                    document.getElementById('sentenceSection').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error loading historical word:', error);
-                document.getElementById('wordContent').innerHTML = `
-                    <div class="error">
-                        Failed to load word for this date.
-                    </div>
-                `;
-            }
-        }
-        
-        // Save word to history
-        async function saveToHistory(word, language, definition) {
-            if (!currentUser || !word) return;
-            
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                // Check if already exists
-                const { data: existing } = await supabase
-                    .from('word_history')
-                    .select('id')
-                    .eq('user_id', currentUser.id)
-                    .eq('word', word.toLowerCase())
-                    .eq('word_language', language)
-                    .eq('word_date', today)
-                    .single();
-                
-                if (!existing) {
-                    // Insert new history entry
-                    await supabase
-                        .from('word_history')
-                        .insert({
-                            user_id: currentUser.id,
-                            word: word.toLowerCase(),
-                            word_language: language,
-                            definition: definition,
-                            word_date: today,
-                            has_sentence: false
-                        });
-                }
-            } catch (error) {
-                console.error('Error saving to history:', error);
-            }
-        }
-        
         function showStatus(message, type) {
             const statusEl = document.getElementById('sentenceStatus');
             statusEl.textContent = message;
@@ -1392,139 +1507,12 @@
             }, 3000);
         }
         
-        // Logout function
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = '/';
-        }
-        
         // Utility function to escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-        
-        // Format date for display
-        function formatDate(dateString) {
-            const date = new Date(dateString + 'T00:00:00');
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-        }
-
-        // Real-time Updates Functions - ADDED FOR THE FEATURE
-        function startRealTimeUpdates() {
-            // Only start if we have an autoreceiver and are viewing today's word
-            if (!autoreceiverEmail || currentTab !== 'today' || !currentWord) {
-                stopRealTimeUpdates();
-                return;
-            }
-
-            // Clear existing interval
-            if (realTimeInterval) {
-                clearInterval(realTimeInterval);
-            }
-
-            console.log('🔄 Starting real-time updates for autoreceiver sentences');
-            
-            // Show indicator
-            document.getElementById('realTimeIndicator').style.display = 'flex';
-            
-            // Set up interval to check every 30 seconds
-            realTimeInterval = setInterval(async () => {
-                console.log('🔄 Checking for new autoreceiver sentences...');
-                await checkForNewAutoreceiverSentence();
-            }, 30000); // 30 seconds
-        }
-
-        function stopRealTimeUpdates() {
-            if (realTimeInterval) {
-                clearInterval(realTimeInterval);
-                realTimeInterval = null;
-                console.log('⏹️ Stopped real-time updates');
-            }
-            
-            // Hide indicator
-            document.getElementById('realTimeIndicator').style.display = 'none';
-        }
-
-        async function checkForNewAutoreceiverSentence() {
-            if (!autoreceiverEmail || !currentWord || !currentLanguage || !currentUser) return;
-
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                // Get autoreceiver's user ID
-                const { data: autoUser, error: autoUserError } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('email', autoreceiverEmail)
-                    .single();
-                
-                if (autoUserError || !autoUser) return;
-
-                // Get their latest sentence for today's word
-                const { data: autoSentence, error: autoSentenceError } = await supabase
-                    .from('word_sentences')
-                    .select('*')
-                    .eq('user_id', autoUser.id)
-                    .eq('word', currentWord.toLowerCase())
-                    .eq('word_language', currentLanguage)
-                    .eq('word_date', today)
-                    .single();
-                
-                if (autoSentenceError && autoSentenceError.code !== 'PGRST116') return;
-                
-                // Check if this is different from what we last saw
-                const newSentence = autoSentence ? autoSentence.sentence : null;
-                
-                if (newSentence && newSentence !== lastAutoreceiverSentence) {
-                    console.log('🆕 New autoreceiver sentence detected!');
-                    // Reload sentences to show the new one
-                    await loadSentences();
-                }
-                
-            } catch (error) {
-                console.warn('⚠️ Error checking for new sentences:', error);
-            }
-        }
-
-        function showNotification(message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            
-            // Add to page
-            document.body.appendChild(notification);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 5000);
-        }
-
-        // Stop real-time updates when page is hidden (user switches tabs/minimizes browser) - ADDED FOR THE FEATURE
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                stopRealTimeUpdates();
-            } else {
-                // Restart when page becomes visible again
-                if (currentTab === 'today' && currentWord && autoreceiverEmail) {
-                    startRealTimeUpdates();
-                }
-            }
-        });
-
-        // Clean up on page unload - ADDED FOR THE FEATURE
-        window.addEventListener('beforeunload', function() {
-            stopRealTimeUpdates();
-        });
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
