@@ -3,479 +3,711 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOTD Playground</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>Pookie's Playground</title>
+    <link rel="icon" href="/assets/icons/favicon.ico">
+    
+    <!-- Import your existing CSS files -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Additional styles for the playground -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
+        .playground-container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            padding: 2rem;
             text-align: center;
         }
-
-        .header h1 {
-            margin-bottom: 10px;
-            font-size: 2.5em;
+        
+        .playground-header {
+            margin-bottom: 2rem;
         }
-
-        .subtitle {
+        
+        .playground-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .playground-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        
+        .game-card p {
+            margin: 0;
             opacity: 0.9;
-            font-size: 1.1em;
+            font-size: 0.95rem;
         }
-
+        
+        .coming-soon {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* User Info Styles */
         .user-info {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+            color: white;
+        }
+        
+        .user-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 15px;
         }
-
+        
+        .user-email {
+            font-weight: 600;
+            color: #FFD700;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
         .streak-info {
-            display: none;
-            gap: 20px;
+            display: flex;
+            gap: 2rem;
+            margin-top: 15px;
         }
-
+        
         .streak-item {
             text-align: center;
         }
-
+        
         .streak-number {
-            font-size: 1.5em;
+            font-size: 1.8rem;
             font-weight: bold;
+            color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
-
+        
         .streak-label {
-            font-size: 0.9em;
-            opacity: 0.8;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
         }
-
-        .tabs {
+        
+        /* Tab Navigation */
+        .tab-navigation {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
+            gap: 10px;
+            margin: 1.5rem 0;
+            justify-content: center;
         }
-
-        .tab {
-            flex: 1;
-            padding: 15px 20px;
-            background: none;
-            border: none;
+        
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 1em;
             transition: all 0.3s ease;
+            font-size: 0.95rem;
         }
-
-        .tab.active {
-            background: white;
-            color: #667eea;
-            font-weight: 600;
-            border-bottom: 3px solid #667eea;
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
-
-        .tab:hover:not(.active) {
-            background: #e9ecef;
+        
+        .tab-btn.active {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
         }
-
+        
         .tab-content {
             display: none;
-            padding: 30px;
         }
-
+        
         .tab-content.active {
             display: block;
         }
-
+        
+        /* Word History Styles */
+        .history-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 10px;
+            text-align: left;
+            border-left: 3px solid rgba(255, 215, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+        
+        .history-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+        
+        .history-word {
+            font-size: 1.2rem;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .history-definition {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+        
+        .history-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+        }
+        
+        .history-empty {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+        
         .language-selector {
-            margin-bottom: 20px;
-        }
-
-        .language-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
         }
-
+        
         .language-btn {
-            padding: 10px 20px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 25px;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 500;
+            font-size: 1rem;
+            min-width: 120px;
         }
-
+        
+        .language-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
         .language-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .language-btn:hover:not(.active) {
-            background: #f8f9ff;
-        }
-
-        .word-display {
-            text-align: center;
-            margin: 30px 0;
-        }
-
-        .word {
-            font-size: 3em;
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+            color: #FFD700;
             font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
         }
-
-        .definition {
-            font-size: 1.2em;
-            color: #666;
+        
+        /* Word Display */
+        .word-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .word-display {
+            font-size: 3.5rem;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.2;
+        }
+        
+        .word-pronunciation {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+        
+        .word-definition {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
             line-height: 1.6;
-            max-width: 600px;
-            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #FFD700;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
-
-        .language-info {
-            margin-top: 15px;
-            font-size: 1.1em;
-            color: #888;
+        
+        .word-example {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            font-style: italic;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 3rem;
         }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1em;
+        
+        .word-example::before {
+            content: '💬';
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
         }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
+        
+        /* Sentence Section Styles */
         .sentence-section {
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-            padding-top: 30px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
         }
-
+        
         .sentence-header {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
+            font-size: 1.3rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
+        
         .sentence-prompt {
-            color: #666;
-            margin-bottom: 15px;
-            text-align: center;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+            font-style: italic;
         }
-
+        
         .sentence-input-group {
-            margin-bottom: 15px;
+            margin-bottom: 1rem;
         }
-
+        
         .sentence-textarea {
             width: 100%;
-            min-height: 100px;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
+            min-height: 80px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
             resize: vertical;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
-
+        
         .sentence-textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.15);
         }
-
+        
+        .sentence-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
         .sentence-buttons {
             display: flex;
             gap: 10px;
-            justify-content: center;
+            justify-content: flex-end;
         }
-
+        
         .sentence-btn {
-            padding: 10px 20px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: 20px;
+            font-size: 0.9rem;
             cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
             transition: all 0.3s ease;
-        }
-
-        .sentence-btn-save {
-            background: #28a745;
-            color: white;
-        }
-
-        .sentence-btn-save:hover {
-            background: #218838;
-        }
-
-        .sentence-btn-cancel {
-            background: #6c757d;
-            color: white;
-        }
-
-        .sentence-btn-cancel:hover {
-            background: #5a6268;
-        }
-
-        .sentence-btn-edit {
-            background: #ffc107;
-            color: #212529;
-            padding: 5px 10px;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
-        .sentence-btn-edit:hover {
-            background: #e0a800;
-        }
-
-        .sentences-display {
-            margin-top: 20px;
-        }
-
-        .sentence-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .sentence-author {
             font-weight: 600;
-            color: #667eea;
+        }
+        
+        .sentence-btn-save {
+            background: #FFD700;
+            color: #764ba2;
+        }
+        
+        .sentence-btn-save:hover {
+            background: #FFE55C;
+            transform: translateY(-2px);
+        }
+        
+        .sentence-btn-cancel {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .sentence-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .sentence-btn-edit {
+            background: rgba(255, 165, 0, 0.8);
+            color: white;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        
+        .sentence-btn-edit:hover {
+            background: rgba(255, 165, 0, 1);
+        }
+        
+        /* Sentences Display */
+        .sentences-display {
+            margin-top: 1rem;
+        }
+        
+        .sentence-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid rgba(255, 215, 0, 0.6);
+            text-align: left;
+        }
+        
+        .sentence-author {
+            font-size: 0.85rem;
+            color: #FFD700;
+            font-weight: bold;
             margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
+        
         .sentence-text {
-            color: #333;
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.9);
             line-height: 1.5;
-            font-size: 1.1em;
+            font-style: italic;
         }
-
+        
         .sentence-empty {
             text-align: center;
-            color: #666;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.6);
             font-style: italic;
-            padding: 20px;
         }
-
+        
+        /* Status Messages */
         .sentence-status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 1rem;
             font-weight: 500;
+            text-align: center;
         }
-
+        
         .sentence-status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(40, 167, 69, 0.2);
+            color: #40E070;
+            border: 1px solid rgba(40, 167, 69, 0.4);
         }
-
+        
         .sentence-status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(220, 53, 69, 0.2);
+            color: #FF6B7A;
+            border: 1px solid rgba(220, 53, 69, 0.4);
+        }
+        
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #FFD700;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error States */
+        .error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #FF6B7A;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            margin: 1rem 0;
+            text-align: center;
         }
 
-        .history-container {
-            max-height: 500px;
-            overflow-y: auto;
+        /* Real-time Updates Styles - ADDED FOR THE FEATURE */
+        .new-sentence {
+            animation: highlightNew 3s ease-in-out;
+            border-left-color: #28a745 !important;
         }
 
-        .history-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .history-word {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .history-date {
+        .new-indicator {
+            color: #28a745;
+            font-weight: bold;
             font-size: 0.9em;
-            color: #666;
-            margin-bottom: 8px;
+            margin-top: 5px;
+            animation: pulse 2s infinite;
         }
 
-        .history-definition {
-            color: #333;
-            line-height: 1.4;
+        @keyframes highlightNew {
+            0% { background-color: rgba(40, 167, 69, 0.3); }
+            50% { background-color: rgba(40, 167, 69, 0.2); }
+            100% { background-color: rgba(255, 255, 255, 0.05); }
         }
 
-        .history-sentence {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #dee2e6;
-            font-style: italic;
-            color: #555;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
-        .debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
             border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .debug-info h4 {
-            margin-bottom: 10px;
-            color: #856404;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        .debug-item {
-            margin: 5px 0;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 4px;
+        .real-time-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .playground-container {
+                padding: 1rem;
+            }
+            
+            .playground-header h1 {
+                font-size: 2rem;
+            }
+            
+            .word-display {
+                font-size: 2.5rem;
+            }
+            
+            .language-selector {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .language-btn {
+                min-width: auto;
+            }
+            
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+            
+            .streak-info {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="playground-container">
+        <a href="/" class="back-button">← Back to Home</a>
+        
+        <div class="playground-header">
             <h1>📚 Word of the Day Playground</h1>
-            <p class="subtitle">Learn, practice, and share words together</p>
-            
-            <div class="user-info">
-                <div>
-                    <span id="userEmail">Loading...</span>
+            <p>Learn, practice, and share words together</p>
+        </div>
+        
+        <!-- User Info Section -->
+        <div class="user-info" id="userInfo" style="display: none;">
+            <div class="user-row">
+                <span class="user-email" id="userEmail">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            <div class="streak-info" id="streakContainer" style="display: none;">
+                <div class="streak-item">
+                    <div class="streak-number" id="currentStreak">0</div>
+                    <div class="streak-label">Current Streak</div>
                 </div>
-                <div class="streak-info" id="streakContainer">
-                    <div class="streak-item">
-                        <div class="streak-number" id="currentStreak">0</div>
-                        <div class="streak-label">Current Streak</div>
-                    </div>
-                    <div class="streak-item">
-                        <div class="streak-number" id="longestStreak">0</div>
-                        <div class="streak-label">Longest Streak</div>
-                    </div>
+                <div class="streak-item">
+                    <div class="streak-number" id="longestStreak">0</div>
+                    <div class="streak-label">Longest Streak</div>
                 </div>
             </div>
         </div>
-
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('today')">📅 Today's Word</button>
-            <button class="tab" onclick="showTab('history')">📖 History</button>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="showTab('today')">📅 Today's Word</button>
+            <button class="tab-btn" onclick="showTab('history')">📖 History</button>
         </div>
-
-        <div class="content">
-            <!-- Today's Word Tab -->
-            <div id="todayContent" class="tab-content active">
-                <div class="language-selector">
-                    <div class="language-buttons">
-                        <button class="language-btn" onclick="setLanguage('english')">🇺🇸 English</button>
-                        <button class="language-btn" onclick="setLanguage('albanian')">🇦🇱 Albanian</button>
-                    </div>
-                </div>
-
-                <div id="wordContent" style="display: none;">
-                    <div class="word-display">
-                        <div class="word" id="currentWordDisplay"></div>
-                        <div class="definition" id="currentDefinition"></div>
-                        <div class="language-info" id="currentLanguageInfo"></div>
-                    </div>
-
-                    <!-- DEBUG INFO SECTION -->
-                    <div id="debugInfo" class="debug-info" style="display: none;">
-                        <h4>🐛 Debug Information</h4>
-                        <div id="debugContent"></div>
-                    </div>
-
-                    <div class="sentence-section" id="sentenceSection" style="display: none;">
-                        <div class="sentence-header">
-                            ✍️ Use it in a Sentence
-                        </div>
-                        
-                        <div id="sentenceForm" style="display: none;">
-                            <div class="sentence-prompt">
-                                Try using this word in your own sentence:
-                            </div>
-                            <div class="sentence-input-group">
-                                <textarea 
-                                    id="sentenceInput" 
-                                    class="sentence-textarea" 
-                                    placeholder="Type your sentence here..."
-                                    maxlength="500"
-                                ></textarea>
-                            </div>
-                            <div class="sentence-buttons">
-                                <button class="sentence-btn sentence-btn-cancel" onclick="cancelSentence()">
-                                    Cancel
-                                </button>
-                                <button class="sentence-btn sentence-btn-save" onclick="saveSentence()">
-                                    💾 Save Sentence
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div id="sentencesDisplay" class="sentences-display">
-                            <!-- Sentences will be displayed here -->
-                        </div>
-                        
-                        <div id="sentenceStatus" class="sentence-status" style="display: none;"></div>
-                    </div>
-                </div>
+        
+        <!-- Today's Word Tab -->
+        <div id="todayContent" class="tab-content active">
+            <div class="language-selector">
+                <button class="language-btn" onclick="setLanguage('english')">🇺🇸 English</button>
+                <button class="language-btn" onclick="setLanguage('albanian')">🇦🇱 Albanian</button>
             </div>
             
-            <!-- History Tab -->
-            <div id="historyContent" class="tab-content">
-                <div class="history-container" id="historyContainer">
-                    <div class="loading">Loading history...</div>
-                </div>
+            <div id="wordContent" style="display: none;">
+                <!-- Word Display will be populated here -->
             </div>
         </div>
+        
+        <!-- History Tab -->
+        <div id="historyContent" class="tab-content">
+            <div class="history-container" id="historyContainer">
+                <div class="loading">Loading history...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time indicator - ADDED FOR THE FEATURE -->
+    <div id="realTimeIndicator" class="real-time-indicator">
+        <div class="pulse-dot"></div>
+        <span>Live updates active</span>
     </div>
 
     <script>
@@ -495,42 +727,22 @@
         let editingSentenceId = null;
         let currentTab = 'today';
         
-        // DEBUG: Show/hide debug info
-        let debugMode = false;
-        function toggleDebug() {
-            debugMode = !debugMode;
-            document.getElementById('debugInfo').style.display = debugMode ? 'block' : 'none';
-        }
-
-        // Add debug button to header
-        document.addEventListener('DOMContentLoaded', function() {
-            const header = document.querySelector('.header');
-            const debugBtn = document.createElement('button');
-            debugBtn.textContent = '🐛 Debug';
-            debugBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; padding: 5px 10px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 5px; cursor: pointer;';
-            debugBtn.onclick = toggleDebug;
-            header.style.position = 'relative';
-            header.appendChild(debugBtn);
-        });
-
-        function updateDebugInfo(info) {
-            if (!debugMode) return;
-            const debugContent = document.getElementById('debugContent');
-            if (debugContent) {
-                debugContent.innerHTML = Object.entries(info).map(([key, value]) => 
-                    `<div class="debug-item"><strong>${key}:</strong> ${JSON.stringify(value)}</div>`
-                ).join('');
-            }
-        }
-
+        // Real-time updates - ADDED FOR THE FEATURE
+        let realTimeInterval = null;
+        let lastAutoreceiverSentence = null;
+        
         // Check authentication and load user data
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 currentUser = user;
                 document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userInfo').style.display = 'block';
                 await loadUserProfile();
                 await loadStreak();
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = '/';
             }
             return user;
         }
@@ -626,8 +838,8 @@
         
         function showTab(tabName) {
             // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
@@ -640,7 +852,13 @@
             currentTab = tabName;
             
             if (tabName === 'history') {
+                stopRealTimeUpdates(); // Stop when viewing history - ADDED FOR THE FEATURE
                 loadHistory();
+            } else if (tabName === 'today') {
+                // Restart real-time updates when back to today - ADDED FOR THE FEATURE
+                if (currentWord && autoreceiverEmail) {
+                    startRealTimeUpdates();
+                }
             }
         }
         
@@ -676,20 +894,8 @@
                 
                 if (wordData) {
                     currentWord = wordData.word;
-                    
-                    document.getElementById('currentWordDisplay').textContent = wordData.word;
-                    document.getElementById('currentDefinition').textContent = wordData.definition;
-                    document.getElementById('currentLanguageInfo').innerHTML = `
-                        <div>Language: ${currentLanguage === 'english' ? '🇺🇸 English' : '🇦🇱 Albanian'}</div>
-                    `;
-                    
-                    document.getElementById('wordContent').style.display = 'block';
-                    document.getElementById('sentenceSection').style.display = 'block';
-                    
-                    // Load sentences after word is loaded
+                    displayWord(wordData);
                     await loadSentences();
-                    
-                    // Save to history
                     await saveToHistory(wordData.word, currentLanguage, wordData.definition);
                 } else {
                     throw new Error('No word found for today');
@@ -703,6 +909,54 @@
                     </div>
                 `;
             }
+        }
+        
+        function displayWord(wordData) {
+            const wordContent = document.getElementById('wordContent');
+            wordContent.innerHTML = `
+                <div class="word-card">
+                    <div class="word-display">${escapeHtml(wordData.word)}</div>
+                    ${wordData.pronunciation ? `<div class="word-pronunciation">${escapeHtml(wordData.pronunciation)}</div>` : ''}
+                    <div class="word-definition">${escapeHtml(wordData.definition)}</div>
+                    ${wordData.example ? `<div class="word-example">${escapeHtml(wordData.example)}</div>` : ''}
+                </div>
+                
+                <div class="sentence-section" id="sentenceSection">
+                    <div class="sentence-header">
+                        ✍️ Use it in a Sentence
+                    </div>
+                    
+                    <div id="sentenceForm" style="display: none;">
+                        <div class="sentence-prompt">
+                            Try using "${escapeHtml(wordData.word)}" in your own sentence:
+                        </div>
+                        <div class="sentence-input-group">
+                            <textarea 
+                                id="sentenceInput" 
+                                class="sentence-textarea" 
+                                placeholder="Type your sentence here..."
+                                maxlength="500"
+                            ></textarea>
+                        </div>
+                        <div class="sentence-buttons">
+                            <button class="sentence-btn sentence-btn-cancel" onclick="cancelSentence()">
+                                Cancel
+                            </button>
+                            <button class="sentence-btn sentence-btn-save" onclick="saveSentence()">
+                                💾 Save Sentence
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="sentencesDisplay" class="sentences-display">
+                        <!-- Sentences will be displayed here -->
+                    </div>
+                    
+                    <div id="sentenceStatus" class="sentence-status" style="display: none;"></div>
+                </div>
+            `;
+            
+            document.getElementById('wordContent').style.display = 'block';
         }
         
         async function loadSentences() {
@@ -778,17 +1032,6 @@
                     }
                 }
                 
-                // Update debug info
-                updateDebugInfo({
-                    currentWord: currentWord,
-                    currentLanguage: currentLanguage,
-                    autoreceiverEmail: autoreceiverEmail,
-                    autoreceiverUserId: autoreceiverUserId,
-                    autoreceiverUsername: autoreceiverUsername,
-                    userSentence: userSentence ? 'Found' : 'None',
-                    autoreceiverSentence: autoreceiverSentence ? 'Found' : 'None'
-                });
-                
                 // Build display HTML
                 let displayHTML = '';
                 
@@ -821,15 +1064,30 @@
                     return 'Friend';
                 }
                 
-                // Display autoreceiver's sentence if found
+                // Display autoreceiver's sentence if found - ENHANCED FOR REAL-TIME UPDATES
                 if (autoreceiverSentence) {
                     const displayName = getAutoDisplayName();
+                    
+                    // Check if this is a new sentence (for real-time updates)
+                    const isNewSentence = lastAutoreceiverSentence !== autoreceiverSentence.sentence;
+                    const newClass = isNewSentence && lastAutoreceiverSentence !== null ? ' new-sentence' : '';
+                    
                     displayHTML += `
-                        <div class="sentence-item">
+                        <div class="sentence-item${newClass}">
                             <div class="sentence-author">${escapeHtml(displayName)} said:</div>
                             <div class="sentence-text">${escapeHtml(autoreceiverSentence.sentence)}</div>
+                            ${isNewSentence && lastAutoreceiverSentence !== null ? '<div class="new-indicator">🆕 New!</div>' : ''}
                         </div>
                     `;
+                    
+                    // Update last known sentence
+                    lastAutoreceiverSentence = autoreceiverSentence.sentence;
+                    
+                    // Show notification for new sentences
+                    if (isNewSentence && lastAutoreceiverSentence !== null) {
+                        showNotification(`${displayName} just used "${currentWord}" in a sentence!`);
+                    }
+                    
                     console.log('✅ Displaying autoreceiver sentence from:', displayName);
                 } else if (autoreceiverEmail) {
                     const displayName = getAutoDisplayName();
@@ -843,6 +1101,9 @@
                 }
                 
                 sentencesDisplay.innerHTML = displayHTML;
+                
+                // Start real-time updates if we have an autoreceiver and are on today's word - ADDED FOR THE FEATURE
+                startRealTimeUpdates();
                 
             } catch (error) {
                 console.error('❌ Error loading sentences:', error);
@@ -1028,9 +1289,9 @@
                         }
                         
                         historyHTML += `
-                            <div class="history-item">
+                            <div class="history-item" onclick="loadHistoricalWord('${item.word_date}', '${item.word_language}')">
+                                <div class="history-date">${formatDate(item.word_date)} • ${item.word_language}${item.has_sentence ? '<span class="history-badge">✍️ Has Sentence</span>' : ''}</div>
                                 <div class="history-word">${escapeHtml(item.word)}</div>
-                                <div class="history-date">${formatDate(item.word_date)} • ${item.word_language}</div>
                                 <div class="history-definition">${escapeHtml(item.definition)}</div>
                                 ${sentenceText}
                             </div>
@@ -1039,7 +1300,7 @@
                     
                     historyContainer.innerHTML = historyHTML;
                 } else {
-                    historyContainer.innerHTML = '<div class="sentence-empty">No word history yet. Start learning words to build your history!</div>';
+                    historyContainer.innerHTML = '<div class="history-empty">No word history yet. Start learning words to build your history!</div>';
                 }
                 
             } catch (error) {
@@ -1050,6 +1311,14 @@
         
         // Load historical word by date and language
         async function loadHistoricalWord(date, language) {
+            // Switch to today tab
+            showTab('today');
+            currentLanguage = language;
+            
+            // Update language button
+            document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.language-btn[onclick="setLanguage('${language}')"]`).classList.add('active');
+            
             try {
                 const { data: wordData, error } = await supabase
                     .from('word_of_the_day')
@@ -1062,18 +1331,9 @@
                 
                 if (wordData) {
                     currentWord = wordData.word;
-                    currentLanguage = language;
+                    displayWord(wordData);
                     
-                    document.getElementById('currentWordDisplay').textContent = wordData.word;
-                    document.getElementById('currentDefinition').textContent = wordData.definition;
-                    document.getElementById('currentLanguageInfo').innerHTML = `
-                        <div>Date: ${formatDate(date)}</div>
-                        <div>Language: ${language === 'english' ? '🇺🇸 English' : '🇦🇱 Albanian'}</div>
-                    `;
-                    
-                    document.getElementById('wordContent').style.display = 'block';
-                    
-                    // Note: Don't show sentence section for historical words
+                    // Note: Don't load sentences for historical words - they're view-only
                     document.getElementById('sentenceSection').style.display = 'none';
                 }
             } catch (error) {
@@ -1132,6 +1392,12 @@
             }, 3000);
         }
         
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '/';
+        }
+        
         // Utility function to escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -1148,13 +1414,8 @@
                 day: 'numeric' 
             });
         }
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-        });
 
-        // Real-time Updates Functions
+        // Real-time Updates Functions - ADDED FOR THE FEATURE
         function startRealTimeUpdates() {
             // Only start if we have an autoreceiver and are viewing today's word
             if (!autoreceiverEmail || currentTab !== 'today' || !currentWord) {
@@ -1248,34 +1509,7 @@
             }, 5000);
         }
 
-        // Stop real-time updates when switching tabs
-        function showTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Content').classList.add('active');
-            
-            currentTab = tabName;
-            
-            if (tabName === 'history') {
-                stopRealTimeUpdates(); // Stop when viewing history
-                loadHistory();
-            } else if (tabName === 'today') {
-                // Restart real-time updates when back to today
-                if (currentWord && autoreceiverEmail) {
-                    startRealTimeUpdates();
-                }
-            }
-        }
-
-        // Stop real-time updates when page is hidden (user switches tabs/minimizes browser)
+        // Stop real-time updates when page is hidden (user switches tabs/minimizes browser) - ADDED FOR THE FEATURE
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
                 stopRealTimeUpdates();
@@ -1287,9 +1521,14 @@
             }
         });
 
-        // Clean up on page unload
+        // Clean up on page unload - ADDED FOR THE FEATURE
         window.addEventListener('beforeunload', function() {
             stopRealTimeUpdates();
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
         });
     </script>
 </body>
