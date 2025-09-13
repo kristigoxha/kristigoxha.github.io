@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word of the Day - Pookie's App</title>
+    <link rel="icon" href="/assets/icons/favicon.ico">
+    
+    <!-- Base CSS files -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Specific CSS -->
+    <link rel="stylesheet" href="/css/playground.css">
+    <link rel="stylesheet" href="/css/word-game.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <a href="/pages/playground.html" class="back-button">← Back to Playground</a>
+    
+    <div class="word-container">
+        <div class="word-panel">
+            <h1 style="text-align: center; margin-bottom: 1rem;">📚 Word of the Day</h1>
+            
+            <!-- Streak Counter -->
+            <div id="streakContainer" class="streak-container" style="display: none;">
+                <div class="streak-item">
+                    <div class="streak-label">Current Streak</div>
+                    <div class="streak-number">
+                        <span id="currentStreak">0</span>
+                        <span class="streak-emoji">🔥</span>
+                    </div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-label">Longest Streak</div>
+                    <div class="streak-number">
+                        <span id="longestStreak">0</span>
+                        <span class="streak-emoji">🏆</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" id="todayTab" onclick="switchTab('today')">
+                    Today's Word
+                </button>
+                <button class="tab-btn" id="historyTab" onclick="switchTab('history')">
+                    Word History
+                </button>
+            </div>
+            
+            <!-- Today's Word Tab -->
+            <div id="todayContent" class="tab-content active">
+                <div class="language-selector">
+                    <button class="lang-btn" id="albanianBtn" onclick="selectLanguage('albanian')">
+                        🇦🇱 Albanian
+                    </button>
+                    <button class="lang-btn" id="englishBtn" onclick="selectLanguage('english')">
+                        🇺🇸 English
+                    </button>
+                </div>
+                
+                <div id="wordContent" class="word-content" style="display: none;">
+                    <div id="wordDisplay"></div>
+                    
+                    <!-- Sentence Section -->
+                    <div class="sentence-section" id="sentenceSection" style="display: none;">
+                        <div class="sentence-header">
+                            ✍️ Create a Sentence
+                        </div>
+                        <div class="sentence-prompt">
+                            Use today's word in a creative sentence to help remember it!
+                        </div>
+                        
+                        <!-- Create Sentence Button -->
+                        <button class="sentence-btn sentence-btn-save" id="createSentenceBtn" onclick="createSentence()">
+                            + Create Your Sentence
+                        </button>
+                        
+                        <!-- Sentence Form (hidden by default) -->
+                        <div id="sentenceForm" style="display: none;">
+                            <div class="sentence-input-group">
+                                <textarea 
+                                    id="sentenceInput" 
+                                    class="sentence-textarea"
+                                    placeholder="Write your sentence using the word..."
+                                    maxlength="300"
+                                ></textarea>
+                            </div>
+                            <div class="sentence-buttons">
+                                <button class="sentence-btn sentence-btn-cancel" onclick="cancelSentence()">
+                                    Cancel
+                                </button>
+                                <button class="sentence-btn sentence-btn-save" onclick="saveSentence()">
+                                    Save Sentence
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Message -->
+                        <div id="sentenceStatus" class="sentence-status" style="display: none;"></div>
+                        
+                        <!-- Display Sentences -->
+                        <div class="sentences-display" id="sentencesDisplay"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="historyContent" class="tab-content">
+                <div class="history-container" id="historyContainer">
+                    <div class="history-empty">Start learning words to build your history!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Word Game JavaScript -->
+    <script src="/js/word-game.js"></script>
+</body>
+</html>

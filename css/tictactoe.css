@@ -1,0 +1,326 @@
+/* tictactoe.css - Tic Tac Toe specific styles */
+
+.tictactoe-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.tictactoe-panel {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Score Board */
+.tictactoe-score {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 5px;
+}
+
+.score-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Game Board */
+.tictactoe-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 10px;
+    justify-content: center;
+    margin: 1.5rem auto;
+}
+
+.tictactoe-cell {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tictactoe-cell:hover:not(.disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.tictactoe-cell.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.tictactoe-cell.winning {
+    background: rgba(255, 215, 0, 0.3);
+    color: #FFD700;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Player Indicators */
+.player-indicator {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 5px;
+    font-size: 0.9rem;
+}
+
+.player-indicator.active {
+    background: #FFD700;
+    color: #764ba2;
+}
+
+/* Controls */
+.tictactoe-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tictactoe-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.tictactoe-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.tictactoe-btn.primary {
+    background: #FFD700;
+    color: #764ba2;
+    border: none;
+}
+
+.tictactoe-btn.primary:hover {
+    background: #FFC700;
+}
+
+.tictactoe-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Status */
+.tictactoe-status {
+    text-align: center;
+    font-size: 1.2rem;
+    color: white;
+    margin: 1rem 0;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    min-height: 30px;
+}
+
+.waiting-indicator {
+    display: inline-block;
+    color: #FFD700;
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Dice Animation */
+.dice-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.dice {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    animation: rollDice 1s ease-in-out;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes rollDice {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(180deg) scale(1.2); }
+    50% { transform: rotate(360deg) scale(1); }
+    75% { transform: rotate(540deg) scale(1.2); }
+    100% { transform: rotate(720deg) scale(1); }
+}
+
+.dice-result {
+    color: white;
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    margin: 1.5rem 0;
+    justify-content: center;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tab-btn.active {
+    background: rgba(255, 215, 0, 0.3);
+    border-color: #FFD700;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* History */
+.tictactoe-history {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-entry {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-date {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.history-result {
+    font-weight: 600;
+}
+
+.winner-x { color: #90EE90; }
+.winner-o { color: #FFB6C1; }
+.winner-draw { color: #FFD700; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tictactoe-container {
+        padding: 1rem;
+    }
+    
+    .tictactoe-board {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+        gap: 8px;
+    }
+    
+    .tictactoe-cell {
+        font-size: 2rem;
+    }
+    
+    .tictactoe-score {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .tictactoe-controls {
+        flex-direction: column;
+    }
+    
+    .tictactoe-btn {
+        width: 100%;
+    }
+    
+    .tab-navigation {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        width: 100%;
+    }
+}
