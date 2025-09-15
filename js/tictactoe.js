@@ -125,7 +125,7 @@ async function startNewGame() {
                 player2_id: player2Id,     // O
                 board: ['', '', '', '', '', '', '', '', ''],
                 current_turn: 'X',
-                status: 'active'
+                status: 'active',
 				updated_at: new Date().toISOString()
             })
             .select()
