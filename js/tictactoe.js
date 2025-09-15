@@ -56,20 +56,36 @@ async function initializeTicTacToe() {
 }
 
 // Check for active game
+// Check for latest active game and auto-resume
 async function checkActiveGame() {
-    if (!currentUser || !pookieUser) return;
-    
-    const { data: games } = await supabase
-        .from('tictactoe_games')
-        .select('*')
-        .or(`player1_id.eq.${currentUser.id},player2_id.eq.${currentUser.id}`)
-        .eq('status', 'active')
-        .maybeSingle();
-    
-    if (games) {
-        currentGame = games;
-        await resumeGame();
-    }
+  if (!currentUser) return;
+
+  // (Optional but nice) If pookie not loaded yet, try to fetch it
+  if (!pookieUser) await findPookie();
+
+  const { data: game, error } = await supabase
+    .from('tictactoe_games')
+    .select('*')
+    .or(`player1_id.eq.${currentUser.id},player2_id.eq.${currentUser.id}`)
+    .eq('status', 'active')
+    .order('updated_at', { ascending: false }) // latest first
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Active game lookup error:', error);
+    updateGameStatus('Could not check for an active game.');
+    return;
+  }
+
+  if (game) {
+    currentGame = game;
+    await resumeGame(); // uses player1=X, player2=O logic you already set
+  } else {
+    // No active game: make sure the UI is ready to start one
+    document.getElementById('startGameBtn')?.removeAttribute('disabled');
+    updateGameStatus("No active game. Click 'Start New Game' to play.");
+  }
 }
 
 // Start New Game
