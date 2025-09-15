@@ -194,23 +194,21 @@ function subscribeToGame(gameId) {
 
 // Handle real-time game updates
 async function handleGameUpdate(game) {
-    currentGame = game;
+  currentGame = game;
 
-const maybeWinner = checkWinner(game.board);
-if (maybeWinner && game.status !== 'completed') {
-  // purely visual; the DB already knows winner/status
-}    
-    updateBoard(game.board);
-    
-    isMyTurn = game.current_turn === mySymbol;
-    updateTurnIndicators();
-    
-    if (game.status === 'completed') {
-        await handleGameEnd(game.winner);
-    } else {
-        updateGameStatus(isMyTurn ? 'Your turn!' : "Waiting for pookie's move...");
-    }
+  updateBoard(game.board);                 // render first
+  checkWinner(game.board);                 // then highlight if any
+
+  isMyTurn = game.current_turn === mySymbol;
+  updateTurnIndicators();
+
+  if (game.status === 'completed') {
+    await handleGameEnd(game.winner);
+  } else {
+    updateGameStatus(isMyTurn ? 'Your turn!' : "Waiting for pookie's move...");
+  }
 }
+
 
 // Update board display
 function updateBoard(board) {
@@ -231,48 +229,47 @@ function updateTurnIndicators() {
 
 // Handle Cell Click
 async function handleCellClick(event) {
-    const cell = event.target;
-    const index = parseInt(cell.dataset.index);
-    
-    if (!currentGame || !isMyTurn || currentGame.board[index] !== '' || currentGame.status !== 'active') {
-        return;
-    }
-    
-    cell.textContent = mySymbol;
-    cell.classList.add('disabled');
-    
-    const newBoard = [...currentGame.board];
-    newBoard[index] = mySymbol;
-    
-    const winner = checkWinner(newBoard);
-    const isDraw = !winner && newBoard.every(cell => cell !== '');
-    
-    const updates = {
-        board: newBoard,
-        current_turn: opponentSymbol,
-        updated_at: new Date().toISOString()
-    };
-    
-    if (winner) {
-        updates.winner = mySymbol;
-        updates.status = 'completed';
-    } else if (isDraw) {
-        updates.winner = 'draw';
-        updates.status = 'completed';
-    }
-    
-    const { error } = await supabase
-        .from('tictactoe_games')
-        .update(updates)
-        .eq('id', currentGame.id);
-    
-    if (error) {
-        console.error('Error updating game:', error);
-        cell.textContent = '';
-        cell.classList.remove('disabled');
-        updateGameStatus('Error making move. Please try again.');
-    }
+  const cell = event.target;
+  const index = parseInt(cell.dataset.index, 10);  // radix 10
+
+  if (!currentGame || !isMyTurn || currentGame.board[index] !== '' || currentGame.status !== 'active') return;
+
+  isMyTurn = false;                        // lock immediately
+
+  cell.textContent = mySymbol;
+  cell.classList.add('disabled');
+
+  const newBoard = [...currentGame.board];
+  newBoard[index] = mySymbol;
+
+  const winner = checkWinner(newBoard);
+  const isDraw = !winner && newBoard.every(c => c !== '');
+
+  const updates = {
+    board: newBoard,
+    current_turn: opponentSymbol,
+    updated_at: new Date().toISOString()
+  };
+
+  if (winner) { updates.winner = mySymbol; updates.status = 'completed'; }
+  else if (isDraw) { updates.winner = 'draw'; updates.status = 'completed'; }
+
+  const { error, data } = await supabase
+    .from('tictactoe_games')
+    .update(updates)
+    .eq('id', currentGame.id)
+    .eq('current_turn', mySymbol)   // still my turn
+    .eq('status', 'active');        // still active
+
+  if (error || !data) {
+    console.error('Error updating game:', error);
+    cell.textContent = '';
+    cell.classList.remove('disabled');
+    updateGameStatus('Error making move. Please try again.');
+    isMyTurn = true; // give turn back locally since update failed
+  }
 }
+
 
 // Check Winner
 function checkWinner(board) {
