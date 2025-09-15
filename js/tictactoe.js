@@ -12,6 +12,9 @@ let currentGame = null;
 let gameSubscription = null;
 let mySymbol = null;
 let opponentSymbol = null;
+let currentUsername = null;
+let autoreceiverEmail = null;
+let autoreceiverUsername = null;
 let isMyTurn = false;
 let gameHistory = [];
 let currentTab = 'game';
@@ -31,16 +34,39 @@ async function checkAuth() {
 
 // Find pookie (the other user)
 async function findPookie() {
-    const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', currentUser.id)
-        .limit(1);
-    
-    if (profiles && profiles.length > 0) {
-        pookieUser = profiles[0];
+  if (!currentUser) return;
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, username, email, autoreceiver_email')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (error) {
+    console.error('Error loading profile:', error);
+    return;
+  }
+
+  currentUsername = profile?.username || currentUser.email.split('@')[0];
+  autoreceiverEmail = profile?.autoreceiver_email || null;
+  autoreceiverUsername = null;
+  pookieUser = null;
+
+  if (autoreceiverEmail) {
+    const { data: opp, error: autoError } = await supabase
+      .from('profiles')
+      .select('id, username, email')
+      .eq('email', autoreceiverEmail)
+      .maybeSingle();
+
+    if (autoError) console.error('Error fetching autoreceiver:', autoError);
+    if (opp) {
+      pookieUser = opp;
+      autoreceiverUsername = opp.username || opp.email.split('@')[0];
     }
+  }
 }
+
 
 // Initialize Tic Tac Toe
 async function initializeTicTacToe() {
@@ -222,8 +248,12 @@ function updateBoard(board) {
 
 // Update turn indicators
 function updateTurnIndicators() {
-    document.getElementById('player1Indicator').textContent = `You (${mySymbol || 'X'})`;
-    document.getElementById('player2Indicator').textContent = `Pookie (${opponentSymbol || 'O'})`;
+	const you = `You (${mySymbol || 'X'})`;
+	const oppName = autoreceiverUsername || autoreceiverEmail?.split('@')[0] || 'Pookie';
+	const opp = `${oppName} (${opponentSymbol || 'O'})`;
+
+	document.getElementById('player1Indicator').textContent = you;
+	document.getElementById('player2Indicator').textContent = opp;
     document.getElementById('player1Indicator').classList.toggle('active', isMyTurn);
     document.getElementById('player2Indicator').classList.toggle('active', !isMyTurn);
 
