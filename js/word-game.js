@@ -594,6 +594,62 @@ async function saveSentence() {
   }
 }
 
+// Sanitize a small allowlist of tags (abbr, b, strong, i, em) and strip attributes except title on <abbr>
+function sanitizeAllowedHtml(root) {
+  const allowedTags = new Set(['ABBR', 'B', 'STRONG', 'I', 'EM']);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null);
+
+  const toRemoveAttrs = (el) => {
+    // Only allow title on abbr; remove everything else
+    for (const attr of Array.from(el.attributes)) {
+      if (!(el.tagName === 'ABBR' && attr.name.toLowerCase() === 'title')) {
+        el.removeAttribute(attr.name);
+      }
+    }
+  };
+
+  const nodes = [];
+  let n = walker.currentNode;
+  while (n) {
+    nodes.push(n);
+    n = walker.nextNode();
+  }
+
+  for (const el of nodes) {
+    if (!allowedTags.has(el.tagName)) {
+      // unwrap element: replace it with its children
+      const parent = el.parentNode;
+      if (!parent) continue;
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      parent.removeChild(el);
+    } else {
+      toRemoveAttrs(el);
+    }
+  }
+  return root.innerHTML;
+}
+
+// Turn <span class="SHRT" data-short="kal.">folje kalimtare</span>
+// into <abbr title="folje kalimtare">kal.</abbr> (or just text if no data-short)
+function renderAlbanianDefinition(defHtml) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = defHtml;
+
+  tmp.querySelectorAll('span.SHRT').forEach(span => {
+    const short = span.getAttribute('data-short') || span.textContent || '';
+    const full = span.textContent || '';
+    const abbr = document.createElement('abbr');
+    abbr.textContent = short.trim();
+    if (full.trim() && full.trim() !== short.trim()) {
+      abbr.setAttribute('title', full.trim());
+    }
+    span.replaceWith(abbr);
+  });
+
+  // Allow only abbr/b/strong/i/em, strip the rest
+  return sanitizeAllowedHtml(tmp);
+}
+
 // ======= Utilities =======
 function showStatus(message, type) {
   const el = document.getElementById('sentenceStatus');
