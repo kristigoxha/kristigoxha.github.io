@@ -31,14 +31,14 @@ async function checkAuth() {
 
 // Find pookie (the other user)
 async function findPookie() {
-    const { data: users } = await supabase
-        .from('users')
+    const { data: profiles } = await supabase
+        .from('profiles')
         .select('*')
         .neq('id', currentUser.id)
         .limit(1);
     
-    if (users && users.length > 0) {
-        pookieUser = users[0];
+    if (profiles && profiles.length > 0) {
+        pookieUser = profiles[0];
     }
 }
 
@@ -77,7 +77,7 @@ async function startNewGame() {
     console.log('Starting new game...');
     
     if (!currentUser || !pookieUser) {
-        updateGameStatus('Please wait, loading users...');
+        updateGameStatus('Please wait, loading profiles...');
         await findPookie();
         if (!pookieUser) {
             updateGameStatus('Cannot find pookie!');
