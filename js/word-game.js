@@ -239,13 +239,14 @@ async function loadAlbanianWord() {
   });
 
   const displayDiv = document.getElementById('wordDisplay');
-  const definition = data.definition;
-
+  const definitionHtml = data.definition || '';
+  const safeDefinition = renderAlbanianDefinition(definitionHtml);
+  
   displayDiv.innerHTML = `
     <div class="word-title">${escapeHtml(data.word)}</div>
     ${data.pronunciation ? `<div class="word-pronunciation">[${escapeHtml(data.pronunciation)}]</div>` : ''}
     ${data.type ? `<span class="word-type">${escapeHtml(data.type)}</span>` : ''}
-    <div class="word-definition"><strong>Definition:</strong> ${escapeHtml(definition)}</div>
+    <div class="word-definition"><strong>Definition:</strong> ${safeDefinition}</div>
     ${data.example ? `<div class="word-example">${escapeHtml(data.example)}</div>` : ''}
     <div class="word-meta">
       <div class="word-date">📅 ${todayFmt}</div>
@@ -253,8 +254,8 @@ async function loadAlbanianWord() {
     </div>
   `;
 
-  await saveToHistory(data.word, 'albanian', definition);
-}
+  const tmp = document.createElement('div'); tmp.innerHTML = safeDefinition;
+  await saveToHistory(data.word, 'albanian', tmp.textContent.trim());}
 
 async function loadEnglishWord() {
   // Merriam-Webster RSS via AllOrigins (no CORS headaches)
