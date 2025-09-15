@@ -17,6 +17,7 @@ let autoreceiverEmail = null;
 let autoreceiverUsername = null;
 let liveChannel = null;
 let pollTimer = null;
+let lobbyChannel = null;
 let isMyTurn = false;
 let gameHistory = [];
 let currentTab = 'game';
@@ -67,6 +68,35 @@ async function findPookie() {
       autoreceiverUsername = opp.username || opp.email.split('@')[0];
     }
   }
+  if (pookieUser) subscribeLobby();  // <-- add this line
+}
+
+function subscribeLobby() {
+  const key = pairKey();
+  if (!key) return;
+
+  // clean old
+  if (lobbyChannel) { lobbyChannel.unsubscribe(); lobbyChannel = null; }
+
+  lobbyChannel = supabase.channel(`ttt-lobby-${key}`, {
+    config: { broadcast: { self: false } }
+  });
+
+  // someone started a new game
+  lobbyChannel.on('broadcast', { event: 'new_game' }, ({ payload }) => {
+    // ignore if we’re already on this game
+    if (currentGame && currentGame.id === payload.id) return;
+
+    currentGame = payload;
+    // Ensure symbols/turns + subscribe to the game’s move channel
+    resumeGame();
+  });
+
+  lobbyChannel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      console.log('Lobby subscribed:', key);
+    }
+  });
 }
 
 
@@ -108,6 +138,14 @@ async function checkActiveGame() {
 
   if (game) {
     currentGame = game;
+	const key = pairKey();
+	if (lobbyChannel && key) {
+	  lobbyChannel.send({
+		type: 'broadcast',
+		event: 'new_game',
+		payload: game
+	  });
+	}
     await resumeGame(); // uses player1=X, player2=O logic you already set
   } else {
     // No active game: make sure the UI is ready to start one
@@ -168,6 +206,14 @@ async function startNewGame() {
 
         currentGame = game;
 
+		const key = pairKey();
+		if (lobbyChannel && key) {
+		  lobbyChannel.send({
+			type: 'broadcast',
+			event: 'new_game',
+			payload: game
+		  });
+		}
         // Compute symbols from who is player1, not from the earlier coin flip
         const iAmPlayer1 = currentUser.id === game.player1_id;
         mySymbol = iAmPlayer1 ? 'X' : 'O';
@@ -197,6 +243,11 @@ function clearBoard() {
         cell.textContent = '';
         cell.classList.remove('disabled', 'winning');
     });
+}
+
+function pairKey() {
+  if (!currentUser || !pookieUser) return null;
+  return [currentUser.id, pookieUser.id].sort().join(':'); // same for both players
 }
 
 // Subscribe to real-time game updates
@@ -617,5 +668,9 @@ window.addEventListener('beforeunload', () => {
   if (pollTimer) {
     clearInterval(pollTimer);
     pollTimer = null;
+  }
+  if (lobbyChannel) {
+  lobbyChannel.unsubscribe();
+  lobbyChannel = null;
   }
 });
