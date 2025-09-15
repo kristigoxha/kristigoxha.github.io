@@ -126,6 +126,7 @@ async function startNewGame() {
                 board: ['', '', '', '', '', '', '', '', ''],
                 current_turn: 'X',
                 status: 'active'
+				updated_at: new Date().toISOString()
             })
             .select()
             .single();
@@ -225,6 +226,13 @@ function updateTurnIndicators() {
     document.getElementById('player2Indicator').textContent = `Pookie (${opponentSymbol || 'O'})`;
     document.getElementById('player1Indicator').classList.toggle('active', isMyTurn);
     document.getElementById('player2Indicator').classList.toggle('active', !isMyTurn);
+
+  const board = document.getElementById('gameBoard');
+  if (isMyTurn) {
+    board.classList.remove('disabled');
+  } else {
+    board.classList.add('disabled');
+  }
 }
 
 // Handle Cell Click
@@ -254,20 +262,22 @@ async function handleCellClick(event) {
   if (winner) { updates.winner = mySymbol; updates.status = 'completed'; }
   else if (isDraw) { updates.winner = 'draw'; updates.status = 'completed'; }
 
-  const { error, data } = await supabase
-    .from('tictactoe_games')
-    .update(updates)
-    .eq('id', currentGame.id)
-    .eq('current_turn', mySymbol)   // still my turn
-    .eq('status', 'active');        // still active
+const { error, data } = await supabase
+  .from('tictactoe_games')
+  .update(updates)
+  .eq('id', currentGame.id)
+  .eq('current_turn', mySymbol)
+  .eq('status', 'active')
+  .select()            // <= add this so data is returned
+  .single();
 
-  if (error || !data) {
-    console.error('Error updating game:', error);
-    cell.textContent = '';
-    cell.classList.remove('disabled');
-    updateGameStatus('Error making move. Please try again.');
-    isMyTurn = true; // give turn back locally since update failed
-  }
+if (error) {
+  console.error('Error updating game:', error);
+  cell.textContent = '';
+  cell.classList.remove('disabled');
+  updateGameStatus('Error making move. Please try again.');
+  isMyTurn = true;
+	}
 }
 
 
