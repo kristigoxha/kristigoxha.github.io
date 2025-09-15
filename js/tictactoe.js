@@ -64,7 +64,7 @@ async function checkActiveGame() {
         .select('*')
         .or(`player1_id.eq.${currentUser.id},player2_id.eq.${currentUser.id}`)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
     
     if (games) {
         currentGame = games;
@@ -75,7 +75,7 @@ async function checkActiveGame() {
 // Start New Game
 async function startNewGame() {
     console.log('Starting new game...');
-    
+
     if (!currentUser || !pookieUser) {
         updateGameStatus('Please wait, loading profiles...');
         await findPookie();
@@ -84,54 +84,57 @@ async function startNewGame() {
             return;
         }
     }
-    
-    // Clear any existing game
+
+    // End any existing active game
     if (currentGame && currentGame.status === 'active') {
         await supabase
             .from('tictactoe_games')
             .update({ status: 'completed', winner: 'abandoned' })
             .eq('id', currentGame.id);
     }
-    
-    // Show dice animation
+
     showDiceAnimation();
-    
-    // After animation, create game in database
+
     setTimeout(async () => {
-        // Randomly decide who is X (goes first)
         const userIsX = Math.random() < 0.5;
-        
-        // Create new game in database
+
+        // IMPORTANT: player1 is ALWAYS X, player2 ALWAYS O
+        const player1Id = userIsX ? currentUser.id : pookieUser.id;
+        const player2Id = userIsX ? pookieUser.id : currentUser.id;
+
         const { data: game, error } = await supabase
             .from('tictactoe_games')
             .insert({
-                player1_id: currentUser.id,
-                player2_id: pookieUser.id,
+                player1_id: player1Id,     // X
+                player2_id: player2Id,     // O
                 board: ['', '', '', '', '', '', '', '', ''],
                 current_turn: 'X',
                 status: 'active'
             })
             .select()
             .single();
-        
+
         if (error) {
             console.error('Error creating game:', error);
             updateGameStatus('Error creating game. Please try again.');
             document.getElementById('diceContainer').style.display = 'none';
             return;
         }
-        
+
         currentGame = game;
-        mySymbol = userIsX ? 'X' : 'O';
-        opponentSymbol = userIsX ? 'O' : 'X';
+
+        // Compute symbols from who is player1, not from the earlier coin flip
+        const iAmPlayer1 = currentUser.id === game.player1_id;
+        mySymbol = iAmPlayer1 ? 'X' : 'O';
+        opponentSymbol = iAmPlayer1 ? 'O' : 'X';
         isMyTurn = mySymbol === 'X';
-        
+
         clearBoard();
         subscribeToGame(game.id);
-        
-        document.getElementById('diceResult').textContent = 
-            userIsX ? 'You go first (X)!' : 'Pookie goes first (O)!';
-        
+
+        document.getElementById('diceResult').textContent =
+            iAmPlayer1 ? 'You go first (X)!' : 'Pookie goes first (X)!';
+
         setTimeout(() => {
             document.getElementById('diceContainer').style.display = 'none';
             updateBoard(game.board);
@@ -176,7 +179,11 @@ function subscribeToGame(gameId) {
 // Handle real-time game updates
 async function handleGameUpdate(game) {
     currentGame = game;
-    
+
+const maybeWinner = checkWinner(game.board);
+if (maybeWinner && game.status !== 'completed') {
+  // purely visual; the DB already knows winner/status
+}    
     updateBoard(game.board);
     
     isMyTurn = game.current_turn === mySymbol;
@@ -335,21 +342,21 @@ async function saveGameScore(result) {
 
 // Resume an active game
 async function resumeGame() {
-    if (!currentGame) return;
-    
-    const userIsPlayer1 = currentGame.player1_id === currentUser.id;
-    
-    mySymbol = userIsPlayer1 ? 'X' : 'O';
-    opponentSymbol = userIsPlayer1 ? 'O' : 'X';
+    if (!currentGame || !currentUser) return;
+
+    const iAmPlayer1 = currentGame.player1_id === currentUser.id;
+    mySymbol = iAmPlayer1 ? 'X' : 'O';
+    opponentSymbol = iAmPlayer1 ? 'O' : 'X';
     isMyTurn = currentGame.current_turn === mySymbol;
-    
+
     updateBoard(currentGame.board);
     updateTurnIndicators();
     updateGameStatus(isMyTurn ? 'Your turn!' : "Waiting for pookie's move...");
-    
+
     subscribeToGame(currentGame.id);
     document.getElementById('startGameBtn').disabled = true;
 }
+
 
 // Show Dice Animation
 function showDiceAnimation() {
