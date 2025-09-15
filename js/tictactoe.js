@@ -15,6 +15,8 @@ let opponentSymbol = null;
 let currentUsername = null;
 let autoreceiverEmail = null;
 let autoreceiverUsername = null;
+let liveChannel = null;
+let pollTimer = null;
 let isMyTurn = false;
 let gameHistory = [];
 let currentTab = 'game';
@@ -199,32 +201,47 @@ function clearBoard() {
 
 // Subscribe to real-time game updates
 function subscribeToGame(gameId) {
-    if (gameSubscription) {
-        gameSubscription.unsubscribe();
+  // cleanup old subs
+  if (gameSubscription) { gameSubscription.unsubscribe(); gameSubscription = null; }
+  if (liveChannel) { liveChannel.unsubscribe(); liveChannel = null; }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
+  // Open a broadcast+presence channel (no replication needed)
+  liveChannel = supabase.channel(`ttt-${gameId}`, {
+    config: {
+      broadcast: { self: false },     // don't echo our own broadcasts
+      presence: { key: currentUser.id }
     }
-    
-    gameSubscription = supabase
-        .channel(`game-${gameId}`)
-        .on('postgres_changes', 
-            { 
-                event: 'UPDATE', 
-                schema: 'public', 
-                table: 'tictactoe_games',
-                filter: `id=eq.${gameId}`
-            }, 
-            (payload) => {
-                handleGameUpdate(payload.new);
-            }
-        )
-        .subscribe();
+  });
+
+  // Receive opponent moves
+  liveChannel.on('broadcast', { event: 'move' }, ({ payload }) => {
+  if (!currentGame || payload.id !== currentGame.id) return; // safety
+    handleGameUpdate(payload);
+  });
+
+  liveChannel.on('presence', { event: 'sync' }, () => {
+    const state = liveChannel.presenceState();
+    console.log('presence', state);
+  });
+
+  liveChannel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      liveChannel.track({
+        user_id: currentUser.id,
+        username: currentUsername || currentUser.email
+      });
+    }
+  });
+
 }
 
 // Handle real-time game updates
 async function handleGameUpdate(game) {
+  if (!game || !Array.isArray(game.board)) return; // defensive
   currentGame = game;
-
-  updateBoard(game.board);                 // render first
-  checkWinner(game.board);                 // then highlight if any
+  updateBoard(game.board);
+  checkWinner(game.board);
 
   isMyTurn = game.current_turn === mySymbol;
   updateTurnIndicators();
@@ -232,7 +249,7 @@ async function handleGameUpdate(game) {
   if (game.status === 'completed') {
     await handleGameEnd(game.winner);
   } else {
-    updateGameStatus(isMyTurn ? 'Your turn!' : "Waiting for pookie's move...");
+    updateGameStatus(isMyTurn ? 'Your turn!' : `Waiting for ${autoreceiverUsername || 'opponent'}...`);
   }
 }
 
@@ -292,13 +309,13 @@ async function handleCellClick(event) {
   if (winner) { updates.winner = mySymbol; updates.status = 'completed'; }
   else if (isDraw) { updates.winner = 'draw'; updates.status = 'completed'; }
 
-const { error, data } = await supabase
+const { error, data: updatedRow } = await supabase
   .from('tictactoe_games')
   .update(updates)
   .eq('id', currentGame.id)
   .eq('current_turn', mySymbol)
   .eq('status', 'active')
-  .select()            // <= add this so data is returned
+  .select()
   .single();
 
 if (error) {
@@ -307,9 +324,21 @@ if (error) {
   cell.classList.remove('disabled');
   updateGameStatus('Error making move. Please try again.');
   isMyTurn = true;
-	}
+  return;
 }
 
+// Update our own UI immediately (optional — you already did optimistic UI)
+handleGameUpdate(updatedRow);
+
+// Broadcast to opponent so they update instantly (no DB replication required)
+if (liveChannel) {
+  liveChannel.send({
+    type: 'broadcast',
+    event: 'move',
+    payload: updatedRow
+  });
+ }
+}
 
 // Check Winner
 function checkWinner(board) {
@@ -577,7 +606,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // Clean up on page unload
 window.addEventListener('beforeunload', () => {
-    if (gameSubscription) {
-        gameSubscription.unsubscribe();
-    }
+  if (gameSubscription) {
+    gameSubscription.unsubscribe();
+    gameSubscription = null;
+  }
+  if (liveChannel) {
+    liveChannel.unsubscribe();
+    liveChannel = null;
+  }
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
 });
