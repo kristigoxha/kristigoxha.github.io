@@ -465,6 +465,56 @@
         }
       });
     </script>
-
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		console.log('Setting up hamburger menu...');
+		
+		// Get the hamburger button and menu elements
+		const menuToggle = document.getElementById('menu-toggle');
+		const menu = document.getElementById('menu');
+		
+		if (menuToggle && menu) {
+			// Add click event to hamburger button
+			menuToggle.addEventListener('click', function(e) {
+				e.stopPropagation(); // Prevent event from bubbling up
+				
+				// Toggle the 'open' class on the menu
+				menu.classList.toggle('open');
+				
+				// Optional: Add visual feedback to hamburger button
+				menuToggle.classList.toggle('active');
+				
+				console.log('Menu toggled:', menu.classList.contains('open') ? 'opened' : 'closed');
+			});
+			
+			// Close menu when clicking outside
+			document.addEventListener('click', function(e) {
+				// Check if click is outside menu and hamburger button
+				if (!menu.contains(e.target) && !menuToggle.contains(e.target)) {
+					menu.classList.remove('open');
+					menuToggle.classList.remove('active');
+					console.log('Menu closed by clicking outside');
+				}
+			});
+			
+			// Close menu when clicking a menu item
+			const menuItems = menu.querySelectorAll('a, button');
+			menuItems.forEach(item => {
+				item.addEventListener('click', function() {
+					menu.classList.remove('open');
+					menuToggle.classList.remove('active');
+					console.log('Menu closed by selecting item');
+				});
+			});
+			
+			console.log('Hamburger menu setup complete!');
+		} else {
+			console.error('Menu elements not found:', {
+				menuToggle: !!menuToggle,
+				menu: !!menu
+			});
+		}
+	});
+	</script>
   </body>
 </html>
