@@ -266,28 +266,60 @@
       </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal">
-      <div>
-        <h3>⚙️ Settings</h3>
-        <div class="settings-section">
-          <label for="autoreceiver-setting">Auto-receiver (photos sent to this person automatically):</label>
-          <input 
-            type="text" 
-            id="autoreceiver-setting" 
-            class="settings-input" 
-            placeholder="Enter username or email"
-            autocomplete="off"
-          />
-          <div class="autocomplete-suggestions" id="autoreceiver-suggestions"></div>
-        </div>
-        <div>
-          <button onclick="saveSettings()">💾 Save Settings</button>
-          <button onclick="closeSettingsModal()">❌ Cancel</button>
-        </div>
-        <div id="settings-message"></div>
+<!-- Settings Modal -->
+<div id="settings-modal" class="settings-modal" onclick="closeSettingsModal(event)">
+  <div class="settings-modal-content">
+    <h2 class="settings-header">⚙️ Settings</h2>
+    
+    <!-- Current Username Section -->
+    <div class="settings-section">
+      <h3>👤 Username</h3>
+      <div class="current-username">
+        Current: <span id="current-username-text">Loading...</span>
       </div>
+      <input 
+        type="text" 
+        id="new-username" 
+        placeholder="Enter new username (optional)"
+        class="settings-input"
+      />
+      <p class="settings-note">Leave blank to keep current username</p>
     </div>
+    
+    <!-- Auto-receiver Section -->
+    <div class="settings-section">
+      <h3>📬 Auto-receiver</h3>
+      <p class="settings-note">Photos will be automatically shared with this person</p>
+      
+      <!-- Current auto-receiver display -->
+      <div id="current-autoreceiver" class="autoreceiver-display" style="display: none;">
+        <strong>Current auto-receiver:</strong>
+        <div id="autoreceiver-tag-container"></div>
+      </div>
+      
+      <input 
+        type="email" 
+        id="autoreceiver-email" 
+        placeholder="Enter email address (optional)"
+        class="settings-input"
+      />
+      <p class="settings-note">Leave blank to keep current auto-receiver</p>
+    </div>
+    
+    <!-- Buttons -->
+    <div class="settings-buttons">
+      <button class="settings-btn settings-btn-primary" onclick="saveSettings()">
+        💾 Save Changes
+      </button>
+      <button class="settings-btn settings-btn-secondary" onclick="closeSettingsModal()">
+        ❌ Cancel
+      </button>
+    </div>
+    
+    <!-- Message display -->
+    <div id="settings-message" class="message" style="margin-top: 15px; text-align: center;"></div>
+  </div>
+</div>
 
     <!-- Photo Preview Popup -->
     <div id="photo-preview-popup" class="photo-preview-popup" onclick="closePhotoPreview(event)">

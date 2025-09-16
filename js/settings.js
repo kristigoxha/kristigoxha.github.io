@@ -1,14 +1,19 @@
 // js/settings.js
-// Settings modal and user preferences management
+// Settings modal and user preferences management with error handling
 
 import { getCurrentUser, updateCurrentUser } from './config.js';
 import { getUserProfile, updateUserProfile } from './database.js';
 
 // SETTINGS MODAL FUNCTIONS
 export async function showSettingsModal() {
+  console.log('Opening settings modal...');
   const modal = document.getElementById('settings-modal');
-  if (!modal) return;
+  if (!modal) {
+    console.error('Settings modal not found');
+    return;
+  }
   
+  modal.style.display = 'flex';
   modal.classList.add('show');
   
   // Load current settings
@@ -17,10 +22,13 @@ export async function showSettingsModal() {
 
 export function closeSettingsModal(event) {
   // Only close if clicking on the backdrop or close button
-  if (event && event.target !== event.currentTarget && !event.target.matches('.settings-btn-secondary')) return;
+  if (event && event.target !== event.currentTarget && !event.target.matches('.settings-btn-secondary')) {
+    return;
+  }
   
   const modal = document.getElementById('settings-modal');
   if (modal) {
+    modal.style.display = 'none';
     modal.classList.remove('show');
     clearSettingsForm();
   }
@@ -28,7 +36,10 @@ export function closeSettingsModal(event) {
 
 async function loadCurrentSettings() {
   const currentUser = getCurrentUser();
-  if (!currentUser) return;
+  if (!currentUser) {
+    console.log('No current user found');
+    return;
+  }
   
   try {
     const profile = await getUserProfile();
@@ -36,26 +47,41 @@ async function loadCurrentSettings() {
     const currentUsername = profile?.username || currentUser.email.split('@')[0];
     const autoreceiverEmail = profile?.autoreceiver_email;
     
-    // Update display
-    document.getElementById('current-username-text').textContent = currentUsername;
-    document.getElementById('new-username').value = '';
-    document.getElementById('autoreceiver-email').value = '';
+    // Update display with null checks
+    const usernameElement = document.getElementById('current-username-text');
+    if (usernameElement) {
+      usernameElement.textContent = currentUsername;
+    }
+    
+    const newUsernameInput = document.getElementById('new-username');
+    if (newUsernameInput) {
+      newUsernameInput.value = '';
+    }
+    
+    const autoreceiverInput = document.getElementById('autoreceiver-email');
+    if (autoreceiverInput) {
+      autoreceiverInput.value = '';
+    }
     
     // Show current autoreceiver if exists
-    if (autoreceiverEmail) {
-      document.getElementById('current-autoreceiver').style.display = 'block';
-      document.getElementById('autoreceiver-tag-container').innerHTML = `
+    const currentAutoreceiverDiv = document.getElementById('current-autoreceiver');
+    const tagContainer = document.getElementById('autoreceiver-tag-container');
+    
+    if (autoreceiverEmail && currentAutoreceiverDiv && tagContainer) {
+      currentAutoreceiverDiv.style.display = 'block';
+      tagContainer.innerHTML = `
         <div class="autoreceiver-tag">
           ${autoreceiverEmail}
           <span class="remove-autoreceiver" onclick="window.removeAutoreceiver()">×</span>
         </div>
       `;
-    } else {
-      document.getElementById('current-autoreceiver').style.display = 'none';
+    } else if (currentAutoreceiverDiv) {
+      currentAutoreceiverDiv.style.display = 'none';
     }
     
   } catch (error) {
     console.error('Error loading current settings:', error);
+    showSettingsMessage('Error loading settings', 'error');
   }
 }
 
@@ -66,8 +92,17 @@ export async function saveSettings() {
     return;
   }
   
-  const newUsername = document.getElementById('new-username').value.trim();
-  const autoreceiverEmail = document.getElementById('autoreceiver-email').value.trim();
+  const newUsernameInput = document.getElementById('new-username');
+  const autoreceiverInput = document.getElementById('autoreceiver-email');
+  
+  if (!newUsernameInput || !autoreceiverInput) {
+    console.error('Settings form inputs not found');
+    showSettingsMessage('❌ Error: Form not found', 'error');
+    return;
+  }
+  
+  const newUsername = newUsernameInput.value.trim();
+  const autoreceiverEmail = autoreceiverInput.value.trim();
   
   // Validate inputs
   if (newUsername && newUsername.length < 2) {
@@ -92,7 +127,7 @@ export async function saveSettings() {
     }
     
     if (Object.keys(updates).length === 0) {
-      showSettingsMessage('❌ No changes to save', 'error');
+      showSettingsMessage('ℹ️ No changes to save', 'info');
       return;
     }
     
@@ -130,7 +165,10 @@ export async function removeAutoreceiver() {
     showSettingsMessage('✅ Auto-receiver removed', 'success');
     
     // Hide autoreceiver display
-    document.getElementById('current-autoreceiver').style.display = 'none';
+    const currentAutoreceiverDiv = document.getElementById('current-autoreceiver');
+    if (currentAutoreceiverDiv) {
+      currentAutoreceiverDiv.style.display = 'none';
+    }
     
   } catch (error) {
     console.error('Error removing autoreceiver:', error);
@@ -138,11 +176,25 @@ export async function removeAutoreceiver() {
   }
 }
 
-function showSettingsMessage(message, type) {
+function showSettingsMessage(message, type = 'info') {
   const messageEl = document.getElementById('settings-message');
   if (messageEl) {
     messageEl.textContent = message;
-    messageEl.style.color = type === 'error' ? '#dc3545' : '#28a745';
+    
+    // Set color based on type
+    switch(type) {
+      case 'error':
+        messageEl.style.color = '#dc3545';
+        break;
+      case 'success':
+        messageEl.style.color = '#28a745';
+        break;
+      case 'info':
+        messageEl.style.color = '#17a2b8';
+        break;
+      default:
+        messageEl.style.color = '#333';
+    }
     
     // Clear message after 3 seconds if it's not an error
     if (type !== 'error') {
@@ -154,9 +206,20 @@ function showSettingsMessage(message, type) {
 }
 
 function clearSettingsForm() {
-  document.getElementById('new-username').value = '';
-  document.getElementById('autoreceiver-email').value = '';
-  document.getElementById('settings-message').textContent = '';
+  const newUsernameInput = document.getElementById('new-username');
+  if (newUsernameInput) {
+    newUsernameInput.value = '';
+  }
+  
+  const autoreceiverInput = document.getElementById('autoreceiver-email');
+  if (autoreceiverInput) {
+    autoreceiverInput.value = '';
+  }
+  
+  const messageEl = document.getElementById('settings-message');
+  if (messageEl) {
+    messageEl.textContent = '';
+  }
 }
 
 function validateEmail(email) {
@@ -170,4 +233,6 @@ export function setupSettingsEventListeners() {
   window.closeSettingsModal = closeSettingsModal;
   window.saveSettings = saveSettings;
   window.removeAutoreceiver = removeAutoreceiver;
+  
+  console.log('Settings event listeners setup complete');
 }
