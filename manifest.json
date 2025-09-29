@@ -1,7 +1,7 @@
 {
   "name": "Pookie's Home",
   "short_name": "Pookie",
-  "description": "A loving app for Pookie with boings and photo sharing",
+  "description": "Pookie's Home",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#a18cd1",

@@ -1206,3 +1206,103 @@ button:focus {
   outline: 2px solid rgba(161, 140, 209, 0.6);
   outline-offset: 2px;
 }
+
+/* Wrapper that contains password input + eye icon button */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Add extra padding on right side for the eye icon */
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 50px;
+  box-sizing: border-box;
+}
+
+/* Eye icon button - positioned inside the input field */
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%); /* Center vertically */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.password-toggle-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  opacity: 0.7;
+}
+
+/* Click effect */
+.password-toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* The SVG icon inside the button */
+.eye-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  user-select: none; /* Can't be selected */
+  pointer-events: none; /* Clicks pass through to button */
+}
+
+/* Show button more clearly when input is focused */
+.password-input-wrapper input:focus + .password-toggle-btn {
+  opacity: 1;
+}
+
+/* Password modal specific spacing */
+#password-modal .password-input-wrapper {
+  margin-bottom: 15px;
+}
+
+#password-modal .password-input-wrapper input {
+  margin: 0;
+  width: 100%;
+}
+
+/* Login section specific spacing */
+#login-section .password-input-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Mobile - larger touch targets */
+@media (max-width: 768px) {
+  .password-toggle-btn {
+    padding: 12px;
+  }
+  
+  .eye-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .password-input-wrapper input {
+    padding-right: 55px;
+  }
+}
+
+/* Keyboard navigation - visible focus outline */
+.password-toggle-btn:focus {
+  outline: 2px solid #a18cd1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .password-toggle-btn {
+    filter: brightness(0.9);
+  }
+}

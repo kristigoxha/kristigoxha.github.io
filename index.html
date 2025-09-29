@@ -158,45 +158,49 @@
     </div>
 
     <!-- LOGIN SECTION -->
-	<div id="login-section">
-		<div class="login-container">
-			<div class="login-header">
-				<span class="emoji">🎎</span>
-				<h1>Welcome back pookie!</h1>
-				<p>Sign in to your home</p>
-			</div>
+    <div id="login-section">
+      <div class="login-container">
+        <div class="login-header">
+          <span class="emoji">🎎</span>
+          <h1>Welcome back pookie!</h1>
+          <p>Sign in to your home</p>
+        </div>
 
-			<div class="login-form-group">
-				<input type="email" id="email" placeholder="Enter your email" />
-			</div>
+        <div class="login-form-group">
+          <input type="email" id="email" placeholder="Enter your email" />
+        </div>
 
-			<div class="login-form-group">
-				<input type="password" id="password" placeholder="Enter your password" />
-			</div>
+        <!-- Password field with visibility toggle -->
+        <div class="login-form-group password-input-wrapper">
+          <input type="password" id="password" placeholder="Enter your password" />
+          <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password')" aria-label="Toggle password visibility">
+            <img src="/assets/images/eye-open-password.svg" alt="Show password" class="eye-icon" id="password-eye">
+          </button>
+        </div>
 
-			<div class="login-btn-group">
-				<button class="login-btn btn-secondary" onclick="register()">
-					Create Account
-				</button>
-				<button class="login-btn btn-primary" onclick="login()">
-					Sign In
-				</button>
-			</div>
+        <div class="login-btn-group">
+          <button class="login-btn btn-secondary" onclick="register()">
+            Create Account
+          </button>
+          <button class="login-btn btn-primary" onclick="login()">
+            Sign In
+          </button>
+        </div>
 
-			<div id="login-message" class="message"></div>
+        <div id="login-message" class="message"></div>
 
-			<div class="reset-section">
-				<h3>Forgot your password?</h3>
-				<div class="login-form-group">
-					<input type="email" id="reset-email" placeholder="Enter your email" />
-				</div>
-				<button class="reset-btn" onclick="resetPassword()">
-					Send Reset Link
-				</button>
-				<div id="reset-message" class="message"></div>
-			</div>
-		</div>
-	</div>
+        <div class="reset-section">
+          <h3>Forgot your password?</h3>
+          <div class="login-form-group">
+            <input type="email" id="reset-email" placeholder="Enter your email" />
+          </div>
+          <button class="reset-btn" onclick="resetPassword()">
+            Send Reset Link
+          </button>
+          <div id="reset-message" class="message"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- APP SECTION -->
     <div id="app-section">
@@ -215,7 +219,6 @@
           📱 Install App
         </button>
         <button onclick="logout()">👋 Logout</button>
-        <!-- Debug menu item (only show in development) -->
         <button onclick="document.getElementById('debug-info').style.display='block'" style="display: none;" id="debug-menu-btn">
           🐛 Debug Info
         </button>
@@ -256,8 +259,23 @@
     <div id="password-modal">
       <div>
         <h3>Change Password</h3>
-        <input type="password" id="current-password" placeholder="Current Password" />
-        <input type="password" id="new-password" placeholder="New Password" />
+        
+        <!-- Current password with visibility toggle -->
+        <div class="password-input-wrapper">
+          <input type="password" id="current-password" placeholder="Current Password" />
+          <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('current-password')" aria-label="Toggle current password visibility">
+            <img src="/assets/images/eye-open-password.svg" alt="Show password" class="eye-icon" id="current-password-eye">
+          </button>
+        </div>
+        
+        <!-- New password with visibility toggle -->
+        <div class="password-input-wrapper">
+          <input type="password" id="new-password" placeholder="New Password (min 8 characters)" />
+          <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('new-password')" aria-label="Toggle new password visibility">
+            <img src="/assets/images/eye-open-password.svg" alt="Show password" class="eye-icon" id="new-password-eye">
+          </button>
+        </div>
+        
         <div>
           <button onclick="changePassword()">Update Password</button>
           <button onclick="closePasswordModal()">Cancel</button>
@@ -266,60 +284,60 @@
       </div>
     </div>
 
-<!-- Settings Modal -->
-<div id="settings-modal" class="settings-modal" onclick="closeSettingsModal(event)">
-  <div class="settings-modal-content">
-    <h2 class="settings-header">⚙️ Settings</h2>
-    
-    <!-- Current Username Section -->
-    <div class="settings-section">
-      <h3>👤 Username</h3>
-      <div class="current-username">
-        Current: <span id="current-username-text">Loading...</span>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="settings-modal" onclick="closeSettingsModal(event)">
+      <div class="settings-modal-content">
+        <h2 class="settings-header">⚙️ Settings</h2>
+        
+        <!-- Current Username Section -->
+        <div class="settings-section">
+          <h3>👤 Username</h3>
+          <div class="current-username">
+            Current: <span id="current-username-text">Loading...</span>
+          </div>
+          <input 
+            type="text" 
+            id="new-username" 
+            placeholder="Enter new username (optional)"
+            class="settings-input"
+          />
+          <p class="settings-note">Leave blank to keep current username</p>
+        </div>
+        
+        <!-- Auto-receiver Section -->
+        <div class="settings-section">
+          <h3>📬 Auto-receiver</h3>
+          <p class="settings-note">Photos will be automatically shared with this person</p>
+          
+          <!-- Current auto-receiver display -->
+          <div id="current-autoreceiver" class="autoreceiver-display" style="display: none;">
+            <strong>Current auto-receiver:</strong>
+            <div id="autoreceiver-tag-container"></div>
+          </div>
+          
+          <input 
+            type="email" 
+            id="autoreceiver-email" 
+            placeholder="Enter email address (optional)"
+            class="settings-input"
+          />
+          <p class="settings-note">Leave blank to keep current auto-receiver</p>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="settings-buttons">
+          <button class="settings-btn settings-btn-primary" onclick="saveSettings()">
+            💾 Save Changes
+          </button>
+          <button class="settings-btn settings-btn-secondary" onclick="closeSettingsModal()">
+            ❌ Cancel
+          </button>
+        </div>
+        
+        <!-- Message display -->
+        <div id="settings-message" class="message" style="margin-top: 15px; text-align: center;"></div>
       </div>
-      <input 
-        type="text" 
-        id="new-username" 
-        placeholder="Enter new username (optional)"
-        class="settings-input"
-      />
-      <p class="settings-note">Leave blank to keep current username</p>
     </div>
-    
-    <!-- Auto-receiver Section -->
-    <div class="settings-section">
-      <h3>📬 Auto-receiver</h3>
-      <p class="settings-note">Photos will be automatically shared with this person</p>
-      
-      <!-- Current auto-receiver display -->
-      <div id="current-autoreceiver" class="autoreceiver-display" style="display: none;">
-        <strong>Current auto-receiver:</strong>
-        <div id="autoreceiver-tag-container"></div>
-      </div>
-      
-      <input 
-        type="email" 
-        id="autoreceiver-email" 
-        placeholder="Enter email address (optional)"
-        class="settings-input"
-      />
-      <p class="settings-note">Leave blank to keep current auto-receiver</p>
-    </div>
-    
-    <!-- Buttons -->
-    <div class="settings-buttons">
-      <button class="settings-btn settings-btn-primary" onclick="saveSettings()">
-        💾 Save Changes
-      </button>
-      <button class="settings-btn settings-btn-secondary" onclick="closeSettingsModal()">
-        ❌ Cancel
-      </button>
-    </div>
-    
-    <!-- Message display -->
-    <div id="settings-message" class="message" style="margin-top: 15px; text-align: center;"></div>
-  </div>
-</div>
 
     <!-- Photo Preview Popup -->
     <div id="photo-preview-popup" class="photo-preview-popup" onclick="closePhotoPreview(event)">
@@ -347,7 +365,7 @@
       </div>
     </div>
 
-    <!-- Debug Info (hidden by default) -->
+    <!-- Debug Info -->
     <div id="debug-info" style="display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000;">
       <button onclick="this.parentElement.style.display='none'" style="float: right;">×</button>
       <div>User: <span id="debug-user">-</span></div>
@@ -357,6 +375,27 @@
 
     <!-- JavaScript Modules -->
     <script type="module" src="js/main.js"></script>
+
+    <!-- Password Toggle JavaScript -->
+    <script>
+      // Toggle password visibility using SVG icons
+      function togglePasswordVisibility(inputId) {
+        const passwordInput = document.getElementById(inputId);
+        const eyeIcon = document.getElementById(inputId + '-eye');
+        
+        if (passwordInput.type === 'password') {
+          // Show password - use closed eye icon
+          passwordInput.type = 'text';
+          eyeIcon.src = '/assets/images/eye-closed-password.svg';
+          eyeIcon.alt = 'Hide password';
+        } else {
+          // Hide password - use open eye icon
+          passwordInput.type = 'password';
+          eyeIcon.src = '/assets/images/eye-open-password.svg';
+          eyeIcon.alt = 'Show password';
+        }
+      }
+    </script>
 
     <!-- Password Reset Fix Script -->
     <script>
@@ -468,28 +507,21 @@
             resetBtn.textContent = 'Updating...';
             
             try {
-              const supabase = window.supabase.createClient(
-                'https://bcjmlhxuakqqqdjrtntj.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y'
-              );
+              const { supabase } = await import('./js/config.js');
               
-              const access_token = hashParams.get('access_token');
-              const refresh_token = hashParams.get('refresh_token');
+              const { access_token, refresh_token } = Object.fromEntries(hashParams);
               
-              await supabase.auth.setSession({
-                access_token,
-                refresh_token
-              });
+              await supabase.auth.setSession({ access_token, refresh_token });
               
-              await supabase.auth.updateUser({
-                password: newPassword
-              });
+              const { error } = await supabase.auth.updateUser({ password: newPassword });
+              
+              if (error) throw error;
               
               showMessage('Password updated successfully! Redirecting...', false);
               setTimeout(() => window.location.href = '/', 2000);
               
             } catch (error) {
-              showMessage('Error: ' + error.message, true);
+              showMessage(error.message, true);
               resetBtn.disabled = false;
               resetBtn.textContent = 'Update Password';
             }
@@ -497,56 +529,49 @@
         }
       });
     </script>
-	<script>
-	document.addEventListener('DOMContentLoaded', function() {
-		console.log('Setting up hamburger menu...');
-		
-		// Get the hamburger button and menu elements
-		const menuToggle = document.getElementById('menu-toggle');
-		const menu = document.getElementById('menu');
-		
-		if (menuToggle && menu) {
-			// Add click event to hamburger button
-			menuToggle.addEventListener('click', function(e) {
-				e.stopPropagation(); // Prevent event from bubbling up
-				
-				// Toggle the 'open' class on the menu
-				menu.classList.toggle('open');
-				
-				// Optional: Add visual feedback to hamburger button
-				menuToggle.classList.toggle('active');
-				
-				console.log('Menu toggled:', menu.classList.contains('open') ? 'opened' : 'closed');
-			});
-			
-			// Close menu when clicking outside
-			document.addEventListener('click', function(e) {
-				// Check if click is outside menu and hamburger button
-				if (!menu.contains(e.target) && !menuToggle.contains(e.target)) {
-					menu.classList.remove('open');
-					menuToggle.classList.remove('active');
-					console.log('Menu closed by clicking outside');
-				}
-			});
-			
-			// Close menu when clicking a menu item
-			const menuItems = menu.querySelectorAll('a, button');
-			menuItems.forEach(item => {
-				item.addEventListener('click', function() {
-					menu.classList.remove('open');
-					menuToggle.classList.remove('active');
-					console.log('Menu closed by selecting item');
-				});
-			});
-			
-			console.log('Hamburger menu setup complete!');
-		} else {
-			console.error('Menu elements not found:', {
-				menuToggle: !!menuToggle,
-				menu: !!menu
-			});
-		}
-	});
-	</script>
+
+    <!-- Hamburger Menu Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const menu = document.getElementById('menu');
+        
+        if (menuToggle && menu) {
+          // Toggle menu on hamburger click
+          menuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+            menuToggle.classList.toggle('active');
+            console.log('Menu toggled:', menu.classList.contains('open') ? 'opened' : 'closed');
+          });
+          
+          // Close menu when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!menu.contains(e.target) && !menuToggle.contains(e.target)) {
+              menu.classList.remove('open');
+              menuToggle.classList.remove('active');
+              console.log('Menu closed by clicking outside');
+            }
+          });
+          
+          // Close menu when clicking a menu item
+          const menuItems = menu.querySelectorAll('a, button');
+          menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+              menu.classList.remove('open');
+              menuToggle.classList.remove('active');
+              console.log('Menu closed by selecting item');
+            });
+          });
+          
+          console.log('Hamburger menu setup complete!');
+        } else {
+          console.error('Menu elements not found:', {
+            menuToggle: !!menuToggle,
+            menu: !!menu
+          });
+        }
+      });
+    </script>
   </body>
 </html>
