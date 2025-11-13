@@ -151,10 +151,112 @@ self.addEventListener('sync', event => {
 });
 async function syncBoings() {
   try {
-    // TODO: read offline items from IndexedDB and POST to your API
-    // (left as an exercise; your app code should queue actions while offline)
     console.log('Syncing offline boings…');
+
+    // Open IndexedDB connection
+    const db = await openDatabase();
+
+    // Get all unsynced boings from IndexedDB
+    const offlineBoings = await getOfflineBoings(db);
+
+    if (offlineBoings.length === 0) {
+      console.log('No offline boings to sync');
+      return;
+    }
+
+    console.log(`Found ${offlineBoings.length} offline boing(s) to sync`);
+
+    // Sync each boing to the API
+    const results = await Promise.allSettled(
+      offlineBoings.map(boing => syncBoingToAPI(boing))
+    );
+
+    // Remove successfully synced boings from IndexedDB
+    const syncedIds = [];
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value) {
+        syncedIds.push(offlineBoings[index].id);
+      }
+    });
+
+    if (syncedIds.length > 0) {
+      await removeBoings(db, syncedIds);
+      console.log(`Successfully synced ${syncedIds.length} boing(s)`);
+    }
+
+    if (syncedIds.length < offlineBoings.length) {
+      console.warn(`Failed to sync ${offlineBoings.length - syncedIds.length} boing(s)`);
+    }
   } catch (err) {
     console.error('Background sync failed:', err);
+    throw err; // Re-throw to trigger retry
   }
+}
+
+// Helper function to open IndexedDB
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('PookieDB', 1);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Helper function to get offline boings
+function getOfflineBoings(db) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['offline_boings'], 'readonly');
+    const store = transaction.objectStore('offline_boings');
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Helper function to sync a single boing to the API
+async function syncBoingToAPI(boing) {
+  try {
+    // POST to Supabase REST API
+    const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y';
+
+    // Get auth token from cookies or session storage
+    // Note: In a real implementation, you'd need to handle authentication properly
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/boings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        boing_date: boing.date,
+        created_at: new Date(boing.timestamp).toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API responded with status ${response.status}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to sync boing:', error);
+    return false;
+  }
+}
+
+// Helper function to remove synced boings from IndexedDB
+function removeBoings(db, ids) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['offline_boings'], 'readwrite');
+    const store = transaction.objectStore('offline_boings');
+
+    ids.forEach(id => store.delete(id));
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
 }
