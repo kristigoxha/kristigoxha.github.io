@@ -7,6 +7,7 @@ import { supabase, getCurrentUser } from './config.js';
 // TEACHING MOMENT: Check and Show Popups
 // This runs when user logs in successfully
 export async function checkChristmasPopups() {
+export async function checkChristmasPopups() {
     const user = getCurrentUser();
     if (!user) return;
     
@@ -163,6 +164,3 @@ function closePopup(popupId) {
         }, 300);
     }
 }
-
-// Export for use in other files
-export { checkChristmasPopups };
