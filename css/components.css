@@ -390,6 +390,238 @@ button:focus {
   background: rgba(0, 122, 255, 0.3) !important;
 }
 
+/* CHRISTMAS WISHLIST */
+
+/* Popup Overlay */
+.christmas-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.christmas-popup-overlay.light {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.christmas-popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Main Popup Container */
+.christmas-popup {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.christmas-popup-overlay.show .christmas-popup {
+    transform: scale(1);
+}
+
+.christmas-popup.small {
+    max-width: 400px;
+    padding: 1.5rem;
+}
+
+/* Popup Header */
+.popup-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.popup-header h2 {
+    font-size: 2rem;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.popup-header h3 {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.popup-header.small {
+    margin-bottom: 1rem;
+}
+
+.popup-emoji {
+    font-size: 3rem;
+    display: inline-block;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Popup Body */
+.popup-body {
+    color: white;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.popup-body p {
+    margin: 0.8rem 0;
+    font-size: 1.1rem;
+}
+
+.popup-body strong {
+    color: #ffd700;
+    font-size: 1.2rem;
+}
+
+.popup-body.small p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+
+.popup-decorations {
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 1rem 0;
+    letter-spacing: 0.5rem;
+}
+
+/* Popup Actions */
+.popup-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Popup Buttons */
+.popup-btn-primary {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.popup-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+.popup-btn-secondary {
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.popup-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Small buttons for reminder */
+.popup-btn-small-primary,
+.popup-btn-small-secondary {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+}
+
+.popup-btn-small-primary {
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.popup-btn-small-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Close X Button */
+.popup-close-x {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-close-x:hover {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .christmas-popup {
+        padding: 1.5rem;
+    }
+    
+    .popup-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .popup-emoji {
+        font-size: 2rem;
+    }
+    
+    .popup-body p {
+        font-size: 1rem;
+    }
+    
+    .popup-actions {
+        flex-direction: column;
+    }
+    
+    .popup-btn-primary,
+    .popup-btn-secondary {
+        width: 100%;
+    }
+}
+
+
 /* LOGIN MESSAGES */
 #login-message,
 #reset-message {

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Wishlist - Pookie's App</title>
+    <link rel="icon" href="/assets/icons/favicon.ico">
+    
+    <!-- Base CSS files -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Wishlist specific CSS -->
+    <link rel="stylesheet" href="/css/wishlist.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <a href="/pages/playground.html" class="back-button">← Back to Playground</a>
+    
+    <div class="wishlist-container">
+        <div class="wishlist-header">
+            <h1>🎄 Christmas Wishlist 🎁</h1>
+            <p>Share your Christmas wishes with your pookie!</p>
+        </div>
+        
+        <div class="wishlist-grid">
+            <!-- Your Wishlist Section -->
+            <div class="wishlist-section your-wishlist">
+                <h2>✨ Your Wishlist</h2>
+                <div class="wishlist-content">
+                    <textarea 
+                        id="your-wishlist-input" 
+                        class="wishlist-textarea"
+                        placeholder="Write your wishes here boo... You can add product links too!"
+                        maxlength="2000"
+                    ></textarea>
+                    <div class="wishlist-actions">
+                        <span class="char-count">0 / 2000</span>
+                        <button id="save-wishlist-btn" class="save-btn">
+                            Save Wishlist
+                        </button>
+                    </div>
+                    <div id="save-message" class="message-toast"></div>
+                </div>
+            </div>
+            
+            <!-- Pookie's Wishlist Section -->
+            <div class="wishlist-section pookie-wishlist">
+                <h2>💝 Pookie's Wishlist</h2>
+                <div class="wishlist-content">
+                    <div id="pookie-wishlist-display" class="wishlist-display">
+                        <p class="loading-text">Loading pookie's wishes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completion Status -->
+        <div class="completion-status">
+            <div class="status-card">
+                <span class="status-icon" id="your-status">⏳</span>
+                <span class="status-text">Your wishlist: <span id="your-status-text">Not started</span></span>
+            </div>
+            <div class="status-card">
+                <span class="status-icon" id="pookie-status">⏳</span>
+                <span class="status-text">Pookie's wishlist: <span id="pookie-status-text">Not started</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Link Preview Popup -->
+    <div id="link-preview-popup" class="link-preview-popup">
+        <button class="preview-close">×</button>
+        <div class="preview-content">
+            <img class="preview-image" src="" alt="Product preview">
+            <div class="preview-info">
+                <h3 class="preview-title"></h3>
+                <p class="preview-description"></p>
+                <a class="preview-link" href="" target="_blank">View Product →</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript for Wishlist -->
+    <script src="/js/wishlist.js" type="module"></script>
+</body>
+</html>
