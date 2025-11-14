@@ -1,23 +1,26 @@
 // js/wishlist.js
 // Christmas Wishlist functionality
-// Teaching moment: This file handles all the wishlist features!
+// FIXED: Authentication check to match your app's pattern
 
-import { supabase, getCurrentUser } from './config.js';
+// Initialize Supabase client (matching your other pages)
+const SUPABASE_URL = 'https://bcjmlhxuakqqqdjrtntj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjam1saHh1YWtxcXFkanJ0bnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1OTMxMzYsImV4cCI6MjA2NjE2OTEzNn0.3vV15QSv4y3mNRJfARPHlk-GvJGO65r594ss5kSGK3Y';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variables to store wishlist data
 let currentUserWishlist = '';
 let pookieWishlist = '';
 let autoSaveTimer = null;
+let currentUser = null;
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎄 Initializing Christmas Wishlist...');
     
-    // Check if user is authenticated
-    const user = getCurrentUser();
-    if (!user) {
-        window.location.href = '/';
-        return;
+    // Check authentication first
+    const authenticated = await checkAuth();
+    if (!authenticated) {
+        return; // Stop initialization if not authenticated
     }
     
     // Set up all the features
@@ -25,6 +28,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupCharacterCounter();
 });
+
+// FIXED: Authentication check matching your app's pattern
+async function checkAuth() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+            console.log('No authenticated user, redirecting to login...');
+            window.location.href = '/';
+            return false;
+        }
+        
+        currentUser = user;
+        console.log('User authenticated:', user.email);
+        return true;
+    } catch (error) {
+        console.error('Auth check error:', error);
+        window.location.href = '/';
+        return false;
+    }
+}
 
 // TEACHING MOMENT: Event Listeners
 // These listen for user actions like typing and clicking
@@ -88,14 +112,21 @@ function updateCharacterCount() {
 // This gets both your wishlist and your partner's wishlist
 async function loadWishlists() {
     try {
-        const user = getCurrentUser();
+        if (!currentUser) {
+            console.error('No current user found');
+            return;
+        }
         
         // Load your wishlist
         const { data: yourData, error: yourError } = await supabase
             .from('wishlists')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', currentUser.id)
             .single();
+        
+        if (yourError && yourError.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error loading your wishlist:', yourError);
+        }
         
         if (yourData) {
             currentUserWishlist = yourData.content || '';
@@ -107,10 +138,14 @@ async function loadWishlists() {
         const { data: pookieData, error: pookieError } = await supabase
             .from('wishlists')
             .select('*')
-            .neq('user_id', user.id)
+            .neq('user_id', currentUser.id)
             .order('updated_at', { ascending: false })
             .limit(1)
             .single();
+        
+        if (pookieError && pookieError.code !== 'PGRST116') {
+            console.error('Error loading pookie wishlist:', pookieError);
+        }
         
         if (pookieData) {
             pookieWishlist = pookieData.content || '';
@@ -144,14 +179,20 @@ async function saveWishlist(isAutoSave = false) {
             saveBtn.classList.add('saving');
         }
         
-        const user = getCurrentUser();
+        if (!currentUser) {
+            throw new Error('No user logged in');
+        }
         
         // Check if wishlist exists
-        const { data: existing } = await supabase
+        const { data: existing, error: checkError } = await supabase
             .from('wishlists')
             .select('id')
-            .eq('user_id', user.id)
+            .eq('user_id', currentUser.id)
             .single();
+        
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
+        }
         
         if (existing) {
             // Update existing wishlist
@@ -161,7 +202,7 @@ async function saveWishlist(isAutoSave = false) {
                     content: wishlistContent,
                     updated_at: new Date().toISOString()
                 })
-                .eq('user_id', user.id);
+                .eq('user_id', currentUser.id);
             
             if (error) throw error;
         } else {
@@ -169,7 +210,7 @@ async function saveWishlist(isAutoSave = false) {
             const { error } = await supabase
                 .from('wishlists')
                 .insert({ 
-                    user_id: user.id,
+                    user_id: currentUser.id,
                     content: wishlistContent,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
@@ -226,9 +267,22 @@ function convertUrlsToLinks(text) {
     // Regular expression to find URLs
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     
-    return text.replace(urlRegex, (url) => {
-        return `<a href="${url}" class="wishlist-link" target="_blank">${url}</a>`;
-    });
+    // Escape HTML to prevent XSS attacks
+    const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    };
+    
+    // Split text by URLs and escape each part
+    const parts = text.split(urlRegex);
+    return parts.map((part, index) => {
+        if (index % 2 === 1) { // This is a URL
+            return `<a href="${escapeHtml(part)}" class="wishlist-link" target="_blank">${escapeHtml(part)}</a>`;
+        } else {
+            return escapeHtml(part);
+        }
+    }).join('');
 }
 
 // TEACHING MOMENT: Show Link Preview
@@ -242,12 +296,18 @@ async function showLinkPreview(url) {
     
     // For this example, we'll show a simple preview
     // In a real app, you might fetch product data from an API
-    previewTitle.textContent = 'Product from ' + new URL(url).hostname;
-    previewDescription.textContent = 'Click below to view this product on the original website.';
-    previewImage.src = '/assets/icons/gift-placeholder.png'; // You'd need to add this image
-    previewLink.href = url;
-    
-    popup.classList.add('show');
+    try {
+        const urlObj = new URL(url);
+        previewTitle.textContent = 'Product from ' + urlObj.hostname;
+        previewDescription.textContent = 'Click below to view this product on the original website.';
+        previewImage.src = ''; // Clear previous image
+        previewImage.style.display = 'none'; // Hide image if we don't have one
+        previewLink.href = url;
+        
+        popup.classList.add('show');
+    } catch (error) {
+        console.error('Invalid URL:', error);
+    }
 }
 
 // TEACHING MOMENT: Update Status Indicators
@@ -255,6 +315,8 @@ async function showLinkPreview(url) {
 function updateWishlistStatus(whose, content) {
     const statusIcon = document.getElementById(`${whose}-status`);
     const statusText = document.getElementById(`${whose}-status-text`);
+    
+    if (!statusIcon || !statusText) return;
     
     if (!content || content.length < 10) {
         statusIcon.textContent = '⏳';
@@ -271,7 +333,15 @@ function updateWishlistStatus(whose, content) {
 // TEACHING MOMENT: Show Messages
 // This shows success or error messages to the user
 function showMessage(text, type = 'success') {
-    const toast = document.getElementById('save-message');
+    // Create toast element if it doesn't exist
+    let toast = document.getElementById('wishlist-message-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'wishlist-message-toast';
+        toast.className = 'message-toast';
+        document.body.appendChild(toast);
+    }
+    
     toast.textContent = text;
     toast.className = `message-toast ${type} show`;
     
@@ -280,5 +350,4 @@ function showMessage(text, type = 'success') {
     }, 3000);
 }
 
-// Export functions for use in other files
-export { loadWishlists, updateWishlistStatus };
+console.log('🎄 Wishlist.js loaded and ready!');
