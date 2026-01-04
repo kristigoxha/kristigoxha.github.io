@@ -104,7 +104,7 @@ export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return null;
 
   try {
-    const reg = await navigator.serviceWorker.register('/js/sw.js', { scope: '/js/' });
+    const reg = await navigator.serviceWorker.register('/js/sw.js', { scope: '/' });
     swRegistration = reg;
     console.log('ServiceWorker registered:', reg);
 
