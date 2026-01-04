@@ -4,8 +4,6 @@
 // 🔊 AUDIO SYSTEM - NEW ADDITION
 let boingSound = null;
 
-import { checkChristmasPopups } from './christmas-popup.js';
-
 // Initialize audio when the app starts
 function initializeAudio() {
   try {
@@ -165,11 +163,6 @@ export async function showApp() {
   
   // Load app-specific data
   await loadAppData();
-
-	// ADD THIS: Check for Christmas popups after successful login
-	setTimeout(() => {
-		checkChristmasPopups();
-	}, 1000); // Small delay to let the app load first
   
   // Initialize app-specific UI elements - NOW WITH AUDIO!
   initializeAppUI();
