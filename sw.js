@@ -9,8 +9,8 @@ const PRECACHE_URLS = [
   '/',                // navigation fallback
   '/index.html',
   '/manifest.json',
-  '/main.js',         // include if your app shell needs it
-  '/boing.mp3',
+  '/js/main.js',         // include if your app shell needs it
+  '/assets/sounds/boing.mp3',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
