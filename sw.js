@@ -71,7 +71,10 @@ self.addEventListener('fetch', (event) => {
         const preload = await event.preloadResponse;
         const fresh = preload || await fetch(req, { cache: 'no-store' });
         const cache = await caches.open(RUNTIME_CACHE);
-        cache.put('/index.html', fresh.clone());
+        // Only cache if it's a full response (not partial)
+        if (fresh.status === 200) {
+          cache.put('/index.html', fresh.clone());
+        }
         return fresh;
       } catch {
         const cached = await caches.match('/index.html');
@@ -84,12 +87,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Static assets: cache-first + background refresh
+  // FIX: Don't cache partial responses (status 206)
   if (/\.(?:js|css|png|jpe?g|gif|webp|svg|mp3|woff2?)$/i.test(url.pathname)) {
     event.respondWith((async () => {
       const cache = await caches.open(RUNTIME_CACHE);
       const cached = await cache.match(req);
       const fetchPromise = fetch(req).then(res => {
-        if (res.ok) cache.put(req, res.clone());
+        // Only cache complete responses (status 200), not partial (206)
+        if (res.ok && res.status === 200) {
+          cache.put(req, res.clone());
+        }
         return res;
       }).catch(() => undefined);
       return cached || fetchPromise;
