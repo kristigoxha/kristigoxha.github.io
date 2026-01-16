@@ -258,24 +258,23 @@ async function loadAlbanianWord() {
   await saveToHistory(data.word, 'albanian', tmp.textContent.trim());}
 
 async function loadEnglishWord() {
-  // Merriam-Webster RSS via AllOrigins (no CORS headaches)
-  const proxyUrl = 'https://api.allorigins.win/raw?url=' +
-    encodeURIComponent('https://www.merriam-webster.com/wotd/feed/rss2');
+  // Use RSS2JSON service for better CORS support
+  const rssUrl = 'https://www.merriam-webster.com/wotd/feed/rss2';
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
-  const res = await fetch(proxyUrl);
+  const res = await fetch(apiUrl);
   if (!res.ok) throw new Error('Failed to fetch English word');
 
-  const xmlText = await res.text();
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+  const data = await res.json();
+  if (!data.items || data.items.length === 0) {
+    throw new Error('No word found in RSS feed');
+  }
 
-  const firstItem = xmlDoc.querySelector('item');
-  if (!firstItem) throw new Error('No word found in RSS feed');
-
-  const title = firstItem.querySelector('title').textContent.trim();
+  const firstItem = data.items[0];
+  const title = firstItem.title.trim();
   currentWord = title;
 
-  const descHtml = firstItem.querySelector('description').textContent;
+  const descHtml = firstItem.description || '';
   const tmp = document.createElement('div');
   tmp.innerHTML = descHtml;
 
