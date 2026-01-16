@@ -9,10 +9,7 @@ const PRECACHE_URLS = [
   '/',                // navigation fallback
   '/index.html',
   '/manifest.json',
-  '/js/main.js',         // include if your app shell needs it
-  '/assets/sounds/boing.mp3',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/js/main.js'         // include if your app shell needs it
 ];
 
 /* ---------- INSTALL ---------- */
