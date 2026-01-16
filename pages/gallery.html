@@ -854,8 +854,11 @@
 
     // Authentication
     async function checkAuth() {
+      console.log('checkAuth() called')
       const { data: { user } } = await supabase.auth.getUser()
+      console.log('User from Supabase:', user)
       if (!user) {
+        console.log('No user found, redirecting to /')
         window.location.href = '/'
         return
       }
@@ -1382,6 +1385,9 @@
     }
 
     // Initialize the application
+    console.log('=== POOKIE GALLERY INITIALIZING ===')
+    console.log('Supabase URL:', SUPABASE_URL)
+    console.log('Starting authentication check...')
     checkAuth()
   </script>
 </body>
