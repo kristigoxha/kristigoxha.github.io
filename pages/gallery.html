@@ -1160,6 +1160,7 @@
         }
         
         const { data: images, error } = await query.order('created_at', { ascending: false })
+        console.log('IMAGES FROM DB:', images)
         
         if (error) throw error
         
