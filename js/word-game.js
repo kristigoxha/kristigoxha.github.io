@@ -21,6 +21,7 @@ let currentTab = 'today';
 // ======= Auth + profile =======
 async function checkAuth() {
   const { data: { user } } = await supabase.auth.getUser();
+  console.log('KRISTI ka lene user: ' user);
   currentUser = user;
 
   if (!currentUser) {
