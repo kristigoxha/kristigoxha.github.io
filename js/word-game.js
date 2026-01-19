@@ -526,8 +526,10 @@ async function saveSentence() {
   }
 
   // Must include the word (case-insensitive)
-  const wordLower = currentWord.toLowerCase();
-  if (!sentence.toLowerCase().includes(wordLower)) {
+  const wordLower = currentWord
+  .toLowerCase()
+  .replace(/ë/g, 'e')
+  .replace(/ç/g, 'c');  if (!sentence.toLowerCase().includes(wordLower)) {
     showStatus(`Please use the word "${currentWord}" in your sentence`, 'error');
     return;
   }
