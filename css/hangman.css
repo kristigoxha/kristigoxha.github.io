@@ -1,0 +1,51 @@
+/* Basic Hangman styles */
+.hangman-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+  margin:1rem 0 2rem;
+}
+.hangman-drawing{
+  width:180px;
+  height:180px;
+  background:transparent;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:3rem;
+}
+.word-display{
+  font-size:2rem;
+  letter-spacing:0.5rem;
+  color:#fff;
+  text-align:center;
+}
+.letters-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.5rem;
+  justify-content:center;
+  max-width:640px;
+}
+.letters-container button{
+  min-width:36px;
+  height:36px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  color:#fff;
+  cursor:pointer;
+}
+.letters-container button.disabled{
+  opacity:0.35;
+  cursor:default;
+}
+.hangman-controls{display:flex;gap:0.5rem;justify-content:center;margin-top:0.5rem}
+.hangman-btn{padding:0.5rem 1rem;border-radius:6px;border:none;cursor:pointer}
+.hangman-btn.primary{background:#2d8cff;color:#fff}
+.hangman-score{display:flex;gap:1rem;justify-content:center;margin-bottom:0.75rem}
+.score-item{text-align:center}
+.score-label{font-size:0.85rem;color:#bbb}
+.score-value{font-weight:700;color:#fff}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman - Pookie's Home</title>
+    <link rel="icon" href="/assets/icons/favicon.ico">
+    
+    <!-- Base CSS files -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Specific CSS -->
+    <link rel="stylesheet" href="/css/playground.css">
+    <link rel="stylesheet" href="/css/hangman.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <a href="/pages/playground.html" class="back-button">← Back to Playground</a>
+    
+    <div class="hangman-container">
+        <div class="hangman-panel">
+            <h1 style="text-align: center; margin-bottom: 1rem;">🧍🏻‍♂️ Hangman</h1>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" id="gameTab" onclick="switchTab('game')">
+                    Play Game
+                </button>
+                <button class="tab-btn" id="historyTab" onclick="switchTab('history')">
+                    Game History
+                </button>
+            </div>
+            
+            <!-- Game Tab -->
+            <div id="gameContent" class="tab-content active">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span class="player-indicator" id="player1Indicator">You</span>
+                    <span style="color: white;">VS</span>
+                    <span class="player-indicator" id="player2Indicator">Pookie</span>
+                </div>
+
+                <!-- Today's Score -->
+                <div class="hangman-score">
+                    <div class="score-item">
+                        <div class="score-label">Your Wins</div>
+                        <div class="score-value" id="scoreX">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Pookie Wins</div>
+                        <div class="score-value" id="scoreO">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Games Played</div>
+                        <div class="score-value" id="scorePlayed">0</div>
+                    </div>
+                </div>
+
+                <!-- Game Status -->
+                <div class="hangman-status" id="gameStatus">Click "Start New Game" to begin!</div>
+
+                <!-- Hangman Display -->
+                <div class="hangman-area">
+                    <div id="hangmanDrawing" class="hangman-drawing" aria-hidden="true"></div>
+                    <div id="wordDisplay" class="word-display" aria-live="polite"></div>
+                    <div id="lettersContainer" class="letters-container" aria-label="Letter choices"></div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="hangman-controls">
+                    <button class="hangman-btn primary" id="startGameBtn" onclick="startNewGame()">Start New Game</button>
+                    <button class="hangman-btn" id="resetScoresBtn" onclick="resetScores()">Reset Scores</button>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="historyContent" class="tab-content">
+                <div class="tictactoe-history">
+                    <div id="historyContentDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dice Animation Overlay -->
+    <div class="dice-container" id="diceContainer">
+        <div>
+            <div class="dice" id="dice">🎲</div>
+            <div class="dice-result" id="diceResult"></div>
+        </div>
+    </div>
+    
+    <!-- Hangman JavaScript -->
+    <script src="/js/hangman.js"></script>
+</body>
+</html>
