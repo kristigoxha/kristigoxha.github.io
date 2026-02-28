@@ -11,7 +11,7 @@ let currentUsername = null;
 let autoreceiverEmail = null;
 let autoreceiverUsername = null;
 
-let currentLanguage = null;   // 'albanian' | 'english'
+let currentLanguage = null;   // 'albanian' | 'english' | 'portuguese'
 let currentWord = null;
 
 let isEditingMode = false;
@@ -147,7 +147,7 @@ async function loadWordHistory() {
           <div class="history-date">${dateStr}</div>
           <div class="history-word">
             ${escapeHtml(item.word)}
-            <span class="history-badge">${item.word_language === 'albanian' ? '🇦🇱' : '🇺🇸'}</span>
+            <span class="history-badge">${item.word_language === 'albanian' ? '🇦🇱' : item.word_language === 'portuguese' ? '🇵🇹' : '🇺🇸'}</span>
             ${item.has_sentence ? '<span class="history-badge">✍️</span>' : ''}
           </div>
           ${item.definition ? `<div class="history-definition">
@@ -170,7 +170,7 @@ function viewHistoryWord(word, language, definition) {
   currentWord = word;
 
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById((language === 'albanian' ? 'albanian' : 'english') + 'Btn').classList.add('active');
+  document.getElementById((language === 'albanian' ? 'albanian' : language === 'portuguese' ? 'portuguese' : 'english') + 'Btn').classList.add('active');
 
   const displayDiv = document.getElementById('wordDisplay');
   displayDiv.innerHTML = `
@@ -178,7 +178,7 @@ function viewHistoryWord(word, language, definition) {
     <div class="word-definition">${definition || 'Definition not available'}</div>
     <div class="word-meta">
       <div class="word-date">📅 From History</div>
-      <div class="word-source">${language === 'albanian' ? '🇦🇱 Albanian' : '🇺🇸 English'}</div>
+      <div class="word-source">${language === 'albanian' ? '🇦🇱 Albanian' : language === 'portuguese' ? '🇵🇹 Portuguese' : '🇺🇸 English'}</div>
     </div>
   `;
 
@@ -197,7 +197,7 @@ async function selectLanguage(language) {
 
   // Button states
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById((language === 'albanian' ? 'albanian' : 'english') + 'Btn').classList.add('active');
+  document.getElementById((language === 'albanian' ? 'albanian' : language === 'portuguese' ? 'portuguese' : 'english') + 'Btn').classList.add('active');
 
   // Show loading
   const contentDiv = document.getElementById('wordContent');
@@ -208,6 +208,8 @@ async function selectLanguage(language) {
   try {
     if (language === 'albanian') {
       await loadAlbanianWord();
+    } else if (language === 'portuguese') {
+      await loadPortugueseWord();
     } else {
       await loadEnglishWord();
     }
@@ -256,6 +258,36 @@ async function loadAlbanianWord() {
 
   const tmp = document.createElement('div'); tmp.innerHTML = safeDefinition;
   await saveToHistory(data.word, 'albanian', tmp.textContent.trim());}
+
+async function loadPortugueseWord() {
+  const res = await fetch('https://marxfnwnc2.execute-api.eu-central-1.amazonaws.com/prod/portuguese-word');
+  if (!res.ok) throw new Error('Failed to fetch Portuguese word');
+
+  const data = await res.json();
+  currentWord = data.word;
+
+  const todayFmt = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  const displayDiv = document.getElementById('wordDisplay');
+
+  displayDiv.innerHTML = `
+    <div class="word-title">${escapeHtml(data.word)}</div>
+    ${data.pronunciation ? `<div class="word-pronunciation">[${escapeHtml(data.pronunciation)}]</div>` : ''}
+    ${data.type ? `<span class="word-type">${escapeHtml(data.type)}</span>` : ''}
+    <div class="word-definition">
+      ${escapeHtml(data.definition || 'Definition not available')}
+    </div>
+    ${data.example ? `<div class="word-example">${escapeHtml(data.example)}</div>` : ''}
+    <div class="word-meta">
+      <div class="word-date">📅 ${todayFmt}</div>
+      <div class="word-source">🇵🇹 Portuguese</div>
+    </div>
+  `;
+
+  await saveToHistory(data.word, 'portuguese', data.definition || '');
+}
 
 async function loadEnglishWord() {
   // Use RSS2JSON service for better CORS support
